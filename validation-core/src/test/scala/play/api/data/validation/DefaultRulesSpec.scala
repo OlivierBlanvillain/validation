@@ -2,8 +2,6 @@ package play.api.data.mapping
 
 import org.specs2.mutable._
 import scala.util.control.Exception._
-import play.api.libs.functional._
-import play.api.libs.functional.syntax._
 
 object DefaultRulesSpec extends Specification {
 
