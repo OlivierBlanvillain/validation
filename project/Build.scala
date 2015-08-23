@@ -16,9 +16,7 @@ object BuildSettings {
   val playVersion = "2.4.1"
   val paradiseVersion = "2.0.1"
 
-  val scalaVersions = Seq(
-    scalaVersion := "2.11.7",
-    crossScalaVersions := Seq("2.10.5", scalaVersion.value))
+  val scalaVersions = Seq(scalaVersion := "2.11.7")
 
   // Used by api docs generation to link back to the correct branch on GitHub, only when version is a SNAPSHOT
   val sourceCodeBranch = "master"
@@ -61,39 +59,27 @@ object BuildSettings {
 object Dependencies {
   import BuildSettings._
 
-  def only(version: (Int, Int), x: ModuleID) = libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some(`version`) =>
-      Seq(x)
-    case _ =>
-      Seq()
-  })
-
+  val scalazDep = libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.1.3"
+  
   val specsDep = libraryDependencies ++= Seq(
     "org.specs2" %% "specs2" % "2.4.9" % "test",
     "org.specs2" %% "specs2-junit" % "2.4.9" % "test") // This is needed to avoid a classpath issue on scalaz
 
-  val shapelessDep = Seq(
-    only((2, 10), "com.chuusai" % "shapeless" % "2.0.0" cross CrossVersion.full),
-    only((2, 11), "com.chuusai" %% "shapeless" % "2.0.0"))
+  val shapelessDep = libraryDependencies += "com.chuusai" %% "shapeless" % "2.0.0"
 
-  val macrosDep = Seq(
-    only((2, 10), "org.scalamacros" %% "quasiquotes" % paradiseVersion),
-    addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full))
+  val macrosDep = addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
 
-  val xmlDep = Seq(
-    only((2, 11), "org.scala-lang.modules" %% "scala-xml" % "1.0.2"))
+  val xmlDep = libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "1.0.2"
 
-  val coreDeps = Seq(
-    only((2, 11), "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1"),
-    libraryDependencies ++= Seq(
-      "joda-time" % "joda-time" % "2.2",
-      "org.joda" % "joda-convert" % "1.3.1",
-      "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-      "com.typesafe.play" %% "play-functional" % playVersion,
-      "com.typesafe.play" %% "play-json" % playVersion))
+  val coreDeps = libraryDependencies ++= Seq(
+    "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1",
+    "joda-time" % "joda-time" % "2.2",
+    "org.joda" % "joda-convert" % "1.3.1",
+    "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+    "com.typesafe.play" %% "play-functional" % playVersion,
+    "com.typesafe.play" %% "play-json" % playVersion)
 
-  val docDeps = libraryDependencies ++= Seq(
-    "com.typesafe.play" %% "play" % playVersion)
+  val docDeps = libraryDependencies += "com.typesafe.play" %% "play" % playVersion
 }
 
 object ValidationBuild extends Build {
@@ -112,6 +98,7 @@ object ValidationBuild extends Build {
     .settings(coreDeps: _*)
     .settings(macrosDep: _*)
     .settings(specsDep: _*)
+    .settings(scalazDep: _*)
 
   lazy val json = Project("validation-json", file("validation-json"))
     .settings(commonSettings: _*)
