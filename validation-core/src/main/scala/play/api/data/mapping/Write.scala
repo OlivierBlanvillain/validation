@@ -58,7 +58,7 @@ object Write {
   // }
 
   implicit def contravariantFunctorWrite[O] = new Contravariant[({ type λ[I] = Write[I, O] })#λ] {
-    def contramap[A, B](wa: Write[A, O], f: B => A): Write[B, O] = Write[B, O]((b: B) => wa.writes(f(b)))
+    def contramap[A, B](wa: Write[A, O])(f: B => A): Write[B, O] = Write[B, O]((b: B) => wa.writes(f(b)))
   }
 
   // implicit def contravariantFunctorExtractorWrite[I, O]: VariantExtractor[({ type λ[I] = Write[I, O] })#λ] =

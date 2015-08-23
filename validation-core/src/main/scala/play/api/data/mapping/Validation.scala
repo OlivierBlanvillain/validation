@@ -217,15 +217,15 @@ object Validation {
   import scala.language.reflectiveCalls
 
   implicit def functorValidation[I] = new Functor[({ type λ[O] = Validation[I, O] })#λ] {
-    def fmap[A, B](m: Validation[I, A], f: A => B): Validation[I, B] = Validation.applicativeValidation[I].map(m, f)
+    def map[A, B](m: Validation[I, A])(f: A => B): Validation[I, B] = Validation.applicativeValidation[I].map(m, f)
   }
 
   implicit def applicativeValidation[E] = new Applicative[({ type λ[A] = Validation[E, A] })#λ] {
-    def pure[A](a: A): Validation[E, A] = Success(a)
+    def point[A](a: => A): Validation[E, A] = Success(a)
 
     def map[A, B](m: Validation[E, A], f: A => B): Validation[E, B] = m.map(f)
 
-    def apply[A, B](mf: Validation[E, A => B], ma: Validation[E, A]): Validation[E, B] = (mf, ma) match {
+    def ap[A, B](ma: => Validation[E, A])(mf: => Validation[E, A => B]): Validation[E, B] = (mf, ma) match {
       case (Success(f), Success(a)) => Success(f(a))
       case (Failure(e1), Failure(e2)) => Failure.merge(Failure(e1), Failure(e2))
       case (Failure(e), _) => Failure(e)

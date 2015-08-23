@@ -146,7 +146,7 @@ object Rule {
   }
 
   implicit def functorRule[I] = new Functor[({ type λ[O] = Rule[I, O] })#λ] {
-    def fmap[A, B](m: Rule[I, A], f: A => B): Rule[I, B] = applicativeRule[I].map(m, f)
+    def map[A, B](m: Rule[I, A])(f: A => B): Rule[I, B] = applicativeRule[I].map(m, f)
   }
 
   // implicit def functorExtractorRule[I, O]: VariantExtractor[({ type λ[O] = Rule[I, O] })#λ] =
