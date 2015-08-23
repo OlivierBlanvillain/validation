@@ -133,7 +133,7 @@ For example it's defined this way for Json:
 
 ```scala
 def optionR[J, O](r: => Rule[J, O], noneValues: Rule[JsValue, JsValue]*)(implicit pick: Path => Rule[JsValue, JsValue], coerce: Rule[JsValue, J]): Path => Rule[JsValue, Option[O]]
-    = super.opt[J, O](r, (jsNull.fmap(n => n: JsValue) +: noneValues):_*)
+    = super.opt[J, O](r, (jsNull.map(n => n: JsValue) +: noneValues):_*)
 ```
 Basically it's just the same, but we are now only supporting `JsValue`. We are also adding JsNull is the list of None-ish values.
 

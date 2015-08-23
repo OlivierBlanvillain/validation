@@ -25,7 +25,7 @@
 //   implicit def invariantFunctorFormat[IR, IW]: InvariantFunctor[({ type λ[O] = Format[IR, IW, O] })#λ] =
 //     new InvariantFunctor[({ type λ[O] = Format[IR, IW, O] })#λ] {
 //       def inmap[A, B](fa: Format[IR, IW, A], f1: A => B, f2: B => A): Format[IR, IW, B] =
-//         Format[IR, IW, B](Rule.toRule(fa).fmap(f1), Write.toWrite(fa).contramap(f2))
+//         Format[IR, IW, B](Rule.toRule(fa).map(f1), Write.toWrite(fa).contramap(f2))
 //     }
 
 //   implicit def invariantFunctorExtractorFormat[IR, IW]: VariantExtractor[({ type λ[O] = Format[IR, IW, O] })#λ] =

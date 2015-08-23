@@ -150,7 +150,7 @@ object MappingMacros {
         q"($typeApply).apply($applyƒ)"
 
       case w1 :: Nil =>
-        q"$w1.fmap($applyƒ)"
+        q"$w1.map($applyƒ)"
     }
 
     // XXX: recursive values need the user to use explcitly typed implicit val

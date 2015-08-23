@@ -11,7 +11,7 @@ trait Get[I, O] {
 
   def read(sub: => RuleLike[O, O]): Rule[I, I] = Rule { i =>
     Rule.toRule(sub).repath(path ++ _)
-      .fmap(_ => i)
+      .map(_ => i)
       .validate(lens.get(i))
   }
   // def read[I, O](implicit r: Path => RuleLike[I, O]): Rule[I, O] =

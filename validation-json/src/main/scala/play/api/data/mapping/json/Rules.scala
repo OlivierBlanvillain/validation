@@ -94,10 +94,10 @@ object Rules extends play.api.data.mapping.DefaultRules[JsValue] {
     optionR(Rule.zero[O])(pick, coerce)(p)
 
   def optionR[J, O](r: => RuleLike[J, O], noneValues: RuleLike[JsValue, JsValue]*)(implicit pick: Path => RuleLike[JsValue, JsValue], coerce: RuleLike[JsValue, J]): Path => Rule[JsValue, Option[O]] =
-    super.opt[J, O](r, (jsNullR.fmap(n => n: JsValue) +: noneValues): _*)
+    super.opt[J, O](r, (jsNullR.map(n => n: JsValue) +: noneValues): _*)
 
   implicit def mapR[O](implicit r: RuleLike[JsValue, O]): Rule[JsValue, Map[String, O]] =
-    super.mapR[JsValue, O](r, jsObjectR.fmap { case JsObject(fs) => fs.toSeq })
+    super.mapR[JsValue, O](r, jsObjectR.map { case JsObject(fs) => fs.toSeq })
 
   implicit def JsValue[O](implicit r: RuleLike[JsObject, O]): Rule[JsValue, O] =
     jsObjectR.compose(r)
@@ -129,7 +129,7 @@ object Rules extends play.api.data.mapping.DefaultRules[JsValue] {
 
   // // XXX: a bit of boilerplate
   private def pickInS[T](implicit r: RuleLike[Seq[JsValue], T]): Rule[JsValue, T] =
-    jsArrayR.fmap { case JsArray(fs) => fs }.compose(r)
+    jsArrayR.map { case JsArray(fs) => fs }.compose(r)
   implicit def pickSeq[O](implicit r: RuleLike[JsValue, O]) = pickInS(seqR[JsValue, O])
   implicit def pickSet[O](implicit r: RuleLike[JsValue, O]) = pickInS(setR[JsValue, O])
   implicit def pickList[O](implicit r: RuleLike[JsValue, O]) = pickInS(listR[JsValue, O])

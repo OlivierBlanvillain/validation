@@ -271,7 +271,7 @@ object MacroSpec extends Specification {
       import Rules._
 
       implicit def idRule[A]: Rule[A, Id[A]] =
-        Rule.zero[A].fmap{ Id[A](_) }
+        Rule.zero[A].map{ Id[A](_) }
 
       implicit def c1Rule[A](implicit rds: Rule[A, Id[A]], e: Path => Rule[UrlFormEncoded, A]) =
         From[UrlFormEncoded]{ __ =>

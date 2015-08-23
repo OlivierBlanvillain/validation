@@ -198,13 +198,13 @@ e: play.api.libs.json.JsObject = {"name":"E","eee":6}
 ```scala
 scala> val rb: Rule[JsValue, A] = From[JsValue]{ __ =>
      |   import play.api.data.mapping.json.Rules, Rules._
-     |   (__ \ "name").read(Rules.equalTo("B")) ~> (__ \ "foo").read[Int].fmap(B.apply _)
+     |   (__ \ "name").read(Rules.equalTo("B")) ~> (__ \ "foo").read[Int].map(B.apply _)
      | }
 rb: play.api.data.mapping.Rule[play.api.libs.json.JsValue,A] = play.api.data.mapping.Rule$$anon$2@4dbfbe84
 
 scala> val rc: Rule[JsValue, A] = From[JsValue]{ __ =>
      |   import play.api.data.mapping.json.Rules, Rules._
-     |   (__ \ "name").read(Rules.equalTo("C")) ~> (__ \ "bar").read[Int].fmap(C.apply _)
+     |   (__ \ "name").read(Rules.equalTo("C")) ~> (__ \ "bar").read[Int].map(C.apply _)
      | }
 rc: play.api.data.mapping.Rule[play.api.libs.json.JsValue,A] = play.api.data.mapping.Rule$$anon$2@7e21b559
 
@@ -233,8 +233,8 @@ typeFailure: play.api.data.mapping.Failure[(play.api.data.mapping.Path.type, Seq
 scala> val rule = From[JsValue] { __ =>
      | 	import play.api.data.mapping.json.Rules._
      | 	(__ \ "name").read[String].flatMap[A] {
-     | 	  case "B" => (__ \ "foo").read[Int].fmap(B.apply _)
-     | 	  case "C" => (__ \ "bar").read[Int].fmap(C.apply _)
+     | 	  case "B" => (__ \ "foo").read[Int].map(B.apply _)
+     | 	  case "C" => (__ \ "bar").read[Int].map(C.apply _)
      | 	  case _ => Rule(_ => typeFailure)
      | 	}
      | }
