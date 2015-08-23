@@ -212,7 +212,6 @@ object Validation {
     }
   }
 
-  import play.api.libs.functional._
   import scala.language.reflectiveCalls
 
   implicit def functorValidation[I] = new Functor[({ type λ[O] = Validation[I, O] })#λ] {
@@ -234,7 +233,6 @@ object Validation {
   }
 
   // XXX: Helps the compiler a bit
-  import play.api.libs.functional.syntax._
   implicit def cba[E] = functionalCanBuildApplicative[({ type λ[A] = Validation[E, A] })#λ]
   implicit def validationFbo[I, O] = toFunctionalBuilderOps[({ type λ[O] = Validation[I, O] })#λ, O] _
 }
@@ -288,8 +286,6 @@ object Success {
 }
 
 object Failure {
-  import play.api.libs.functional.Monoid
-
   def apply[E, A](errors: Seq[E]): Failure[E, A] = new Failure(errors)
   def unapply[E, A](f: Failure[E, A]): Option[Seq[E]] = Some(f.errors)
 

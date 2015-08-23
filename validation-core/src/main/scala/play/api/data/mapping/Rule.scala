@@ -115,8 +115,6 @@ object Rule {
   def uncurry[A, B, C](f: A => Rule[B, C]): Rule[(A, B), C] =
     Rule { case (a, b) => f(a).validate(b) }
 
-  import play.api.libs.functional._
-
   implicit def zero[O] = toRule(RuleLike.zero[O])
 
   def apply[I, O](m: Mapping[(Path, Seq[ValidationError]), I, O]) = new Rule[I, O] {
@@ -153,7 +151,6 @@ object Rule {
     VariantExtractor.functor[({ type λ[O] = Rule[I, O] })#λ](functorRule)
 
   // XXX: Helps the compiler a bit
-  import play.api.libs.functional.syntax._
   implicit def cba[I] = functionalCanBuildApplicative[({ type λ[O] = Rule[I, O] })#λ]
   implicit def fbo[I, O] = toFunctionalBuilderOps[({ type λ[O] = Rule[I, O] })#λ, O] _
   implicit def ao[I, O] = toApplicativeOps[({ type λ[O] = Rule[I, O] })#λ, O] _

@@ -48,7 +48,6 @@ object Write {
 
   implicit def zero[I]: Write[I, I] = toWrite(WriteLike.zero[I])
 
-  import play.api.libs.functional._
   implicit def functionalCanBuildWrite[O](implicit m: Monoid[O]) = new FunctionalCanBuild[({ type λ[I] = Write[I, O] })#λ] {
     def apply[A, B](wa: Write[A, O], wb: Write[B, O]): Write[A ~ B, O] = Write[A ~ B, O] { (x: A ~ B) =>
       x match {
@@ -65,7 +64,6 @@ object Write {
     VariantExtractor.contravariantFunctor[({ type λ[I] = Write[I, O] })#λ](contravariantFunctorWrite)
 
   // XXX: Helps the compiler a bit
-  import play.api.libs.functional.syntax._
   implicit def fboWrite[I, O: Monoid](a: Write[I, O]) = toFunctionalBuilderOps[({ type λ[I] = Write[I, O] })#λ, I](a)
   implicit def cfoWrite[I, O](a: Write[I, O]) = toContraFunctorOps[({ type λ[I] = Write[I, O] })#λ, I](a)
 }

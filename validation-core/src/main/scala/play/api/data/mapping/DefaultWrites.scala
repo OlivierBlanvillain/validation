@@ -48,8 +48,6 @@ trait DateWrites {
 }
 
 trait DefaultWrites extends DateWrites {
-  import play.api.libs.functional.Monoid
-
   protected def optionW[I, J, O](r: => WriteLike[I, J], empty: O)(implicit w: Path => WriteLike[J, O]) =
     (p: Path) => Write[Option[I], O] { maybeI =>
       maybeI.map { i =>

@@ -21,8 +21,6 @@ object Format {
   import scala.language.experimental.macros
   def gen[IR, IW, O]: Format[IR, IW, O] = macro MappingMacros.format[IR, IW, O]
 
-  import play.api.libs.functional._
-
   implicit def invariantFunctorFormat[IR, IW]: InvariantFunctor[({ type λ[O] = Format[IR, IW, O] })#λ] =
     new InvariantFunctor[({ type λ[O] = Format[IR, IW, O] })#λ] {
       def inmap[A, B](fa: Format[IR, IW, A], f1: A => B, f2: B => A): Format[IR, IW, B] =
@@ -39,7 +37,6 @@ object Format {
     }
 
   // XXX: Helps the compiler a bit
-  import play.api.libs.functional.syntax._
   implicit def fboFormat[IR, IW: Monoid, O](f: Format[IR, IW, O])(implicit fcb: FunctionalCanBuild[({ type λ[O] = Format[IR, IW, O] })#λ]) =
     toFunctionalBuilderOps[({ type λ[O] = Format[IR, IW, O] })#λ, O](f)(fcb)
 
