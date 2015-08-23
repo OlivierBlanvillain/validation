@@ -59,8 +59,6 @@ object BuildSettings {
 object Dependencies {
   import BuildSettings._
 
-  val scalazDep = libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.1.3"
-  
   val specsDep = libraryDependencies ++= Seq(
     "org.specs2" %% "specs2" % "2.4.9" % "test",
     "org.specs2" %% "specs2-junit" % "2.4.9" % "test") // This is needed to avoid a classpath issue on scalaz
@@ -76,8 +74,10 @@ object Dependencies {
     "joda-time" % "joda-time" % "2.2",
     "org.joda" % "joda-convert" % "1.3.1",
     "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-    "com.typesafe.play" %% "play-functional" % playVersion,
-    "com.typesafe.play" %% "play-json" % playVersion)
+    "org.scalaz" %% "scalaz-core" % "7.1.3"
+    // "com.typesafe.play" %% "play-functional" % playVersion
+    // "com.typesafe.play" %% "play-json" % playVersion
+  )
 
   val docDeps = libraryDependencies += "com.typesafe.play" %% "play" % playVersion
 }
@@ -98,7 +98,6 @@ object ValidationBuild extends Build {
     .settings(coreDeps: _*)
     .settings(macrosDep: _*)
     .settings(specsDep: _*)
-    .settings(scalazDep: _*)
 
   lazy val json = Project("validation-json", file("validation-json"))
     .settings(commonSettings: _*)
