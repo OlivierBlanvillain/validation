@@ -1,5 +1,7 @@
 package play.api.data.mapping
 
+ import scalaz.{Ordering => _, _}
+
 /**
  * Validation[E, A] is the result of a validation, where E is the type of each error, and A is the type of the result if the validation is successful
  * The only two possible implementations are Success[E, A](value: A), or Failure[E, A](errors: Seq[E])
@@ -219,7 +221,6 @@ object Validation {
   }
 
   implicit def applicativeValidation[E] = new Applicative[({ type λ[A] = Validation[E, A] })#λ] {
-
     def pure[A](a: A): Validation[E, A] = Success(a)
 
     def map[A, B](m: Validation[E, A], f: A => B): Validation[E, B] = m.map(f)
@@ -233,8 +234,8 @@ object Validation {
   }
 
   // XXX: Helps the compiler a bit
-  implicit def cba[E] = functionalCanBuildApplicative[({ type λ[A] = Validation[E, A] })#λ]
-  implicit def validationFbo[I, O] = toFunctionalBuilderOps[({ type λ[O] = Validation[I, O] })#λ, O] _
+  // implicit def cba[E] = functionalCanBuildApplicative[({ type λ[A] = Validation[E, A] })#λ]
+  // implicit def validationFbo[I, O] = toFunctionalBuilderOps[({ type λ[O] = Validation[I, O] })#λ, O] _
 }
 
 final case class FailProjection[+E, +A](v: Validation[E, A]) {

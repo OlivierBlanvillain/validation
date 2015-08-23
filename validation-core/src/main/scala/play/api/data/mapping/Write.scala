@@ -1,6 +1,7 @@
 package play.api.data.mapping
 
 import scala.language.implicitConversions
+ import scalaz.{Ordering => _, _}
 
 trait WriteLike[I, +O] {
   /**
@@ -44,26 +45,26 @@ object Write {
     def writes(data: I): O = r.writes(data)
   }
 
-  def gen[I, O]: Write[I, O] = macro MappingMacros.write[I, O]
+  // def gen[I, O]: Write[I, O] = macro MappingMacros.write[I, O]
 
   implicit def zero[I]: Write[I, I] = toWrite(WriteLike.zero[I])
 
-  implicit def functionalCanBuildWrite[O](implicit m: Monoid[O]) = new FunctionalCanBuild[({ type λ[I] = Write[I, O] })#λ] {
-    def apply[A, B](wa: Write[A, O], wb: Write[B, O]): Write[A ~ B, O] = Write[A ~ B, O] { (x: A ~ B) =>
-      x match {
-        case a ~ b => m.append(wa.writes(a), wb.writes(b))
-      }
-    }
-  }
+  // implicit def functionalCanBuildWrite[O](implicit m: Monoid[O]) = new FunctionalCanBuild[({ type λ[I] = Write[I, O] })#λ] {
+  //   def apply[A, B](wa: Write[A, O], wb: Write[B, O]): Write[A ~ B, O] = Write[A ~ B, O] { (x: A ~ B) =>
+  //     x match {
+  //       case a ~ b => m.append(wa.writes(a), wb.writes(b))
+  //     }
+  //   }
+  // }
 
-  implicit def contravariantFunctorWrite[O] = new ContravariantFunctor[({ type λ[I] = Write[I, O] })#λ] {
+  implicit def contravariantFunctorWrite[O] = new Contravariant[({ type λ[I] = Write[I, O] })#λ] {
     def contramap[A, B](wa: Write[A, O], f: B => A): Write[B, O] = Write[B, O]((b: B) => wa.writes(f(b)))
   }
 
-  implicit def contravariantFunctorExtractorWrite[I, O]: VariantExtractor[({ type λ[I] = Write[I, O] })#λ] =
-    VariantExtractor.contravariantFunctor[({ type λ[I] = Write[I, O] })#λ](contravariantFunctorWrite)
+  // implicit def contravariantFunctorExtractorWrite[I, O]: VariantExtractor[({ type λ[I] = Write[I, O] })#λ] =
+  //   VariantExtractor.contravariantFunctor[({ type λ[I] = Write[I, O] })#λ](contravariantFunctorWrite)
 
   // XXX: Helps the compiler a bit
-  implicit def fboWrite[I, O: Monoid](a: Write[I, O]) = toFunctionalBuilderOps[({ type λ[I] = Write[I, O] })#λ, I](a)
-  implicit def cfoWrite[I, O](a: Write[I, O]) = toContraFunctorOps[({ type λ[I] = Write[I, O] })#λ, I](a)
+  // implicit def fboWrite[I, O: Monoid](a: Write[I, O]) = toFunctionalBuilderOps[({ type λ[I] = Write[I, O] })#λ, I](a)
+  // implicit def cfoWrite[I, O](a: Write[I, O]) = toContraFunctorOps[({ type λ[I] = Write[I, O] })#λ, I](a)
 }

@@ -1,5 +1,7 @@
 package play.api.data.mapping
 
+ import scalaz.{Ordering => _, _}
+
 object MappingMacros {
   import language.experimental.macros
   import scala.reflect.macros.Context
@@ -155,12 +157,12 @@ object MappingMacros {
     c.Expr[Rule[I, O]](q"""{ import play.api.libs.functional.syntax._; _root_.play.api.data.mapping.From[${typeI}] { __ => $body } }""")
   }
 
-  def format[IR: c.WeakTypeTag, IW: c.WeakTypeTag, O: c.WeakTypeTag](c: Context): c.Expr[Format[IR, IW, O]] = {
-    import c.universe._
-    import c.universe.Flag._
+  // def format[IR: c.WeakTypeTag, IW: c.WeakTypeTag, O: c.WeakTypeTag](c: Context): c.Expr[Format[IR, IW, O]] = {
+  //   import c.universe._
+  //   import c.universe.Flag._
 
-    val r = rule[IR, O](c)
-    val w = write[O, IW](c)
-    c.Expr[Format[IR, IW, O]](q"""_root_.play.api.data.mapping.Format($r, $w)""")
-  }
+  //   val r = rule[IR, O](c)
+  //   val w = write[O, IW](c)
+  //   c.Expr[Format[IR, IW, O]](q"""_root_.play.api.data.mapping.Format($r, $w)""")
+  // }
 }

@@ -1,5 +1,7 @@
 package play.api.data.mapping
 
+ import scalaz.{Ordering => _, _}
+
 /**
  * This trait provides default Rule implementations,
  * from String to various date types and format
@@ -99,7 +101,8 @@ trait DateRules {
    * @param corrector a simple string transformation function that can be used to transform input String before parsing. Useful when standards are not exactly respected and require a few tweaks
    */
   def sqlDateRule(pattern: String, corrector: String => String = identity): Rule[String, java.sql.Date] =
-    date(pattern, corrector).fmap(d => new java.sql.Date(d.getTime))
+    Rule.functorRule[String]
+      .fmap(date(pattern, corrector), (d: java.util.Date) => new java.sql.Date(d.getTime))
 
   /**
    * the default implicit Rule for `java.sql.Date`
@@ -136,7 +139,8 @@ trait GenericRules {
    * @return A new Rule
    */
   implicit def arrayR[I, O: scala.reflect.ClassTag](implicit r: RuleLike[I, O]): Rule[Seq[I], Array[O]] =
-    seqR[I, O](r).fmap(_.toArray)
+    Rule.functorRule[Seq[I]]
+      .fmap(seqR[I, O](r), (_: Seq[O]).toArray)
 
   /**
    * lift a `Rule[I, O]` to a Rule of `Rule[Seq[I], Traversable[O]]`
@@ -147,7 +151,8 @@ trait GenericRules {
    * @return A new Rule
    */
   implicit def traversableR[I, O](implicit r: RuleLike[I, O]): Rule[Seq[I], Traversable[O]] =
-    seqR[I, O](r).fmap(_.toTraversable)
+    Rule.functorRule[Seq[I]]
+      .fmap(seqR[I, O](r), (_: Seq[O]).toTraversable)
 
   /**
    * lift a `Rule[I, O]` to a Rule of `Rule[Seq[I], Set[O]]`
@@ -158,7 +163,8 @@ trait GenericRules {
    * @return A new Rule
    */
   implicit def setR[I, O](implicit r: RuleLike[I, O]): Rule[Seq[I], Set[O]] =
-    seqR[I, O](r).fmap(_.toSet)
+    Rule.functorRule[Seq[I]]
+      .fmap(seqR[I, O](r), (_: Seq[O]).toSet)
 
   /**
    * lift a `Rule[I, O]` to a Rule of `Rule[Seq[I], Seq[O]]`
@@ -187,8 +193,8 @@ trait GenericRules {
    * @return A new Rule
    */
   implicit def listR[I, O](implicit r: RuleLike[I, O]): Rule[Seq[I], List[O]] =
-    seqR[I, O](r).fmap(_.toList)
-
+    Rule.functorRule[Seq[I]]
+      .fmap(seqR[I, O](r), (_: Seq[O]).toList)
   /**
    * Create a Rule validation that a Seq[I] is not empty, and attempt to convert it's first element as a `O`
    * {{{
@@ -354,12 +360,14 @@ trait DefaultRules[I] extends GenericRules with DateRules {
   protected def opt[J, O](r: => RuleLike[J, O], noneValues: RuleLike[I, I]*)(implicit pick: Path => RuleLike[I, I], coerce: RuleLike[I, J]) = (path: Path) =>
     Rule[I, Option[O]] {
       (d: I) =>
-        val isNone = not(noneValues.foldLeft(Rule.zero[I])(_ compose not(_))).fmap(_ => None)
+        val isNone = Rule.functorRule[I]
+          .fmap(not(noneValues.foldLeft(Rule.zero[I])(_ compose not(_))), (_: I) => None)
+        // not(noneValues.foldLeft(Rule.zero[I])(_ compose not(_))).fmap(_ => None)
         val v = (pick(path).validate(d).map(Some.apply) orElse Success(None))
         v.viaEither {
           _.right.flatMap {
             case None => Right(None)
-            case Some(i) => isNone.orElse(Rule.toRule(coerce).compose(r).fmap[Option[O]](Some.apply)).validate(i).asEither
+            case Some(i) => ??? // isNone.orElse(Rule.toRule(coerce).compose(r).fmap[Option[O]](Some.apply)).validate(i).asEither
           }
         }
     }

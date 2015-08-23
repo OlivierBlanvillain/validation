@@ -1,5 +1,7 @@
 package play.api.data.mapping
 
+import scalaz.{Ordering => _, _}
+
 trait From[I] {
   def apply[O](f: Reader[I] => RuleLike[I, O]): Rule[I, O] = Rule.toRule(f(Reader[I]()))
 }
@@ -129,40 +131,43 @@ case class Writer[I](path: Path = Path(Nil)) {
    * }}}
    * @note This method works fine with recursive writes
    */
-  def write[O, J](format: => WriteLike[O, J])(implicit w: Path => WriteLike[J, I]): Write[O, I] =
-    Write.toWrite(w(path)).contramap(x => format.writes(x))
+  def write[O, J](format: => WriteLike[O, J])(implicit w: Path => WriteLike[J, I]): Write[O, I] = {
+    Write.contravariantFunctorWrite[I]
+      .contramap(Write.toWrite(w(path)))(x => format.writes(x))
+    // Write.toWrite(w(path)).contramap(x => format.writes(x))
+  }
 
   def \(key: String): Writer[I] = Writer(path \ key)
   def \(idx: Int): Writer[I] = Writer(path \ idx)
   def \(child: PathNode): Writer[I] = Writer(path \ child)
 }
 
-trait Formatting[IR, IW] {
-  def apply[O](f: Formatter[IR, IW] => Format[IR, IW, O]) = f(Formatter[IR, IW]())
-}
-object Formatting {
-  def apply[IR, IW] = new Formatting[IR, IW] {}
-}
+// trait Formatting[IR, IW] {
+//   def apply[O](f: Formatter[IR, IW] => Format[IR, IW, O]) = f(Formatter[IR, IW]())
+// }
+// object Formatting {
+//   def apply[IR, IW] = new Formatting[IR, IW] {}
+// }
 
-case class Formatter[IR, IW](path: Path = Path(Nil)) {
+// case class Formatter[IR, IW](path: Path = Path(Nil)) {
 
-  def format[JJ, J, O](subR: => RuleLike[J, O], subW: => WriteLike[O, JJ])(implicit r: Path => RuleLike[IR, J], w: Path => WriteLike[JJ, IW]): Format[IR, IW, O] = {
-    Format[IR, IW, O](Reader(path).read(subR), Writer(path).write(subW))
-  }
+//   def format[JJ, J, O](subR: => RuleLike[J, O], subW: => WriteLike[O, JJ])(implicit r: Path => RuleLike[IR, J], w: Path => WriteLike[JJ, IW]): Format[IR, IW, O] = {
+//     Format[IR, IW, O](Reader(path).read(subR), Writer(path).write(subW))
+//   }
 
-  def format[J, O](subR: => RuleLike[J, O])(implicit r: Path => RuleLike[IR, J], w: Path => WriteLike[O, IW]): Format[IR, IW, O] =
-    format(subR, Write.zero[O])
+//   def format[J, O](subR: => RuleLike[J, O])(implicit r: Path => RuleLike[IR, J], w: Path => WriteLike[O, IW]): Format[IR, IW, O] =
+//     format(subR, Write.zero[O])
 
-  // def format[JJ, O](subW: => WriteLike[O, JJ])(implicit r: Path => RuleLike[I, O], w: Path => WriteLike[JJ, I]): Format[I, O] =
-  //   format(Rule.zero[O], subW)
+//   // def format[JJ, O](subW: => WriteLike[O, JJ])(implicit r: Path => RuleLike[I, O], w: Path => WriteLike[JJ, I]): Format[I, O] =
+//   //   format(Rule.zero[O], subW)
 
-  def format[O](implicit r: Path => RuleLike[IR, O], w: Path => WriteLike[O, IW]): Format[IR, IW, O] = new Format[IR, IW, O] {
-    lazy val f = format(Rule.zero[O], Write.zero[O])
-    def validate(i: IR) = f.validate(i)
-    def writes(o: O) = f.writes(o)
-  }
+//   def format[O](implicit r: Path => RuleLike[IR, O], w: Path => WriteLike[O, IW]): Format[IR, IW, O] = new Format[IR, IW, O] {
+//     lazy val f = format(Rule.zero[O], Write.zero[O])
+//     def validate(i: IR) = f.validate(i)
+//     def writes(o: O) = f.writes(o)
+//   }
 
-  def \(key: String): Formatter[IR, IW] = Formatter(path \ key)
-  def \(idx: Int): Formatter[IR, IW] = Formatter(path \ idx)
-  def \(child: PathNode): Formatter[IR, IW] = Formatter(path \ child)
-}
+//   def \(key: String): Formatter[IR, IW] = Formatter(path \ key)
+//   def \(idx: Int): Formatter[IR, IW] = Formatter(path \ idx)
+//   def \(child: PathNode): Formatter[IR, IW] = Formatter(path \ child)
+// }

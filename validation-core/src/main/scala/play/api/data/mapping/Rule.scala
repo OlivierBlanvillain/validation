@@ -1,5 +1,7 @@
 package play.api.data.mapping
 
+import scalaz.{Ordering => _, _}
+
 trait RuleLike[I, O] {
   /**
    * Apply the Rule to `data`
@@ -101,7 +103,7 @@ trait Rule[I, O] extends RuleLike[I, O] {
 object Rule {
   import scala.language.experimental.macros
 
-  def gen[I, O]: Rule[I, O] = macro MappingMacros.rule[I, O]
+  // def gen[I, O]: Rule[I, O] = macro MappingMacros.rule[I, O]
 
   /**
    * Turn a `A => Rule[B, C]` into a `Rule[(A, B), C]`
@@ -147,12 +149,12 @@ object Rule {
     def fmap[A, B](m: Rule[I, A], f: A => B): Rule[I, B] = applicativeRule[I].map(m, f)
   }
 
-  implicit def functorExtractorRule[I, O]: VariantExtractor[({ type λ[O] = Rule[I, O] })#λ] =
-    VariantExtractor.functor[({ type λ[O] = Rule[I, O] })#λ](functorRule)
+  // implicit def functorExtractorRule[I, O]: VariantExtractor[({ type λ[O] = Rule[I, O] })#λ] =
+  //   VariantExtractor.functor[({ type λ[O] = Rule[I, O] })#λ](functorRule)
 
   // XXX: Helps the compiler a bit
-  implicit def cba[I] = functionalCanBuildApplicative[({ type λ[O] = Rule[I, O] })#λ]
-  implicit def fbo[I, O] = toFunctionalBuilderOps[({ type λ[O] = Rule[I, O] })#λ, O] _
-  implicit def ao[I, O] = toApplicativeOps[({ type λ[O] = Rule[I, O] })#λ, O] _
-  implicit def f[I, O] = toFunctorOps[({ type λ[O] = Rule[I, O] })#λ, O] _
+  // implicit def cba[I] = functionalCanBuildApplicative[({ type λ[O] = Rule[I, O] })#λ]
+  // implicit def fbo[I, O] = toFunctionalBuilderOps[({ type λ[O] = Rule[I, O] })#λ, O] _
+  // implicit def ao[I, O] = toApplicativeOps[({ type λ[O] = Rule[I, O] })#λ, O] _
+  // implicit def f[I, O] = toFunctorOps[({ type λ[O] = Rule[I, O] })#λ, O] _
 }

@@ -1,5 +1,7 @@
 package play.api.data.mapping
 
+ import scalaz.{Ordering => _, _}
+
 trait DateWrites {
   /**
    * Serializer for java.util.Date
@@ -42,7 +44,8 @@ trait DateWrites {
   implicit val jodaDate: Write[org.joda.time.DateTime, String] = jodaDate("yyyy-MM-dd")
 
   def sqlDate(pattern: String): Write[java.sql.Date, String] =
-    date(pattern).contramap((d: java.sql.Date) => new java.util.Date(d.getTime))
+    Write.contravariantFunctorWrite[String]
+      .contramap(date(pattern))((d: java.sql.Date) => new java.util.Date(d.getTime))  
 
   val sqlDate: Write[java.sql.Date, String] = sqlDate("yyyy-MM-dd")
 }
@@ -51,7 +54,9 @@ trait DefaultWrites extends DateWrites {
   protected def optionW[I, J, O](r: => WriteLike[I, J], empty: O)(implicit w: Path => WriteLike[J, O]) =
     (p: Path) => Write[Option[I], O] { maybeI =>
       maybeI.map { i =>
-        Write.toWrite(w(p)).contramap(r.writes).writes(i)
+        Write.contravariantFunctorWrite[O]
+          .contramap(Write.toWrite(w(p)))(r.writes _)
+          .writes(i)
       }.getOrElse(empty)
     }
 
