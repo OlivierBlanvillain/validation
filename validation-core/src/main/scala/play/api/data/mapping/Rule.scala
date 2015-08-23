@@ -131,13 +131,13 @@ object Rule {
     Rule[I, O](f(_: I).fail.map(errs => Seq(Path -> errs)))
 
   implicit def applicativeRule[I] = new Applicative[({ type λ[O] = Rule[I, O] })#λ] {
-    override def pure[A](a: A): Rule[I, A] =
+    def point[A](a: => A): Rule[I, A] =
       Rule(_ => Success(a))
 
-    override def map[A, B](m: Rule[I, A], f: A => B): Rule[I, B] =
+    def map[A, B](m: Rule[I, A], f: A => B): Rule[I, B] =
       Rule(d => m.validate(d).map(f))
 
-    override def apply[A, B](mf: Rule[I, A => B], ma: Rule[I, A]): Rule[I, B] =
+    def ap[A, B](ma: => Rule[I, A])(mf: => Rule[I, A => B]): Rule[I, B] =
       Rule { d =>
         val a = ma.validate(d)
         val f = mf.validate(d)
