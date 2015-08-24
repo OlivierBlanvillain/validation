@@ -2,7 +2,7 @@
 
 // import scala.annotation.implicitNotFound
 // import scala.language.implicitConversions
-//  import scalaz.{Ordering => _, _}
+// import cats._
 
 // @implicitNotFound("No Format found for types ${IR},${IW}, ${O}. Try to implement an implicit Format[${IR}, ${IW}, ${O}].")
 // trait Format[IR, +IW, O] extends RuleLike[IR, O] with WriteLike[O, IW]

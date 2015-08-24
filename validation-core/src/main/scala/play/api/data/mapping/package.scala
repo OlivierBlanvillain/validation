@@ -1,6 +1,6 @@
 package play.api.data
 
- import scalaz.{Ordering => _, _}
+import cats._
 
 /**
  * Contains the validation API used by `Form`.

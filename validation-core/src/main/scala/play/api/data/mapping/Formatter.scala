@@ -1,6 +1,6 @@
 package play.api.data.mapping
 
-import scalaz.{Ordering => _, _}
+import cats._
 
 trait From[I] {
   def apply[O](f: Reader[I] => RuleLike[I, O]): Rule[I, O] = Rule.toRule(f(Reader[I]()))

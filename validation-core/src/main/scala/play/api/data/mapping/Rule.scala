@@ -1,6 +1,6 @@
 package play.api.data.mapping
 
-import scalaz.{Ordering => _, _}
+import cats._
 
 trait RuleLike[I, O] {
   /**
@@ -131,13 +131,13 @@ object Rule {
     Rule[I, O](f(_: I).fail.map(errs => Seq(Path -> errs)))
 
   implicit def applicativeRule[I] = new Applicative[({ type λ[O] = Rule[I, O] })#λ] {
-    def point[A](a: => A): Rule[I, A] =
+    def pure[A](a: A): Rule[I, A] =
       Rule(_ => Success(a))
 
     def map[A, B](m: Rule[I, A], f: A => B): Rule[I, B] =
       Rule(d => m.validate(d).map(f))
 
-    def ap[A, B](ma: => Rule[I, A])(mf: => Rule[I, A => B]): Rule[I, B] =
+    def ap[A, B](ma: Rule[I, A])(mf: Rule[I, A => B]): Rule[I, B] =
       Rule { d =>
         val a = ma.validate(d)
         val f = mf.validate(d)

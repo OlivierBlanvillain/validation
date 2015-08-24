@@ -1,7 +1,8 @@
 package play.api.data.mapping
 
 import scala.language.implicitConversions
- import scalaz.{Ordering => _, _}
+import cats._
+import cats.functor.Contravariant
 
 trait WriteLike[I, +O] {
   /**

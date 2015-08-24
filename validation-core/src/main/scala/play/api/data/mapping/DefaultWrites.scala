@@ -1,6 +1,6 @@
 package play.api.data.mapping
 
- import scalaz.{Ordering => _, _}
+import cats._
 
 trait DateWrites {
   /**

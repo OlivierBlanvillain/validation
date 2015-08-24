@@ -2,7 +2,7 @@ package play.api.data.mapping
 
 import scala.language.higherKinds
 import scala.language.implicitConversions
- import scalaz.{Ordering => _, _}
+import cats._
 
 sealed trait PathNode
 case class KeyPathNode(key: String) extends PathNode {

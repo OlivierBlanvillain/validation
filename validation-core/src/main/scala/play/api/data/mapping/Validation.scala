@@ -1,6 +1,6 @@
 package play.api.data.mapping
 
- import scalaz.{Ordering => _, _}
+import cats._
 
 /**
  * Validation[E, A] is the result of a validation, where E is the type of each error, and A is the type of the result if the validation is successful
@@ -221,11 +221,11 @@ object Validation {
   }
 
   implicit def applicativeValidation[E] = new Applicative[({ type λ[A] = Validation[E, A] })#λ] {
-    def point[A](a: => A): Validation[E, A] = Success(a)
+    def pure[A](a: A): Validation[E, A] = Success(a)
 
     def map[A, B](m: Validation[E, A], f: A => B): Validation[E, B] = m.map(f)
 
-    def ap[A, B](ma: => Validation[E, A])(mf: => Validation[E, A => B]): Validation[E, B] = (mf, ma) match {
+    def ap[A, B](ma: Validation[E, A])(mf: Validation[E, A => B]): Validation[E, B] = (mf, ma) match {
       case (Success(f), Success(a)) => Success(f(a))
       case (Failure(e1), Failure(e2)) => Failure.merge(Failure(e1), Failure(e2))
       case (Failure(e), _) => Failure(e)
