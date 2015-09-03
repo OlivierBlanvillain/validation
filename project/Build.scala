@@ -68,7 +68,9 @@ object Dependencies {
   val macrosDep = addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
 
   val xmlDep = libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "1.0.2"
-
+  
+  val playDep = libraryDependencies += "com.typesafe.play" %% "play-json" % playVersion
+  
   val coreDeps = libraryDependencies ++= Seq(
     "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1",
     "joda-time" % "joda-time" % "2.2",
@@ -76,7 +78,6 @@ object Dependencies {
     "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     "org.spire-math" %% "cats" % "0.1.2"
     // "com.typesafe.play" %% "play-functional" % playVersion
-    // "com.typesafe.play" %% "play-json" % playVersion
   )
 
   val docDeps = libraryDependencies += "com.typesafe.play" %% "play" % playVersion
@@ -101,6 +102,7 @@ object ValidationBuild extends Build {
 
   lazy val json = Project("validation-json", file("validation-json"))
     .settings(commonSettings: _*)
+    .settings(playDep: _*)
     .settings(specsDep: _*)
     .dependsOn(core)
 

@@ -127,6 +127,9 @@ object Rules extends play.api.data.mapping.DefaultRules[JsValue] {
     }.compose(r)
   }
 
+  import cats._
+  import cats.syntax.all._
+
   // // XXX: a bit of boilerplate
   private def pickInS[T](implicit r: RuleLike[Seq[JsValue], T]): Rule[JsValue, T] =
     jsArrayR.map { case JsArray(fs) => fs }.compose(r)

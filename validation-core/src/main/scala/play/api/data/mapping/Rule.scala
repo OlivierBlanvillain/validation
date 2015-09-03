@@ -98,6 +98,8 @@ trait Rule[I, O] extends RuleLike[I, O] {
       }
     }
 
+  def map[B](f: O => B): Rule[I, B] =
+    Rule(d => this.validate(d).map(f))
 }
 
 object Rule {
