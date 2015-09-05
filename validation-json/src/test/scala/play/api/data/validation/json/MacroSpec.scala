@@ -2,8 +2,8 @@
 
 // import org.specs2.mutable._
 // import scala.util.control.Exception._
-// import play.api.libs.functional._
-// import play.api.libs.functional.syntax._
+// import cats._
+// import cats.syntax.all._
 
 // import play.api.libs.json._
 // import play.api.data.mapping._
@@ -256,7 +256,6 @@
 //     }
 
 //     "manage Boxed class" in {
-//       import play.api.libs.functional.syntax._
 //       import Rules._
 
 //       implicit def idRule[A]: Rule[A, Id[A]] =

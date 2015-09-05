@@ -4,8 +4,9 @@ import play.api.libs.json._
 
 object Rules extends play.api.data.mapping.DefaultRules[JsValue] {
   import scala.language.implicitConversions
-  import play.api.libs.functional._
-  import play.api.libs.functional.syntax._
+  
+  import cats._
+  import cats.syntax.all._
 
   import play.api.data.mapping._
 

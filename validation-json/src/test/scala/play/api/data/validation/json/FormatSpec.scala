@@ -4,7 +4,8 @@
 package play.api.libs.json
 
 import org.specs2.mutable._
-import play.api.libs.functional.syntax._
+import cats._
+import cats.syntax.all._
 
 object FormatSpec extends Specification {
   case class User(id: Long, name: String)

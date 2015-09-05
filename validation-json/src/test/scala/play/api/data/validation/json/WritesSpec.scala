@@ -1,7 +1,8 @@
 package play.api.libs.json
 
 import org.specs2.mutable._
-import play.api.libs.functional.syntax._
+import cats._
+import cats.syntax.all._
 
 class WritesSpec extends Specification {
 
@@ -223,8 +224,6 @@ class WritesSpec extends Specification {
     }
 
     "compose" in {
-      import play.api.libs.functional._
-
       val w = To[JsObject] { __ =>
         ((__ \ "email").write[Option[String]] ~
          (__ \ "phones").write[Seq[String]]).tupled
@@ -257,8 +256,6 @@ class WritesSpec extends Specification {
     }
 
     "write Map" in {
-      import play.api.libs.functional.syntax.unlift
-
       implicit val contactInformation = To[JsObject] { __ =>
         ((__ \ "label").write[String] ~
           (__ \ "email").write[Option[String]] ~
