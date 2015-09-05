@@ -27,6 +27,7 @@ object BuildSettings {
     "-feature",
     "-language:existentials",
     "-language:higherKinds",
+    "-language:reflectiveCalls",
     "-language:implicitConversions",
     "-language:experimental.macros",
     "-unchecked",

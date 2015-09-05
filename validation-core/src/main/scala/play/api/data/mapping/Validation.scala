@@ -214,8 +214,6 @@ object Validation {
     }
   }
 
-  import scala.language.reflectiveCalls
-
   implicit def functorValidation[I] = new Functor[Validation[I, ?]] {
     def map[A, B](m: Validation[I, A])(f: A => B): Validation[I, B] = Validation.applicativeValidation[I].map(m, f)
   }

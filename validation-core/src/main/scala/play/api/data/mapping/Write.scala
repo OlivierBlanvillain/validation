@@ -33,11 +33,12 @@ trait Write[I, +O] extends WriteLike[I, O] {
    */
   def compose[OO >: O, P](w: WriteLike[OO, P]) =
     this.map(o => w.writes(o))
+  
+  def contramap[B](f: B => I): Write[B, O] =
+    Write[B, O]((b: B) => writes(f(b)))
 }
 
 object Write {
-  import scala.language.experimental.macros
-
   def apply[I, O](w: I => O): Write[I, O] = new Write[I, O] {
     def writes(i: I) = w(i)
   }
@@ -46,27 +47,21 @@ object Write {
     def writes(data: I): O = r.writes(data)
   }
 
-  // def gen[I, O]: Write[I, O] = macro MappingMacros.write[I, O]
 
   implicit def zero[I]: Write[I, I] = toWrite(WriteLike.zero[I])
 
-  implicit def functionalCanBuildWrite[O](implicit m: Monoid[O]) = new FunctionalCanBuild[({ type λ[I] = Write[I, O] })#λ] {
-    def apply[A, B](wa: Write[A, O], wb: Write[B, O]): Write[A ~ B, O] = Write[A ~ B, O] { (x: A ~ B) =>
-      x match {
-        case a ~ b => m.combine(wa.writes(a), wb.writes(b))
-      }
-    }
-  }
-
   implicit def contravariantFunctorWrite[O] = new Contravariant[Write[?, O]] {
     def contramap[A, B](wa: Write[A, O])(f: B => A): Write[B, O] =
-      Write[B, O]((b: B) => wa.writes(f(b)))
+      wa.contramap(f)
   }
+  
+  // def gen[I, O]: Write[I, O] = macro MappingMacros.write[I, O]
 
-  // implicit def contravariantFunctorExtractorWrite[I, O]: VariantExtractor[({ type λ[I] = Write[I, O] })#λ] =
-  //   VariantExtractor.contravariantFunctor[({ type λ[I] = Write[I, O] })#λ](contravariantFunctorWrite)
-
-  // // XXX: Helps the compiler a bit
+  implicit def functionalCanBuildWrite[O](implicit m: Monoid[O]) = new FunctionalCanBuild[Write[?, O]] {
+    def apply[A, B](wa: Write[A, O], wb: Write[B, O]): Write[A ~ B, O] = Write[A ~ B, O] { 
+      case a ~ b => m.combine(wa.writes(a), wb.writes(b))
+    }
+  }
   implicit def fboWrite[I, O: Monoid](a: Write[I, O]) = toFunctionalBuilderOps[({ type λ[I] = Write[I, O] })#λ, I](a)
   implicit def toFunctionalBuilderOps[M[_], A](a: M[A])(implicit fcb: FunctionalCanBuild[M]) = new FunctionalBuilderOps[M, A](a)(fcb)
 }

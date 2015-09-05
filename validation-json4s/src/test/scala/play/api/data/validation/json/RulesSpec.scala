@@ -5,8 +5,6 @@ import scala.util.control.Exception._
 import play.api.data.mapping._
 import org.json4s._
 
-import scala.language.reflectiveCalls
-
 object RulesSpec extends Specification {
 
   "Json Rules" should {

@@ -44,6 +44,8 @@ class FunctionalBuilder[M[_]](canBuild: FunctionalCanBuild[M]) {
 
     def join[A >: A1](implicit witness1: <:<[A, A1], witness2: <:<[A, A2], fu: Contravariant[M]): M[A] =
       apply[A]((a: A) => (a: A1, a: A2))(fu)
+      
+    def tupled(implicit fu: Invariant[M]): M[(A1, A2)] = apply[(A1, A2)]({ (a1: A1, a2: A2) => (a1, a2) }, { (a: (A1, A2)) => (a._1, a._2) })(fu)
   }
   
   class CanBuild3[A1, A2, A3](m1: M[A1 ~ A2], m2: M[A3]) {

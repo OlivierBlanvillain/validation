@@ -223,37 +223,37 @@ class WritesSpec extends Specification {
       w2.writes(500d) mustEqual(Json.obj("foo" -> "500,00 €"))
     }
 
-    // "compose" in {
-    //   val w: Write[(Option[String], Seq[String]), JsObject] = To[JsObject] { __ =>
-    //     ((__ \ "email").write[Option[String]] ~
-    //      (__ \ "phones").write[Seq[String]]).tupled
-    //   }
+    "compose" in {
+      val w: Write[(Option[String], Seq[String]), JsObject] = To[JsObject] { __ =>
+        ((__ \ "email").write[Option[String]] ~
+         (__ \ "phones").write[Seq[String]]).tupled
+      }
 
-    //   val v =  Some("jto@foobar.com") -> Seq("01.23.45.67.89", "98.76.54.32.10")
+      val v =  Some("jto@foobar.com") -> Seq("01.23.45.67.89", "98.76.54.32.10")
 
-    //   w.writes(v) mustEqual Json.obj("email" -> "jto@foobar.com", "phones" -> Seq("01.23.45.67.89", "98.76.54.32.10"))
-    //   w.writes(Some("jto@foobar.com") -> Nil) mustEqual Json.obj("email" -> "jto@foobar.com", "phones" -> Seq[String]())
-    //   w.writes(None -> Nil) mustEqual Json.obj("phones" -> Seq[String]())
-    // }
+      w.writes(v) mustEqual Json.obj("email" -> "jto@foobar.com", "phones" -> Seq("01.23.45.67.89", "98.76.54.32.10"))
+      w.writes(Some("jto@foobar.com") -> Nil) mustEqual Json.obj("email" -> "jto@foobar.com", "phones" -> Seq[String]())
+      w.writes(None -> Nil) mustEqual Json.obj("phones" -> Seq[String]())
+    }
 
-  //   "write Failure" in {
-  //     import play.api.data.mapping.json.Writes.{ failure => ff }
-  //     val f = Failure[(Path, Seq[ValidationError]), String](Seq(Path \ "n" -> Seq(ValidationError("validation.type-mismatch", "Int"))))
+    "write Failure" in {
+      import play.api.data.mapping.json.Writes.{ failure => ff }
+      val f = Failure[(Path, Seq[ValidationError]), String](Seq(Path \ "n" -> Seq(ValidationError("validation.type-mismatch", "Int"))))
 
-  //     implicitly[Write[(Path, Seq[ValidationError]), JsObject]]
-  //     implicitly[Write[Failure[(Path, Seq[ValidationError]), String], JsObject]]
+      implicitly[Write[(Path, Seq[ValidationError]), JsObject]]
+      implicitly[Write[Failure[(Path, Seq[ValidationError]), String], JsObject]]
 
-  //     val error =
-  //       Json.obj("errors" ->
-  //         Json.obj("/n" -> Json.arr(
-  //             Json.obj(
-  //               "msg" -> "validation.type-mismatch",
-  //               "args" -> Seq("Int")))))
+      val error =
+        Json.obj("errors" ->
+          Json.obj("/n" -> Json.arr(
+              Json.obj(
+                "msg" -> "validation.type-mismatch",
+                "args" -> Seq("Int")))))
 
-  //     (Path \ "errors").write[Failure[(Path, Seq[ValidationError]), String], JsObject]
-  //       .writes(f) mustEqual(error)
+      (Path \ "errors").write[Failure[(Path, Seq[ValidationError]), String], JsObject]
+        .writes(f) mustEqual(error)
 
-  //   }
+    }
 
     "write Map" in {
       implicit val contactInformation = To[JsObject] { __ =>
@@ -272,66 +272,66 @@ class WritesSpec extends Specification {
       contactWrite.writes(contact) mustEqual contactJson
     }
 
-  //   "write recursive" in {
-  //     case class RecUser(name: String, friends: List[RecUser] = Nil)
-  //     val u = RecUser(
-  //       "bob",
-  //       List(RecUser("tom")))
+    "write recursive" in {
+      case class RecUser(name: String, friends: List[RecUser] = Nil)
+      val u = RecUser(
+        "bob",
+        List(RecUser("tom")))
 
-  //     val m = Json.obj(
-  //       "name" -> "bob",
-  //       "friends" -> Seq(Json.obj("name" -> "tom", "friends" -> Seq[JsObject]())))
+      val m = Json.obj(
+        "name" -> "bob",
+        "friends" -> Seq(Json.obj("name" -> "tom", "friends" -> Seq[JsObject]())))
 
-  //     case class User1(name: String, friend: Option[User1] = None)
-  //     val u1 = User1("bob", Some(User1("tom")))
-  //     val m1 = Json.obj(
-  //       "name" -> "bob",
-  //       "friend" -> Json.obj("name" -> "tom"))
+      case class User1(name: String, friend: Option[User1] = None)
+      val u1 = User1("bob", Some(User1("tom")))
+      val m1 = Json.obj(
+        "name" -> "bob",
+        "friend" -> Json.obj("name" -> "tom"))
 
-  //     "using explicit notation" in {
-  //       lazy val w: Write[RecUser, JsObject] = To[JsObject]{ __ =>
-  //         ((__ \ "name").write[String] ~
-  //          (__ \ "friends").write(seqW(w)))(unlift(RecUser.unapply _))
-  //       }
-  //       w.writes(u) mustEqual m
+      "using explicit notation" in {
+        lazy val w: Write[RecUser, JsObject] = To[JsObject]{ __ =>
+          ((__ \ "name").write[String] ~
+           (__ \ "friends").write(seqW(w)))(unlift(RecUser.unapply _))
+        }
+        w.writes(u) mustEqual m
 
-  //       lazy val w2: Write[RecUser, JsObject] =
-  //         ((Path \ "name").write[String, JsObject] ~
-  //          (Path \ "friends").write(seqW(w2)))(unlift(RecUser.unapply _))
-  //       w2.writes(u) mustEqual m
+        lazy val w2: Write[RecUser, JsObject] =
+          ((Path \ "name").write[String, JsObject] ~
+           (Path \ "friends").write(seqW(w2)))(unlift(RecUser.unapply _))
+        w2.writes(u) mustEqual m
 
-  //       lazy val w3: Write[User1, JsObject] = To[JsObject]{ __ =>
-  //         ((__ \ "name").write[String] ~
-  //          (__ \ "friend").write(optionW(w3)))(unlift(User1.unapply _))
-  //       }
-  //       w3.writes(u1) mustEqual m1
-  //     }
+        lazy val w3: Write[User1, JsObject] = To[JsObject]{ __ =>
+          ((__ \ "name").write[String] ~
+           (__ \ "friend").write(optionW(w3)))(unlift(User1.unapply _))
+        }
+        w3.writes(u1) mustEqual m1
+      }
 
-  //     "using implicit notation" in {
-  //       implicit lazy val w: Write[RecUser, JsObject] = To[JsObject]{ __ =>
-  //         ((__ \ "name").write[String] ~
-  //          (__ \ "friends").write[Seq[RecUser]])(unlift(RecUser.unapply _))
-  //       }
-  //       w.writes(u) mustEqual m
+      "using implicit notation" in {
+        implicit lazy val w: Write[RecUser, JsObject] = To[JsObject]{ __ =>
+          ((__ \ "name").write[String] ~
+           (__ \ "friends").write[Seq[RecUser]])(unlift(RecUser.unapply _))
+        }
+        w.writes(u) mustEqual m
 
-  //       implicit lazy val w3: Write[User1, JsObject] = To[JsObject]{ __ =>
-  //         ((__ \ "name").write[String] ~
-  //          (__ \ "friend").write[Option[User1]])(unlift(User1.unapply _))
-  //       }
-  //       w3.writes(u1) mustEqual m1
-  //     }
+        implicit lazy val w3: Write[User1, JsObject] = To[JsObject]{ __ =>
+          ((__ \ "name").write[String] ~
+           (__ \ "friend").write[Option[User1]])(unlift(User1.unapply _))
+        }
+        w3.writes(u1) mustEqual m1
+      }
 
-  //   }
+    }
 
-  //   "support write of value class" in {
-  //     import TestValueClass._
+    "support write of value class" in {
+      import TestValueClass._
 
-  //     val w = To[JsObject] { __ =>
-  //       (__ \ "id").write[Id]
-  //     }
+      val w = To[JsObject] { __ =>
+        (__ \ "id").write[Id]
+      }
 
-  //     w.writes(Id("1")) mustEqual Json.obj("id" -> "1")
-  //   }
+      w.writes(Id("1")) mustEqual Json.obj("id" -> "1")
+    }
 
   }
 

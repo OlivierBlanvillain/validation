@@ -103,8 +103,6 @@ trait Rule[I, O] extends RuleLike[I, O] {
 }
 
 object Rule {
-  import scala.language.experimental.macros
-
   // def gen[I, O]: Rule[I, O] = macro MappingMacros.rule[I, O]
 
   /**
@@ -145,16 +143,13 @@ object Rule {
   }
 
   implicit def functorRule[I] = new Functor[Rule[I, ?]] {
-    import scala.language.reflectiveCalls
     def map[A, B](m: Rule[I, A])(f: A => B): Rule[I, B] = m.map(f)
   }
 
-  // implicit def functorExtractorRule[I, O]: VariantExtractor[({ type λ[O] = Rule[I, O] })#λ] =
-  //   VariantExtractor.functor[({ type λ[O] = Rule[I, O] })#λ](functorRule)
-
   // XXX: Helps the compiler a bit
   // implicit def cba[I] = functionalCanBuildApplicative[({ type λ[O] = Rule[I, O] })#λ]
-  // implicit def fbo[I, O] = toFunctionalBuilderOps[({ type λ[O] = Rule[I, O] })#λ, O] _
+  implicit def fbo[I, O] = toFunctionalBuilderOps[Rule[?, O], O] _
   // implicit def ao[I, O] = toApplicativeOps[({ type λ[O] = Rule[I, O] })#λ, O] _
   // implicit def f[I, O] = toFunctorOps[({ type λ[O] = Rule[I, O] })#λ, O] _
+  implicit def toFunctionalBuilderOps[M[_], A](a: M[A])(implicit fcb: FunctionalCanBuild[M]) = new FunctionalBuilderOps[M, A](a)(fcb)
 }
