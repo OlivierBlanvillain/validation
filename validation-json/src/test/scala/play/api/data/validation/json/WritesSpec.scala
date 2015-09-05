@@ -257,20 +257,16 @@ class WritesSpec extends Specification {
 
     "write Map" in {
       implicit val contactInformation = To[JsObject] { __ =>
-        (
-          (__ \ "label").write[String] ~
+        ((__ \ "label").write[String] ~
           (__ \ "email").write[Option[String]] ~
-          (__ \ "phones").write[Seq[String]]
-        )(unlift(ContactInformation.unapply _))
+          (__ \ "phones").write[Seq[String]]) (unlift(ContactInformation.unapply _))
       }
 
       implicit val contactWrite = To[JsObject] { __ =>
-        (
-          (__ \ "firstname").write[String] ~
-          (__ \ "lastname").write[String] ~
-          (__ \ "company").write[Option[String]] ~
-          (__ \ "informations").write[Seq[ContactInformation]]
-        )(unlift(Contact.unapply _))
+        ((__ \ "firstname").write[String] ~
+         (__ \ "lastname").write[String] ~
+         (__ \ "company").write[Option[String]] ~
+         (__ \ "informations").write[Seq[ContactInformation]]) (unlift(Contact.unapply _))
       }
 
       contactWrite.writes(contact) mustEqual contactJson
