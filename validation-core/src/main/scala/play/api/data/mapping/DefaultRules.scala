@@ -359,13 +359,12 @@ trait DefaultRules[I] extends GenericRules with DateRules {
   protected def opt[J, O](r: => RuleLike[J, O], noneValues: RuleLike[I, I]*)(implicit pick: Path => RuleLike[I, I], coerce: RuleLike[I, J]) = (path: Path) =>
     Rule[I, Option[O]] {
       (d: I) =>
-        Rule.functorRule[I]
-          .map(not(noneValues.foldLeft(Rule.zero[I])(_ compose not(_))))(_ => None)
+        val isNone = Rule.functorRule[I].map(not(noneValues.foldLeft(Rule.zero[I])(_ compose not(_))))(_ => None)
         val v = (pick(path).validate(d).map(Some.apply) orElse Success(None))
         v.viaEither {
           _.right.flatMap {
             case None => Right(None)
-            case Some(i) => ??? // isNone.orElse(Rule.toRule(coerce).compose(r).map[Option[O]](Some.apply)).validate(i).asEither
+            case Some(i) => isNone.orElse(Rule.toRule(coerce).compose(r).map[Option[O]](Some.apply)).validate(i).asEither
           }
         }
     }
