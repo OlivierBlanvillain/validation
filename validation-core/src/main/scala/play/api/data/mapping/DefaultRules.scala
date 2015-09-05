@@ -280,7 +280,7 @@ trait GenericRules {
   /**
    * A Rule that always succeed
    */
-  def noConstraint[From]: Constraint[From] = Success(_)
+  def noConstraint[F]: Constraint[F] = Success(_)
 
   /**
    * A Rule for HTML checkboxes

@@ -5,11 +5,11 @@ import play.api.data.mapping._
 import play.api.libs.json.{JsValue, JsObject, Json, JsString, JsNumber, JsBoolean, JsArray}
 
 trait DefaultMonoids {
-  import play.api.libs.functional.Monoid
-
+  import cats.Monoid
+  
   implicit def jsonMonoid = new Monoid[JsObject] {
-    def append(a1: JsObject, a2: JsObject) = a1 deepMerge a2
-    def identity = Json.obj()
+    def combine(a1: JsObject, a2: JsObject): JsObject = a1 deepMerge a2
+    def empty: JsObject = Json.obj()
   }
 }
 

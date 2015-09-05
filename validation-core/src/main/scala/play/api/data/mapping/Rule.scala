@@ -148,6 +148,7 @@ object Rule {
   }
 
   implicit def functorRule[I] = new Functor[({ type λ[O] = Rule[I, O] })#λ] {
+    import scala.language.reflectiveCalls
     def map[A, B](m: Rule[I, A])(f: A => B): Rule[I, B] = applicativeRule[I].map(m, f)
   }
 

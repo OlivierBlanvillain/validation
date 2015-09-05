@@ -20,7 +20,26 @@ object BuildSettings {
 
   // Used by api docs generation to link back to the correct branch on GitHub, only when version is a SNAPSHOT
   val sourceCodeBranch = "master"
-
+  
+  val commonScalacOptions = Seq(
+    "-deprecation",
+    "-encoding", "UTF-8",
+    "-feature",
+    "-language:existentials",
+    "-language:higherKinds",
+    "-language:implicitConversions",
+    "-language:experimental.macros",
+    "-unchecked",
+    "-Xfatal-warnings",
+    "-Xlint",
+    "-Yinline-warnings",
+    "-Yno-adapted-args",
+    "-Ywarn-dead-code",
+    "-Ywarn-numeric-widen",
+    "-Ywarn-value-discard",
+    "-Xfuture"
+  )
+  
   val sonatypeSettings = Seq(
     publishMavenStyle := true,
     publishTo := {
@@ -49,6 +68,7 @@ object BuildSettings {
   )
 
   val commonSettings = scalaVersions ++ Seq(
+    scalacOptions ++= commonScalacOptions,
     organization := org,
     version := buildVersion,
     ivyLoggingLevel := UpdateLogging.DownloadOnly,
