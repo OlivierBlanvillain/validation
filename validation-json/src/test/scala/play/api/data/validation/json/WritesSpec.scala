@@ -223,18 +223,18 @@ class WritesSpec extends Specification {
       w2.writes(500d) mustEqual(Json.obj("foo" -> "500,00 €"))
     }
 
-    "compose" in {
-      val w = To[JsObject] { __ =>
-        ((__ \ "email").write[Option[String]] |@|
-         (__ \ "phones").write[Seq[String]]).tupled
-      }
+    // "compose" in {
+    //   val w: Write[(Option[String], Seq[String]), JsObject] = To[JsObject] { __ =>
+    //     ((__ \ "email").write[Option[String]] ~
+    //      (__ \ "phones").write[Seq[String]]).tupled
+    //   }
 
-      val v =  Some("jto@foobar.com") -> Seq("01.23.45.67.89", "98.76.54.32.10")
+    //   val v =  Some("jto@foobar.com") -> Seq("01.23.45.67.89", "98.76.54.32.10")
 
-      w.writes(v) mustEqual Json.obj("email" -> "jto@foobar.com", "phones" -> Seq("01.23.45.67.89", "98.76.54.32.10"))
-      w.writes(Some("jto@foobar.com") -> Nil) mustEqual Json.obj("email" -> "jto@foobar.com", "phones" -> Seq[String]())
-      w.writes(None -> Nil) mustEqual Json.obj("phones" -> Seq[String]())
-    }
+    //   w.writes(v) mustEqual Json.obj("email" -> "jto@foobar.com", "phones" -> Seq("01.23.45.67.89", "98.76.54.32.10"))
+    //   w.writes(Some("jto@foobar.com") -> Nil) mustEqual Json.obj("email" -> "jto@foobar.com", "phones" -> Seq[String]())
+    //   w.writes(None -> Nil) mustEqual Json.obj("phones" -> Seq[String]())
+    // }
 
   //   "write Failure" in {
   //     import play.api.data.mapping.json.Writes.{ failure => ff }
@@ -255,22 +255,26 @@ class WritesSpec extends Specification {
 
   //   }
 
-  //   "write Map" in {
-  //     implicit val contactInformation = To[JsObject] { __ =>
-  //       ((__ \ "label").write[String] ~
-  //         (__ \ "email").write[Option[String]] ~
-  //         (__ \ "phones").write[Seq[String]]) (unlift(ContactInformation.unapply _))
-  //     }
+    "write Map" in {
+      implicit val contactInformation = To[JsObject] { __ =>
+        (
+          (__ \ "label").write[String] ~
+          (__ \ "email").write[Option[String]] ~
+          (__ \ "phones").write[Seq[String]]
+        )(unlift(ContactInformation.unapply _))
+      }
 
-  //     implicit val contactWrite = To[JsObject] { __ =>
-  //       ((__ \ "firstname").write[String] ~
-  //        (__ \ "lastname").write[String] ~
-  //        (__ \ "company").write[Option[String]] ~
-  //        (__ \ "informations").write[Seq[ContactInformation]]) (unlift(Contact.unapply _))
-  //     }
+      implicit val contactWrite = To[JsObject] { __ =>
+        (
+          (__ \ "firstname").write[String] ~
+          (__ \ "lastname").write[String] ~
+          (__ \ "company").write[Option[String]] ~
+          (__ \ "informations").write[Seq[ContactInformation]]
+        )(unlift(Contact.unapply _))
+      }
 
-  //     contactWrite.writes(contact) mustEqual contactJson
-  //   }
+      contactWrite.writes(contact) mustEqual contactJson
+    }
 
   //   "write recursive" in {
   //     case class RecUser(name: String, friends: List[RecUser] = Nil)

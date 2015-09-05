@@ -18,4 +18,6 @@ package object mapping {
   type Mapping[E, I, O] = I => Validation[E, O]
   type Constraint[T] = Mapping[ValidationError, T, T]
   type VA[O] = Validation[(Path, Seq[ValidationError]), O]
+  
+  def unlift[A, B](f: A => Option[B]): A => B = Function.unlift(f)
 }
