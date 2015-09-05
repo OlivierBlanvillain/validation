@@ -37,6 +37,7 @@ object BuildSettings {
     "-Ywarn-dead-code",
     "-Ywarn-numeric-widen",
     "-Ywarn-value-discard",
+    // "-Ywarn-unused-import",
     "-Xfuture"
   )
   
@@ -86,6 +87,8 @@ object Dependencies {
   val shapelessDep = libraryDependencies += "com.chuusai" %% "shapeless" % "2.0.0"
 
   val macrosDep = addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
+  
+  val kindProjector = addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.6.3")
 
   val xmlDep = libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "1.0.2"
   
@@ -117,6 +120,7 @@ object ValidationBuild extends Build {
   lazy val core = Project("validation-core", file("validation-core"))
     .settings(commonSettings: _*)
     .settings(coreDeps: _*)
+    .settings(kindProjector: _*)
     .settings(macrosDep: _*)
     .settings(specsDep: _*)
 

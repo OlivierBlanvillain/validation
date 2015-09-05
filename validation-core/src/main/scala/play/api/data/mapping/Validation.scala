@@ -216,11 +216,11 @@ object Validation {
 
   import scala.language.reflectiveCalls
 
-  implicit def functorValidation[I] = new Functor[({ type λ[O] = Validation[I, O] })#λ] {
+  implicit def functorValidation[I] = new Functor[Validation[I, ?]] {
     def map[A, B](m: Validation[I, A])(f: A => B): Validation[I, B] = Validation.applicativeValidation[I].map(m, f)
   }
 
-  implicit def applicativeValidation[E] = new Applicative[({ type λ[A] = Validation[E, A] })#λ] {
+  implicit def applicativeValidation[E] = new Applicative[Validation[E, ?]] {
     def pure[A](a: A): Validation[E, A] = Success(a)
 
     def map[A, B](m: Validation[E, A], f: A => B): Validation[E, B] = m.map(f)

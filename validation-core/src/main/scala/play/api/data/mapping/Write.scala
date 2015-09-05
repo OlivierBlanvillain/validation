@@ -50,6 +50,32 @@ object Write {
 
   implicit def zero[I]: Write[I, I] = toWrite(WriteLike.zero[I])
 
+  implicit def applicativeWrite[O](implicit m: Monoid[O]) = new Applicative[Write[?, O]] {
+    def pure[A](x: A): Write[A, O] =
+      Write(_ => m.empty)
+      
+    def ap[A, B](fa: Write[A, O])(f: Write[A => B, O]): Write[B, O] =
+      Write { (b: B) =>
+        m.empty
+      }
+  }
+  
+  // def bind[A, B](fa: T => A)(f: A => T => B): T => B = (t) => f(fa(t))(t)
+  
+  // implicit def applicativeWritz[I] = new Applicative[Write[I, ?]] {
+  //   def pure[A](x: A): Write[I, A] = ???
+  //   def ap[A, B](fa: Write[I, A])(f: Write[I, A => B]): Write[I, B] = ???
+  // }
+
+  // implicit def writeMonoid[I, O](implicit m: Monoid[O]): Monoid[Write[I, O]] =
+  //   new Monoid[Write[I, O]] {
+  //     def empty: Write[I, O] =
+  //       Write(_ => m.empty)
+      
+  //     def combine(x: Write[I, O], y: Write[I, O]): Write[I, O] =
+  //       Write(i => m.combine(x.writes(i), y.writes(i)))
+  //   }
+
   // implicit def functionalCanBuildWrite[O](implicit m: Monoid[O]) = new FunctionalCanBuild[({ type λ[I] = Write[I, O] })#λ] {
   //   def apply[A, B](wa: Write[A, O], wb: Write[B, O]): Write[A ~ B, O] = Write[A ~ B, O] { (x: A ~ B) =>
   //     x match {
@@ -58,8 +84,9 @@ object Write {
   //   }
   // }
 
-  implicit def contravariantFunctorWrite[O] = new Contravariant[({ type λ[I] = Write[I, O] })#λ] {
-    def contramap[A, B](wa: Write[A, O])(f: B => A): Write[B, O] = Write[B, O]((b: B) => wa.writes(f(b)))
+  implicit def contravariantFunctorWrite[O] = new Contravariant[Write[?, O]] {
+    def contramap[A, B](wa: Write[A, O])(f: B => A): Write[B, O] =
+      Write[B, O]((b: B) => wa.writes(f(b)))
   }
 
   // implicit def contravariantFunctorExtractorWrite[I, O]: VariantExtractor[({ type λ[I] = Write[I, O] })#λ] =

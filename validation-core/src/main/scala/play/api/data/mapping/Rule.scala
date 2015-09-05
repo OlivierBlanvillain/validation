@@ -132,12 +132,9 @@ object Rule {
   def fromMapping[I, O](f: Mapping[ValidationError, I, O]) =
     Rule[I, O](f(_: I).fail.map(errs => Seq(Path -> errs)))
 
-  implicit def applicativeRule[I] = new Applicative[({ type λ[O] = Rule[I, O] })#λ] {
+  implicit def applicativeRule[I] = new Applicative[Rule[I, ?]] {
     def pure[A](a: A): Rule[I, A] =
       Rule(_ => Success(a))
-
-    def map[A, B](m: Rule[I, A], f: A => B): Rule[I, B] =
-      Rule(d => m.validate(d).map(f))
 
     def ap[A, B](ma: Rule[I, A])(mf: Rule[I, A => B]): Rule[I, B] =
       Rule { d =>
@@ -147,9 +144,9 @@ object Rule {
       }
   }
 
-  implicit def functorRule[I] = new Functor[({ type λ[O] = Rule[I, O] })#λ] {
+  implicit def functorRule[I] = new Functor[Rule[I, ?]] {
     import scala.language.reflectiveCalls
-    def map[A, B](m: Rule[I, A])(f: A => B): Rule[I, B] = applicativeRule[I].map(m, f)
+    def map[A, B](m: Rule[I, A])(f: A => B): Rule[I, B] = m.map(f)
   }
 
   // implicit def functorExtractorRule[I, O]: VariantExtractor[({ type λ[O] = Rule[I, O] })#λ] =
