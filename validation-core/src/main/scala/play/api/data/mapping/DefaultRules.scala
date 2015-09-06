@@ -1,8 +1,5 @@
 package play.api.data.mapping
 
-import cats._
-import cats.syntax.all._
-
 /**
  * This trait provides default Rule implementations,
  * from String to various date types and format
@@ -45,7 +42,6 @@ trait DateRules {
    */
   def jodaDateRule(pattern: String, corrector: String => String = identity) = Rule.fromMapping[String, org.joda.time.DateTime] { s =>
     import scala.util.Try
-    import org.joda.time.DateTime
 
     val df = org.joda.time.format.DateTimeFormat.forPattern(pattern)
     Try(df.parseDateTime(corrector(s)))
@@ -87,7 +83,6 @@ trait DateRules {
    */
   val isoDate = Rule.fromMapping[String, java.util.Date] { s =>
     import scala.util.Try
-    import java.util.Date
     import org.joda.time.format.ISODateTimeFormat
     val parser = ISODateTimeFormat.dateOptionalTimeParser()
     Try(parser.parseDateTime(s).toDate())
@@ -338,7 +333,6 @@ trait ParsingRules {
     case s if isValidDouble(s) => Success(s.toDouble)
   }("Double")
 
-  import java.{ math => jm }
   implicit def javaBigDecimalR = stringAs {
     case s => Success(s.bigDecimal)
   }("BigDecimal")

@@ -1,7 +1,5 @@
 package play.api.data.mapping
 
-import cats._
-
 sealed trait PathNode
 case class KeyPathNode(key: String) extends PathNode {
   override def toString = key

@@ -1,7 +1,5 @@
 package play.api.data
 
-import cats._
-
 /**
  * Contains the validation API used by `Form`.
  *

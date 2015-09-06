@@ -20,7 +20,6 @@ class WritesSpec extends Specification {
     ContactInformation("Personal", Some("fakecontact@gmail.com"), Seq("01.23.45.67.89", "98.76.54.32.10"))))
 
   import play.api.data.mapping._
-  import play.api.data.mapping.json4s._
   import play.api.data.mapping.json4s.Writes._
 
   val contactJson = JObject(

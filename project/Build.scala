@@ -38,7 +38,7 @@ object BuildSettings {
     "-Ywarn-dead-code",
     "-Ywarn-numeric-widen",
     "-Ywarn-value-discard",
-    // "-Ywarn-unused-import",
+    "-Ywarn-unused-import",
     "-Xfuture"
   )
   

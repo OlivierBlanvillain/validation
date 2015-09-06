@@ -3,11 +3,6 @@ package play.api.data.mapping.json
 import play.api.libs.json._
 
 object Rules extends play.api.data.mapping.DefaultRules[JsValue] {
-  import scala.language.implicitConversions
-  
-  import cats._
-  import cats.syntax.all._
-
   import play.api.data.mapping._
 
   private def jsonAs[T](f: PartialFunction[JsValue, Validation[ValidationError, T]])(msg: String, args: Any*) =
@@ -127,9 +122,6 @@ object Rules extends play.api.data.mapping.DefaultRules[JsValue] {
       }
     }.compose(r)
   }
-
-  import cats._
-  import cats.syntax.all._
 
   // // XXX: a bit of boilerplate
   private def pickInS[T](implicit r: RuleLike[Seq[JsValue], T]): Rule[JsValue, T] =

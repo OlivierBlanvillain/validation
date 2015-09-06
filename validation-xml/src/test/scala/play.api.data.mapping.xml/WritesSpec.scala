@@ -2,7 +2,6 @@ package play.api.data.mapping.xml
 
 import org.specs2.mutable._
 import play.api.data.mapping._
-import scala.xml._
 
 class WritesSpec extends Specification {
 

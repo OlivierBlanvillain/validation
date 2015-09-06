@@ -4,7 +4,6 @@ import play.api.data.mapping._
 import cats.Monoid
 
 import org.json4s._
-import org.json4s.native.JsonMethods._
 
 trait DefaultMonoids {
   implicit def jsonMonoid = new Monoid[JObject] {

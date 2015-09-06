@@ -1,7 +1,6 @@
 package play.api.data.mapping.json4s
 
 import org.json4s._
-import org.json4s.native.JsonMethods._
 
 object Rules extends play.api.data.mapping.DefaultRules[JValue] {
   import play.api.data.mapping._

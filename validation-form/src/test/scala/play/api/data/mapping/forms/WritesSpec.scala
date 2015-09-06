@@ -28,7 +28,6 @@ class WritesSpec extends Specification {
     "informations[0].phones[1]" -> Seq("98.76.54.32.10"))
 
   import Writes._
-  import PM._
 
   "Writes" should {
 
@@ -326,7 +325,6 @@ class WritesSpec extends Specification {
 object TestValueClass {
   case class Id(value: String) extends AnyVal
   object Id {
-    import play.api.data.mapping.forms.Writes._
     implicit val writes: Write[Id, String] = Write(id => id.value)
   }
 }

@@ -15,7 +15,6 @@ object FormatSpec extends Specification {
     import play.api.data.mapping._
     import play.api.data.mapping.json4s.Rules
     import play.api.data.mapping.json4s.Writes
-    import Writes._
 
     "serialize and deserialize primitives" in {
       import Rules._
@@ -32,7 +31,6 @@ object FormatSpec extends Specification {
 
       (Path \ "id").from[JValue](f).validate(JObject()) mustEqual(Failure(Seq(Path \ "id" -> Seq(ValidationError("error.required")))))
     }
-
 
     "serialize and deserialize String" in {
       import Rules._

@@ -1,7 +1,6 @@
 package play.api.data.mapping
 
 import org.specs2.mutable._
-import scala.util.control.Exception._
 import cats.syntax.all._
 
 object ExperimentalSpec extends Specification {

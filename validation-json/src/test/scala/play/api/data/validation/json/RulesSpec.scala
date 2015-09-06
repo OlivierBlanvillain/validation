@@ -1,9 +1,7 @@
 package play.api.libs.json
 
 import org.specs2.mutable._
-import scala.util.control.Exception._
 import play.api.data.mapping._
-import cats._
 import cats.syntax.all._
 
 object RulesSpec extends Specification {
@@ -11,7 +9,6 @@ object RulesSpec extends Specification {
   "Json Rules" should {
     import play.api.data.mapping.json._
     import Rules._
-    import Writes._
 
     val valid = Json.obj(
     "firstname" -> "Julien",

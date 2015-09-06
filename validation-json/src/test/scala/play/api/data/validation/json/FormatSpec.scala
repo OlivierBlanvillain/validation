@@ -4,8 +4,6 @@
 package play.api.libs.json
 
 import org.specs2.mutable._
-import cats._
-import cats.syntax.all._
 
 object FormatSpec extends Specification {
   case class User(id: Long, name: String)
@@ -16,7 +14,6 @@ object FormatSpec extends Specification {
     import play.api.data.mapping._
     import play.api.data.mapping.json.Rules
     import play.api.data.mapping.json.Writes
-    import Writes._
 
     "serialize and deserialize primitives" in {
       import Rules._

@@ -1,7 +1,6 @@
 package play.api.data.mapping
 
 import org.specs2.mutable._
-import scala.util.control.Exception._
 
 object PathSpec extends Specification {
   "Path" should {

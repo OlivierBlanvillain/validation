@@ -1,7 +1,5 @@
 package play.api.data.mapping
 
-import cats._
-
 trait DateWrites {
   /**
    * Serializer for java.util.Date
@@ -13,7 +11,6 @@ trait DateWrites {
   implicit val date: Write[java.util.Date, String] = date()
 
   val isoDate = Write[java.util.Date, String] { d =>
-    import java.util.Date
     import org.joda.time.format.ISODateTimeFormat
     val fmt = ISODateTimeFormat.dateTimeNoMillis()
     fmt.print(d.getTime)

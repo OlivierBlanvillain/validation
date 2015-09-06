@@ -1,7 +1,6 @@
 package play.api.data.mapping.forms
 
 import org.specs2.mutable._
-import scala.util.control.Exception._
 import play.api.data.mapping._
 import cats.syntax.all._
 
@@ -10,7 +9,6 @@ object RulesSpec extends Specification {
   "Rules" should {
 
     import Rules._
-    import PM._
     val valid: UrlFormEncoded = Map(
       "firstname" -> Seq("Julien", "ignored"),
       "lastname" -> Seq("Tournay"),

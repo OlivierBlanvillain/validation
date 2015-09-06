@@ -1,8 +1,6 @@
 package play.api.libs.json
 
 import org.specs2.mutable._
-import cats._
-import cats.syntax.all._
 
 class WritesSpec extends Specification {
 
@@ -21,7 +19,6 @@ class WritesSpec extends Specification {
     ContactInformation("Personal", Some("fakecontact@gmail.com"), Seq("01.23.45.67.89", "98.76.54.32.10"))))
 
   import play.api.data.mapping._
-  import play.api.data.mapping.json._
   import play.api.data.mapping.json.Writes._
 
   val contactJson = Json.obj(

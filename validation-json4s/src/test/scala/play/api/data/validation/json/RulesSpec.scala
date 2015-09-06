@@ -1,7 +1,6 @@
 package play.api.libs.json4s
 
 import org.specs2.mutable._
-import scala.util.control.Exception._
 import play.api.data.mapping._
 import org.json4s._
 import cats.syntax.all._
@@ -11,7 +10,6 @@ object RulesSpec extends Specification {
   "Json Rules" should {
     import play.api.data.mapping.json4s._
     import Rules._
-    import Writes._
 
     val valid = JObject(
     "firstname" -> JString("Julien"),
