@@ -39,6 +39,8 @@ trait Write[I, +O] extends WriteLike[I, O] {
 }
 
 object Write {
+  // def gen[I, O]: Write[I, O] = macro MappingMacros.write[I, O]
+
   def apply[I, O](w: I => O): Write[I, O] = new Write[I, O] {
     def writes(i: I) = w(i)
   }
@@ -50,18 +52,19 @@ object Write {
 
   implicit def zero[I]: Write[I, I] = toWrite(WriteLike.zero[I])
 
-  implicit def contravariantFunctorWrite[O] = new Contravariant[Write[?, O]] {
-    def contramap[A, B](wa: Write[A, O])(f: B => A): Write[B, O] =
-      wa.contramap(f)
-  }
-  
-  // def gen[I, O]: Write[I, O] = macro MappingMacros.write[I, O]
-
-  implicit def functionalCanBuildWrite[O](implicit m: Monoid[O]) = new FunctionalCanBuild[Write[?, O]] {
-    def apply[A, B](wa: Write[A, O], wb: Write[B, O]): Write[A ~ B, O] = Write[A ~ B, O] { 
-      case a ~ b => m.combine(wa.writes(a), wb.writes(b))
+  implicit def contravariantFunctorWrite[O]: Contravariant[Write[?, O]] =
+    new Contravariant[Write[?, O]] {
+      def contramap[A, B](wa: Write[A, O])(f: B => A): Write[B, O] =
+        wa.contramap(f)
     }
-  }
-  implicit def fboWrite[I, O: Monoid](a: Write[I, O]) = toFunctionalBuilderOps[({ type λ[I] = Write[I, O] })#λ, I](a)
-  implicit def toFunctionalBuilderOps[M[_], A](a: M[A])(implicit fcb: FunctionalCanBuild[M]) = new FunctionalBuilderOps[M, A](a)(fcb)
+  
+  implicit def functionalCanBuildWrite[O](implicit m: Monoid[O]): FunctionalCanBuild[Write[?, O]] =
+    new FunctionalCanBuild[Write[?, O]] {
+      def apply[A, B](wa: Write[A, O], wb: Write[B, O]): Write[A ~ B, O] = Write[A ~ B, O] { 
+        case a ~ b => m.combine(wa.writes(a), wb.writes(b))
+      }
+    }
+    
+  implicit def fboWrite[I, O](a: Write[I, O])(implicit m: Monoid[O]): FunctionalBuilderOps[Write[?, O],I]
+   = toFunctionalBuilderOps[Write[?, O], I](a)
 }

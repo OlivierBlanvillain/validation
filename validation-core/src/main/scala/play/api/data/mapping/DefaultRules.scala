@@ -102,8 +102,7 @@ trait DateRules {
    * @param corrector a simple string transformation function that can be used to transform input String before parsing. Useful when standards are not exactly respected and require a few tweaks
    */
   def sqlDateRule(pattern: String, corrector: String => String = identity): Rule[String, java.sql.Date] =
-    Rule.functorRule[String]
-      .map(date(pattern, corrector))((d: java.util.Date) => new java.sql.Date(d.getTime))
+    date(pattern, corrector).map((d: java.util.Date) => new java.sql.Date(d.getTime))
 
   /**
    * the default implicit Rule for `java.sql.Date`
@@ -359,7 +358,7 @@ trait DefaultRules[I] extends GenericRules with DateRules {
   protected def opt[J, O](r: => RuleLike[J, O], noneValues: RuleLike[I, I]*)(implicit pick: Path => RuleLike[I, I], coerce: RuleLike[I, J]) = (path: Path) =>
     Rule[I, Option[O]] {
       (d: I) =>
-        val isNone = Rule.functorRule[I].map(not(noneValues.foldLeft(Rule.zero[I])(_ compose not(_))))(_ => None)
+        val isNone = not(noneValues.foldLeft(Rule.zero[I])(_ compose not(_))).map(_ => None)
         val v = (pick(path).validate(d).map(Some.apply) orElse Success(None))
         v.viaEither {
           _.right.flatMap {

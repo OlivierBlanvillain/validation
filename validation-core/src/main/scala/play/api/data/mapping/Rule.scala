@@ -142,14 +142,10 @@ object Rule {
       }
   }
 
-  implicit def functorRule[I] = new Functor[Rule[I, ?]] {
-    def map[A, B](m: Rule[I, A])(f: A => B): Rule[I, B] = m.map(f)
+  implicit def functionalCanBuildApplicative[M[_]](implicit app: Applicative[M]): FunctionalCanBuild[M] = new FunctionalCanBuild[M] {
+     def apply[A, B](a: M[A], b: M[B]): M[A ~ B] = app.ap(b)(app.map[A, B => A ~ B](a)(a => ((b: B) => new ~(a, b))))
   }
-
-  // XXX: Helps the compiler a bit
-  // implicit def cba[I] = functionalCanBuildApplicative[({ type λ[O] = Rule[I, O] })#λ]
-  implicit def fbo[I, O] = toFunctionalBuilderOps[Rule[?, O], O] _
-  // implicit def ao[I, O] = toApplicativeOps[({ type λ[O] = Rule[I, O] })#λ, O] _
-  // implicit def f[I, O] = toFunctorOps[({ type λ[O] = Rule[I, O] })#λ, O] _
-  implicit def toFunctionalBuilderOps[M[_], A](a: M[A])(implicit fcb: FunctionalCanBuild[M]) = new FunctionalBuilderOps[M, A](a)(fcb)
+  
+  implicit def cbaRule[I] = functionalCanBuildApplicative[Rule[I, ?]]
+  implicit def fboRule[I, O] = toFunctionalBuilderOps[Rule[I, ?], O] _
 }

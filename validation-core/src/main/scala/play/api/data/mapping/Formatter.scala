@@ -132,9 +132,7 @@ case class Writer[I](path: Path = Path(Nil)) {
    * @note This method works fine with recursive writes
    */
   def write[O, J](format: => WriteLike[O, J])(implicit w: Path => WriteLike[J, I]): Write[O, I] = {
-    Write.contravariantFunctorWrite[I]
-      .contramap(Write.toWrite(w(path)))(x => format.writes(x))
-    // Write.toWrite(w(path)).contramap(x => format.writes(x))
+    Write.toWrite(w(path)).contramap(x => format.writes(x))
   }
 
   def \(key: String): Writer[I] = Writer(path \ key)

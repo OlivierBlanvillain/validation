@@ -20,4 +20,6 @@ package object mapping {
   type VA[O] = Validation[(Path, Seq[ValidationError]), O]
   
   def unlift[A, B](f: A => Option[B]): A => B = Function.unlift(f)
+  
+  implicit def toFunctionalBuilderOps[M[_], A](a: M[A])(implicit fcb: FunctionalCanBuild[M]) = new FunctionalBuilderOps[M, A](a)(fcb)
 }
