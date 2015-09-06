@@ -1,7 +1,6 @@
 package play.api.data.mapping.forms
 
 import org.specs2.mutable._
-import play.api.libs.functional.syntax._
 import play.api.data.mapping._
 
 class WritesSpec extends Specification {
@@ -243,7 +242,6 @@ class WritesSpec extends Specification {
 
     "write Map" in {
       def contactWrite = {
-        import play.api.libs.functional.syntax.unlift
         implicit val contactInformation = To[UrlFormEncoded] { __ =>
           ((__ \ "label").write[String] ~
            (__ \ "email").write[Option[String]] ~

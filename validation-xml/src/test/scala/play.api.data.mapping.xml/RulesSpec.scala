@@ -3,6 +3,8 @@ package play.api.data.mapping.xml
 import org.specs2.mutable._
 import play.api.data.mapping._
 import scala.xml._
+import cats._
+import cats.syntax.all._
 
 object RulesSpec extends Specification {
 
@@ -308,11 +310,11 @@ object RulesSpec extends Specification {
 
         "by trying all possible Rules" in {
           val rb: Rule[Node, A] = From[Node]{ __ =>
-            (__ \ "name").read(Rules.equalTo("B")) ~> (__ \ "foo").read[Int].map(B.apply _)
+            (__ \ "name").read(Rules.equalTo("B")) *> (__ \ "foo").read[Int].map(B.apply _)
           }
 
           val rc: Rule[Node, A] = From[Node]{ __ =>
-            (__ \ "name").read(Rules.equalTo("C")) ~> (__ \ "bar").read[Int].map(C.apply _)
+            (__ \ "name").read(Rules.equalTo("C")) *> (__ \ "bar").read[Int].map(C.apply _)
           }
 
           val rule = rb orElse rc orElse Rule(_ => typeFailure)

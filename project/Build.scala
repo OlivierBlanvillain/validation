@@ -139,6 +139,7 @@ object ValidationBuild extends Build {
 
   lazy val form = Project("validation-form", file("validation-form"))
     .settings(commonSettings: _*)
+    .settings(kindProjector: _*)
     .settings(specsDep: _*)
     .dependsOn(core)
 

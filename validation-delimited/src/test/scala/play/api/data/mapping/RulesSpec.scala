@@ -11,8 +11,8 @@ class RulesSpec extends Specification {
       case class Contact(name: String, email: String, birthday: Option[LocalDate])
 
       val contactReads = From[Delimited] { __ ⇒ (
-        (__ \ 0).read[String] and
-        (__ \ 1).read(email) and
+        (__ \ 0).read[String] ~
+        (__ \ 1).read(email) ~
         (__ \ 2).read(optionR[LocalDate](Rules.equalTo("N/A")))
       )(Contact)}
 

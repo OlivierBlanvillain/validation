@@ -1,8 +1,6 @@
 package play.api.data.mapping.xml
 
 import org.specs2.mutable._
-import play.api.libs.functional.syntax._
-import play.api.data.mapping._
 
 import scala.xml._
 
@@ -194,8 +192,6 @@ class WritesSpec extends Specification {
     }
 
     "do a complex write" in {
-      import play.api.libs.functional._
-
       val w = To[XmlWriter] { __ => (
         (__ \ "email").write[Option[String]] ~
         (__ \ "phones").write(seqToNodeSeq(

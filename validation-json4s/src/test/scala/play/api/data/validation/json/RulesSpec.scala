@@ -4,6 +4,7 @@ import org.specs2.mutable._
 import scala.util.control.Exception._
 import play.api.data.mapping._
 import org.json4s._
+import cats.syntax.all._
 
 object RulesSpec extends Specification {
 
@@ -344,11 +345,11 @@ object RulesSpec extends Specification {
 
       "by trying all possible Rules" in {
         val rb: Rule[JValue, A] = From[JValue]{ __ =>
-          (__ \ "name").read(Rules.equalTo("B")) ~> (__ \ "foo").read[Int].map(B.apply _)
+          (__ \ "name").read(Rules.equalTo("B")) *> (__ \ "foo").read[Int].map(B.apply _)
         }
 
         val rc: Rule[JValue, A] = From[JValue]{ __ =>
-          (__ \ "name").read(Rules.equalTo("C")) ~> (__ \ "bar").read[Int].map(C.apply _)
+          (__ \ "name").read(Rules.equalTo("C")) *> (__ \ "bar").read[Int].map(C.apply _)
         }
 
         val rule = rb orElse rc orElse Rule(_ => typeFailure)

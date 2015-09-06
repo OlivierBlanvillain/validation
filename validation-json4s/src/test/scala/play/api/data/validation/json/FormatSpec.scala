@@ -4,7 +4,6 @@
 package play.api.libs.json4s
 
 import org.specs2.mutable._
-import play.api.libs.functional.syntax._
 import org.json4s._
 
 object FormatSpec extends Specification {
