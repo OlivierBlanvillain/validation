@@ -3,7 +3,6 @@ package play.api.data.mapping.xml
 import org.specs2.mutable._
 import play.api.data.mapping._
 import scala.xml._
-import cats._
 import cats.syntax.all._
 
 object RulesSpec extends Specification {

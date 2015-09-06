@@ -71,6 +71,8 @@ class FunctionalBuilder[M[_]](canBuild: FunctionalCanBuild[M]) {
         canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 => f1(a1, a2, a3, a4) })(
         (b: B) => { val (a1, a2, a3, a4) = f2(b); new ~(new ~(new ~(a1, a2), a3), a4) }
       )
+        
+    def tupled(implicit fu: Invariant[M]): M[(A1, A2, A3, A4)] = apply[(A1, A2, A3, A4)]({ (a1: A1, a2: A2, a3: A3, a4: A4) => (a1, a2, a3, a4) }, { (a: (A1, A2, A3, A4)) => (a._1, a._2, a._3, a._4) })(fu)
   }
 
   class CanBuild5[A1, A2, A3, A4, A5](m1: M[A1 ~ A2 ~ A3 ~ A4], m2: M[A5]) {
