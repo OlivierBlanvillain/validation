@@ -1,12 +1,8 @@
 package play.api.data.mapping.forms
 
-import scala.language.implicitConversions
-
 import play.api.data.mapping._
 
 trait DefaultMonoids {
-  import play.api.libs.functional.Monoid
-
   implicit def mapMonoid = new Monoid[UrlFormEncoded] {
     def append(a1: UrlFormEncoded, a2: UrlFormEncoded) = a1 ++ a2
     def identity = Map.empty

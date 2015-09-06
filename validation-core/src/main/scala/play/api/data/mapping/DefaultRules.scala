@@ -353,8 +353,6 @@ trait ParsingRules {
  * Extends this trait if your implementing a new set of Rules for `I`.
  */
 trait DefaultRules[I] extends GenericRules with DateRules {
-  import scala.language.implicitConversions
-
   protected def opt[J, O](r: => RuleLike[J, O], noneValues: RuleLike[I, I]*)(implicit pick: Path => RuleLike[I, I], coerce: RuleLike[I, J]) = (path: Path) =>
     Rule[I, Option[O]] {
       (d: I) =>

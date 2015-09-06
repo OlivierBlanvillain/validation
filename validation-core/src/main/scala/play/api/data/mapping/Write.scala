@@ -1,6 +1,5 @@
 package play.api.data.mapping
 
-import scala.language.implicitConversions
 import cats._
 import cats.functor.Contravariant
 
@@ -51,7 +50,7 @@ object Write {
 
   implicit def zero[I]: Write[I, I] = toWrite(WriteLike.zero[I])
 
-  implicit def contravariantFunctorWrite[O]: Contravariant[Write[?, O]] =
+  implicit def contravariantWrite[O]: Contravariant[Write[?, O]] =
     new Contravariant[Write[?, O]] {
       def contramap[A, B](wa: Write[A, O])(f: B => A): Write[B, O] =
         wa.contramap(f)

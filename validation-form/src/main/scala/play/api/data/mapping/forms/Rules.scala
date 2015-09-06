@@ -101,12 +101,6 @@ object PM {
  * This object provides Rules for Map[String, Seq[String]]
  */
 object Rules extends DefaultRules[PM.PM] with ParsingRules {
-  import scala.language.implicitConversions
-  import scala.language.higherKinds
-
-  import play.api.libs.functional._
-  import play.api.libs.functional.syntax._
-
   import PM._
 
   implicit def mapR[O](implicit r: RuleLike[Seq[String], O]): Rule[PM, Map[String, O]] =

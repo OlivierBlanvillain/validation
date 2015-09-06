@@ -4,10 +4,6 @@ import org.json4s._
 import org.json4s.native.JsonMethods._
 
 object Rules extends play.api.data.mapping.DefaultRules[JValue] {
-  import scala.language.implicitConversions
-  import play.api.libs.functional._
-  import play.api.libs.functional.syntax._
-
   import play.api.data.mapping._
 
   private def jsonAs[T](f: PartialFunction[JValue, Validation[ValidationError, T]])(msg: String, args: Any*) =

@@ -1,8 +1,8 @@
 package play.api.data.mapping
 
 import scala.annotation.implicitNotFound
-import scala.language.implicitConversions
 import cats._
+import cats.functor.Invariant
 
 @implicitNotFound("No Format found for types ${IR},${IW}, ${O}. Try to implement an implicit Format[${IR}, ${IW}, ${O}].")
 trait Format[IR, +IW, O] extends RuleLike[IR, O] with WriteLike[O, IW]
@@ -11,6 +11,7 @@ trait Format[IR, +IW, O] extends RuleLike[IR, O] with WriteLike[O, IW]
  * Default formatters.
  */
 object Format {
+  // def gen[IR, IW, O]: Format[IR, IW, O] = macro MappingMacros.format[IR, IW, O]
 
   def apply[IR, IW, O](r: RuleLike[IR, O], w: WriteLike[O, IW]): Format[IR, IW, O] = {
     new Format[IR, IW, O] {
@@ -19,24 +20,18 @@ object Format {
     }
   }
 
-  // def gen[IR, IW, O]: Format[IR, IW, O] = macro MappingMacros.format[IR, IW, O]
+  implicit def invariantFormat[IR, IW]: Invariant[Format[IR, IW, ?]] =
+    new Invariant[Format[IR, IW, ?]] {
+      def imap[A, B](fa: Format[IR, IW, A])(f1: A => B)(f2: B => A): Format[IR, IW, B] =
+        Format[IR, IW, B](Rule.toRule(fa).map(f1), Write.toWrite(fa).contramap(f2))
+    }
 
-  // implicit def invariantFunctorFormat[IR, IW]: InvariantFunctor[({ type λ[O] = Format[IR, IW, O] })#λ] =
-  //   new InvariantFunctor[({ type λ[O] = Format[IR, IW, O] })#λ] {
-  //     def inmap[A, B](fa: Format[IR, IW, A], f1: A => B, f2: B => A): Format[IR, IW, B] =
-  //       Format[IR, IW, B](Rule.toRule(fa).map(f1), Write.toWrite(fa).contramap(f2))
-  //   }
+  implicit def functionalCanBuildFormat[IR, IW : Monoid](implicit rcb: FunctionalCanBuild[Rule[IR, ?]], wcb: FunctionalCanBuild[Write[?, IW]]): FunctionalCanBuild[Format[IR, IW, ?]] =
+    new FunctionalCanBuild[Format[IR, IW, ?]] {
+      def apply[A, B](fa: Format[IR, IW, A], fb: Format[IR, IW, B]): Format[IR, IW, A ~ B] =
+        Format[IR, IW, A ~ B](rcb(Rule.toRule(fa), Rule.toRule(fb)), wcb(Write.toWrite(fa), Write.toWrite(fb)))
+    }
 
-  // implicit def invariantFunctorExtractorFormat[IR, IW]: VariantExtractor[({ type λ[O] = Format[IR, IW, O] })#λ] =
-  //   VariantExtractor.invariantFunctor[({ type λ[O] = Format[IR, IW, O] })#λ](invariantFunctorFormat)
-
-  // implicit def functionalCanBuildFormat[IR, IW: Monoid](implicit rcb: FunctionalCanBuild[({ type λ[O] = Rule[IR, O] })#λ], wcb: FunctionalCanBuild[({ type λ[O] = Write[O, IW] })#λ]): FunctionalCanBuild[({ type λ[O] = Format[IR, IW, O] })#λ] =
-  //   new FunctionalCanBuild[({ type λ[O] = Format[IR, IW, O] })#λ] {
-  //     def apply[A, B](fa: Format[IR, IW, A], fb: Format[IR, IW, B]): Format[IR, IW, A ~ B] =
-  //       Format[IR, IW, A ~ B](rcb(Rule.toRule(fa), Rule.toRule(fb)), wcb(Write.toWrite(fa), Write.toWrite(fb)))
-  //   }
-
-  // // XXX: Helps the compiler a bit
-  // implicit def fboFormat[IR, IW: Monoid, O](f: Format[IR, IW, O])(implicit fcb: FunctionalCanBuild[({ type λ[O] = Format[IR, IW, O] })#λ]) =
-  //   toFunctionalBuilderOps[({ type λ[O] = Format[IR, IW, O] })#λ, O](f)(fcb)
+  implicit def fboFormat[IR, IW : Monoid, O](f: Format[IR, IW, O])(implicit fcb: FunctionalCanBuild[Format[IR, IW, ?]]) =
+    toFunctionalBuilderOps[Format[IR, IW, ?], O](f)(fcb)
 }

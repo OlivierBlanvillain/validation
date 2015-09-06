@@ -1,7 +1,5 @@
 package play.api.data.mapping
 
-import scala.language.higherKinds
-import scala.language.implicitConversions
 import cats._
 
 sealed trait PathNode
