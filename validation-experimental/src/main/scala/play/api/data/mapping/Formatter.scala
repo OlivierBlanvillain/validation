@@ -38,4 +38,3 @@
 
 //   def apply[I]: Get[I, I] = lens(shapeless.lens.apply[I])
 // }
-)

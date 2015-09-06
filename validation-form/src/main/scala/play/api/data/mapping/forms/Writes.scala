@@ -1,11 +1,12 @@
 package play.api.data.mapping.forms
 
 import play.api.data.mapping._
+import cats.Monoid
 
 trait DefaultMonoids {
   implicit def mapMonoid = new Monoid[UrlFormEncoded] {
-    def append(a1: UrlFormEncoded, a2: UrlFormEncoded) = a1 ++ a2
-    def identity = Map.empty
+    def combine(a1: UrlFormEncoded, a2: UrlFormEncoded) = a1 ++ a2
+    def empty = Map.empty
   }
 }
 
