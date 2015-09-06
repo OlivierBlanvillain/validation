@@ -100,6 +100,12 @@ trait Rule[I, O] extends RuleLike[I, O] {
 
   def map[B](f: O => B): Rule[I, B] =
     Rule(d => this.validate(d).map(f))
+  
+  def ap[A](mf: Rule[I, O => A]): Rule[I, A] = Rule { d =>
+    val a = validate(d)
+    val f = mf.validate(d)
+    (f *> a).viaEither { _.right.flatMap(x => f.asEither.right.map(_(x))) }
+  }
 }
 
 object Rule {
@@ -117,7 +123,9 @@ object Rule {
   def uncurry[A, B, C](f: A => Rule[B, C]): Rule[(A, B), C] =
     Rule { case (a, b) => f(a).validate(b) }
 
-  implicit def zero[O] = toRule(RuleLike.zero[O])
+  def zero[O]: Rule[O, O] = toRule(RuleLike.zero[O])
+  
+  def pure[I, O](o: O): Rule[I, O] = Rule(_ => Success(o))
 
   def apply[I, O](m: Mapping[(Path, Seq[ValidationError]), I, O]) = new Rule[I, O] {
     def validate(data: I): VA[O] = m(data)
@@ -131,21 +139,16 @@ object Rule {
     Rule[I, O](f(_: I).fail.map(errs => Seq(Path -> errs)))
 
   implicit def applicativeRule[I] = new Applicative[Rule[I, ?]] {
-    def pure[A](a: A): Rule[I, A] =
-      Rule(_ => Success(a))
-
-    def ap[A, B](ma: Rule[I, A])(mf: Rule[I, A => B]): Rule[I, B] =
-      Rule { d =>
-        val a = ma.validate(d)
-        val f = mf.validate(d)
-        (f *> a).viaEither { _.right.flatMap(x => f.asEither.right.map(_(x))) }
-      }
+    def pure[A](a: A): Rule[I, A] = pure(a)
+    def ap[A, B](ma: Rule[I, A])(mf: Rule[I, A => B]): Rule[I, B] = ma.ap(mf)
   }
 
-  implicit def functionalCanBuildApplicative[M[_]](implicit app: Applicative[M]): FunctionalCanBuild[M] = new FunctionalCanBuild[M] {
-     def apply[A, B](a: M[A], b: M[B]): M[A ~ B] = app.ap(b)(app.map[A, B => A ~ B](a)(a => ((b: B) => new ~(a, b))))
-  }
-  
-  implicit def cbaRule[I] = functionalCanBuildApplicative[Rule[I, ?]]
-  implicit def fboRule[I, O] = toFunctionalBuilderOps[Rule[I, ?], O] _
+  implicit def functionalCanBuildRule[I]: FunctionalCanBuild[Rule[I, ?]] =
+    new FunctionalCanBuild[Rule[I, ?]] {
+      def apply[A, B](a: Rule[I, A], b: Rule[I, B]): Rule[I, A ~ B] =
+        b.ap(a.map(a => c => new ~(a, c)))
+    }
+
+  implicit def fboRule[I, O](r: Rule[I, O]): FunctionalBuilderOps[Rule[I, ?], O] =
+    toFunctionalBuilderOps[Rule[I, ?], O](r)
 }

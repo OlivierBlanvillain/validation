@@ -21,5 +21,5 @@ package object mapping {
   
   def unlift[A, B](f: A => Option[B]): A => B = Function.unlift(f)
   
-  implicit def toFunctionalBuilderOps[M[_], A](a: M[A])(implicit fcb: FunctionalCanBuild[M]) = new FunctionalBuilderOps[M, A](a)(fcb)
+  implicit def toFunctionalBuilderOps[M[_], A](a: M[A])(implicit fcb: FunctionalCanBuild[M]): FunctionalBuilderOps[M, A] = new FunctionalBuilderOps[M, A](a)(fcb)
 }

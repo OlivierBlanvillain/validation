@@ -49,7 +49,6 @@ object Write {
     def writes(data: I): O = r.writes(data)
   }
 
-
   implicit def zero[I]: Write[I, I] = toWrite(WriteLike.zero[I])
 
   implicit def contravariantFunctorWrite[O]: Contravariant[Write[?, O]] =
@@ -65,6 +64,6 @@ object Write {
       }
     }
     
-  implicit def fboWrite[I, O](a: Write[I, O])(implicit m: Monoid[O]): FunctionalBuilderOps[Write[?, O],I]
-   = toFunctionalBuilderOps[Write[?, O], I](a)
+  implicit def fboWrite[I, O : Monoid](w: Write[I, O]): FunctionalBuilderOps[Write[?, O], I] =
+    toFunctionalBuilderOps[Write[?, O], I](w)
 }
