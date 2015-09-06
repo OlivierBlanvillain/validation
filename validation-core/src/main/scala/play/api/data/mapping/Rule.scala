@@ -140,7 +140,7 @@ object Rule {
 
   implicit def applicativeRule[I]: Applicative[Rule[I, ?]] =
     new Applicative[Rule[I, ?]] {
-      def pure[A](a: A): Rule[I, A] = pure(a)
+      def pure[A](a: A): Rule[I, A] = Rule.pure(a)
       def ap[A, B](ma: Rule[I, A])(mf: Rule[I, A => B]): Rule[I, B] = ma.ap(mf)
     }
 
