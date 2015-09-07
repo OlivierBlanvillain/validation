@@ -1,6 +1,6 @@
-package play.api.data.mapping
+package jto.validation
 
-import cats._
+import cats.Functor
 import cats.functor._
 
 case class ~[A, B](_1: A, _2: B)

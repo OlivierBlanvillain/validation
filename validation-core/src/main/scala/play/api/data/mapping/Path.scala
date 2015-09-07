@@ -1,4 +1,4 @@
-package play.api.data.mapping
+package jto.validation
 
 sealed trait PathNode
 case class KeyPathNode(key: String) extends PathNode {

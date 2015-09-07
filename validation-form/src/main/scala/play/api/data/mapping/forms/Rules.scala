@@ -1,6 +1,7 @@
-package play.api.data.mapping.forms
+package jto.validation
+package forms
 
-import play.api.data.mapping._
+import scala.util.parsing.combinator.{ Parsers, RegexParsers }
 
 /**
  * Play provides you a `Map[String, Seq[String]]` (aliased as `UrlFormEncoded`) in request body for urlFormEncoded requests.
@@ -9,8 +10,6 @@ import play.api.data.mapping._
  * @note We use the alias `UrlFormEncoded`, which is just a `Map[String, Seq[String]]`
  */
 object PM {
-
-  import scala.util.parsing.combinator.{ Parsers, RegexParsers }
   /**
    * A parser converting a key of a Map[String, [Seq[String]]] to a Path instance
    * `foo.bar[0].baz` becomes `Path \ "foo" \ "bar" \ 0 \ "baz"`

@@ -1,4 +1,4 @@
-package play.api.data.mapping
+import jto.validation._;
 
 import org.specs2.mutable._
 

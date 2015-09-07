@@ -1,14 +1,13 @@
-package play.api.libs.json4s
-
+import jto.validation._
+import jto.validation.json4s._
 import org.specs2.mutable._
-import play.api.data.mapping._
 import org.json4s._
 import cats.syntax.all._
 
 object RulesSpec extends Specification {
 
   "Json Rules" should {
-    import play.api.data.mapping.json4s._
+    
     import Rules._
 
     val valid = JObject(
@@ -489,7 +488,7 @@ object RulesSpec extends Specification {
         }
 
       val jsonR = {
-        import play.api.data.mapping.json4s.Rules._
+        
         genR[JValue](optionR(_))
       }
 
@@ -501,7 +500,7 @@ object RulesSpec extends Specification {
 
 
       // val formR = {
-      //   import play.api.data.mapping..Rules._
+      //   
       //   genR[UrlFormEncoded](optionR(_))
       // }
       // val form = Map("name" -> Seq("bob"), "color" -> Seq("blue"))

@@ -1,4 +1,4 @@
-package play.api.data.mapping
+package jto.validation
 
 import shapeless._
 import ops.record.{ Selector => RSelector, Updater }

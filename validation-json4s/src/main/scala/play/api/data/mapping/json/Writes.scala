@@ -1,8 +1,7 @@
-package play.api.data.mapping.json4s
+package jto.validation
+package json4s
 
-import play.api.data.mapping._
 import cats.Monoid
-
 import org.json4s._
 
 trait DefaultMonoids {

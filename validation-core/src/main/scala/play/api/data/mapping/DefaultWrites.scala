@@ -1,4 +1,4 @@
-package play.api.data.mapping
+package jto.validation
 
 trait DateWrites {
   /**
@@ -64,7 +64,6 @@ trait DefaultWrites extends DateWrites {
 }
 
 trait GenericWrites[O] {
-
   implicit def arrayW[I](implicit w: WriteLike[Seq[I], O]) =
     Write((_: Array[I]).toSeq) compose w
 

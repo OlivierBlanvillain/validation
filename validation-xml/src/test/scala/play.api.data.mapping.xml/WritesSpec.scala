@@ -1,7 +1,10 @@
-package play.api.data.mapping.xml
-
+import jto.validation._
+import jto.validation.xml._
+import jto.validation.xml.Writes._
+import java.text.NumberFormat
+import java.util.{Date, Locale}
+import org.joda.time.{DateTime, LocalDate}
 import org.specs2.mutable._
-import play.api.data.mapping._
 
 class WritesSpec extends Specification {
 
@@ -20,8 +23,6 @@ class WritesSpec extends Specification {
 
   val contact = Contact("Julien", "Tournay", None, Seq(
   ContactInformation("Personal", Some("fakecontact@gmail.com"), Seq("01.23.45.67.89", "98.76.54.32.10"))))
-
-  import play.api.data.mapping.xml.Writes._
 
   "Writes" should {
 
@@ -101,14 +102,12 @@ class WritesSpec extends Specification {
       }
 
       "date" in {
-        import java.util.Date
         val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
         val d = f.parse("1985-09-10")
         Path.write(date).writes(d)(<a></a>) mustEqual(<a>1985-09-10</a>)
       }
 
       "joda" in {
-        import org.joda.time.DateTime
         val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
         val dd = f.parse("1985-09-10")
         val jd = new DateTime(dd)
@@ -118,14 +117,12 @@ class WritesSpec extends Specification {
         }
 
         "local date" in {
-          import org.joda.time.LocalDate
           val ld = new LocalDate()
           Path.write(jodaLocalDate).writes(ld)(<a></a>) mustEqual(<a>{ld.toString}</a>)
         }
       }
 
       "sql date" in {
-        import java.util.Date
         val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
         val dd = f.parse("1985-09-10")
         val ds = new java.sql.Date(dd.getTime())
@@ -142,8 +139,6 @@ class WritesSpec extends Specification {
 
     "format data" in {
       val formatter = Write[Double, String]{ money =>
-        import java.text.NumberFormat
-        import java.util.Locale
         val f = NumberFormat.getCurrencyInstance(Locale.FRANCE)
         f.format(money)
       }
@@ -251,10 +246,6 @@ class WritesSpec extends Specification {
         }
         w3.writes(u1)(<user></user>) mustEqual m1
       }
-
     }
-
-
   }
-
 }

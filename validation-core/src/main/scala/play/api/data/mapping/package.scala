@@ -1,4 +1,4 @@
-package play.api.data
+package jto
 
 /**
  * Contains the validation API used by `Form`.
@@ -11,7 +11,7 @@ package play.api.data
  *   }
  * }}}
  */
-package object mapping {
+package object validation {
   @annotation.implicitNotFound("No implicit Mapping found from ${I} to ${O}. Try to define an implicit Mapping[${E}, ${I}, ${O}].")
   type Mapping[E, I, O] = I => Validation[E, O]
   type Constraint[T] = Mapping[ValidationError, T, T]

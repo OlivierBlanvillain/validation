@@ -1,6 +1,6 @@
-package play.api.data.mapping
+package jto.validation
 
-import cats._
+import cats.{Functor, Applicative}
 
 /**
  * Validation[E, A] is the result of a validation, where E is the type of each error, and A is the type of the result if the validation is successful

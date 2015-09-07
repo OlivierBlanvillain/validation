@@ -1,6 +1,6 @@
-package play.api.data.mapping.delimited
+package jto.validation.delimited
 
-import play.api.data.mapping._
+import jto.validation._
 
 /**
  * Rules for parsing/validating/transforming Array[String] as typically returned from CSV parsers.

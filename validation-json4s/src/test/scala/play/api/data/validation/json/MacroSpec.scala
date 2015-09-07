@@ -1,10 +1,7 @@
-// package play.api.data.mapping.json4s
-
+// import jto.validation._
+// import jto.validation.json4s._
 // import org.specs2.mutable._
 // import scala.util.control.Exception._
-
-// import play.api.data.mapping._
-// import play.api.data.mapping.{ json4s => js }
 // import js._
 // import org.json4s._
 

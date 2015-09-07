@@ -1,9 +1,8 @@
-package play.api.data.mapping.delimited
-
+import jto.validation._
+import jto.validation.delimited._
+import jto.validation.delimited.Rules._
 import org.joda.time.LocalDate
 import org.specs2.mutable._
-import play.api.data.mapping.{From, Path, Success}
-import play.api.data.mapping.delimited.Rules._
 
 class RulesSpec extends Specification {
   "Rules" should {

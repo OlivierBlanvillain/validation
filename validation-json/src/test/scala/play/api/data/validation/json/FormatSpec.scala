@@ -1,20 +1,13 @@
-/*
- * Copyright (C) 2009-2013 Typesafe Inc. <http://www.typesafe.com>
- */
-package play.api.libs.json
-
+import jto.validation._
+import jto.validation.json._
 import org.specs2.mutable._
+import play.api.libs.json.{JsValue, JsObject, Json, JsString, JsNumber, JsBoolean, JsArray, JsNull}
 
 object FormatSpec extends Specification {
   case class User(id: Long, name: String)
   val luigi = User(1, "Luigi")
 
   "Format" should {
-
-    import play.api.data.mapping._
-    import play.api.data.mapping.json.Rules
-    import play.api.data.mapping.json.Writes
-
     "serialize and deserialize primitives" in {
       import Rules._
       import Writes._

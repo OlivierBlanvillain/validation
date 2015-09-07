@@ -1,4 +1,5 @@
-// package play.api.data.mapping.json
+// import jto.validation._
+// import jto.validation.json._
 
 // import org.specs2.mutable._
 // import scala.util.control.Exception._
@@ -6,8 +7,8 @@
 // import cats.syntax.all._
 
 // import play.api.libs.json._
-// import play.api.data.mapping._
-// import play.api.data.mapping.{ json => js }
+// 
+// 
 // import js._
 
 // object MacroSpec extends Specification {

@@ -1,14 +1,16 @@
-package play.api.data.mapping.xml
-
-import org.specs2.mutable._
-import play.api.data.mapping._
-import scala.xml._
+import jto.validation._
+import jto.validation.xml._
+import jto.validation.xml.Rules._
 import cats.syntax.all._
+import java.math.{BigDecimal => jBigDecimal}
+import java.util.Date
+import org.joda.time.{LocalDate, DateTime}
+import org.specs2.mutable._
+import scala.xml.Node
 
 object RulesSpec extends Specification {
-
+  
   "Xml rules" should {
-    import play.api.data.mapping.xml.Rules._
 
     val valid =
       <person>
@@ -97,7 +99,6 @@ object RulesSpec extends Specification {
       }
 
       "java BigDecimal" in {
-        import java.math.{ BigDecimal => jBigDecimal }
         Path.read[Node, jBigDecimal].validate(<a>4</a>) === Success(new jBigDecimal("4"))
         attributeR[jBigDecimal]("attr").validate(<a attr="4"></a>) === Success(new jBigDecimal("4"))
         Path.read[Node, jBigDecimal].validate(<a>no</a>) === Failure(Seq(Path -> Seq(ValidationError("error.number", "BigDecimal"))))
@@ -110,14 +111,12 @@ object RulesSpec extends Specification {
       }
 
       "date" in {
-        import java.util.Date
         val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
         Path.from[Node](Rules.date).validate(<a>1985-09-10</a>) mustEqual(Success(f.parse("1985-09-10")))
         Path.from[Node](Rules.date).validate(<a>foo</a>) mustEqual(Failure(Seq(Path -> Seq(ValidationError("error.expected.date", "yyyy-MM-dd")))))
       }
 
       "joda" in {
-        import org.joda.time.DateTime
         val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
         val dd = f.parse("1985-09-10")
         val jd = new DateTime(dd)
@@ -133,7 +132,6 @@ object RulesSpec extends Specification {
         }
 
         "local date" in {
-          import org.joda.time.LocalDate
           val ld = new LocalDate()
           Path.from[Node](Rules.jodaLocalDate).validate(<a>{ld.toString}</a>) mustEqual(Success(ld))
           Path.from[Node](Rules.jodaLocalDate).validate(<a>foo</a>) mustEqual(Failure(Seq(Path -> Seq(ValidationError("error.expected.jodadate.format", "")))))
@@ -141,7 +139,6 @@ object RulesSpec extends Specification {
       }
 
       "sql date" in {
-        import java.util.Date
         val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
         val dd = f.parse("1985-09-10")
         val ds = new java.sql.Date(dd.getTime())
@@ -470,7 +467,6 @@ object RulesSpec extends Specification {
           </entity>
 
         val reads = From[Node] { __ =>
-          import Rules._
           (
             pickChildWithAttribute("prop", attrKey = "name", attrValue = "job")(
               attributeR[String]("value") ~

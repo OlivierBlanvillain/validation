@@ -1,6 +1,6 @@
-package play.api.data.mapping.xml
+package jto.validation
+package xml
 
-import play.api.data.mapping._
 import cats.Monoid
 import scala.xml._
 

@@ -1,10 +1,9 @@
-package play.api.data.mapping.json4s
+package jto.validation
+package json4s
 
 import org.json4s._
 
-object Rules extends play.api.data.mapping.DefaultRules[JValue] {
-  import play.api.data.mapping._
-
+object Rules extends DefaultRules[JValue] {
   private def jsonAs[T](f: PartialFunction[JValue, Validation[ValidationError, T]])(msg: String, args: Any*) =
     Rule.fromMapping[JValue, T](
       f.orElse {

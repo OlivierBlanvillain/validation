@@ -1,6 +1,6 @@
-package play.api.data.mapping.forms
+package jto.validation
+package forms
 
-import play.api.data.mapping._
 import cats.Monoid
 
 trait DefaultMonoids {
@@ -11,7 +11,6 @@ trait DefaultMonoids {
 }
 
 object Writes extends DefaultWrites with GenericWrites[PM.PM] with DefaultMonoids {
-
   import PM._
 
   // TODO: accept a format ?

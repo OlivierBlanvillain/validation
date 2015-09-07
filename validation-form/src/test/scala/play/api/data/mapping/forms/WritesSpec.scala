@@ -1,7 +1,6 @@
-package play.api.data.mapping.forms
-
+import jto.validation._
+import jto.validation.forms._
 import org.specs2.mutable._
-import play.api.data.mapping._
 
 class WritesSpec extends Specification {
 

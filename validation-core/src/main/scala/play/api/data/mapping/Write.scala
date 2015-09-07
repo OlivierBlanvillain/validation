@@ -1,6 +1,6 @@
-package play.api.data.mapping
+package jto.validation
 
-import cats._
+import cats.Monoid
 import cats.functor.Contravariant
 
 trait WriteLike[I, +O] {

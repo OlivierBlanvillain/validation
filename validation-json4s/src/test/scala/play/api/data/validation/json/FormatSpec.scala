@@ -1,8 +1,5 @@
-/*
- * Copyright (C) 2009-2013 Typesafe Inc. <http://www.typesafe.com>
- */
-package play.api.libs.json4s
-
+import jto.validation._
+import jto.validation.json4s._
 import org.specs2.mutable._
 import org.json4s._
 
@@ -12,9 +9,9 @@ object FormatSpec extends Specification {
 
   "Format" should {
 
-    import play.api.data.mapping._
-    import play.api.data.mapping.json4s.Rules
-    import play.api.data.mapping.json4s.Writes
+    
+    
+    
 
     "serialize and deserialize primitives" in {
       import Rules._

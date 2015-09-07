@@ -1,8 +1,7 @@
-// package play.api.data.mapping.forms
-
+// import jto.validation._
+// import jto.validation.forms._
 // import org.specs2.mutable._
 // import scala.util.control.Exception._
-// import play.api.data.mapping._
 
 // case class User(age: Int, name: String)
 // case class Dog(name: String, master: User)

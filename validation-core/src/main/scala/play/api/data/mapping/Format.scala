@@ -1,4 +1,4 @@
-package play.api.data.mapping
+package jto.validation
 
 import scala.annotation.implicitNotFound
 import cats.Monoid

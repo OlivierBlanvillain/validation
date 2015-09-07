@@ -1,13 +1,12 @@
-package play.api.libs.json
-
+import jto.validation._
+import jto.validation.json._
 import org.specs2.mutable._
-import play.api.data.mapping._
 import cats.syntax.all._
+import play.api.libs.json.{JsValue, JsObject, Json, JsString, JsNumber, JsBoolean, JsArray, JsNull}
 
 object RulesSpec extends Specification {
 
   "Json Rules" should {
-    import play.api.data.mapping.json._
     import Rules._
 
     val valid = Json.obj(
@@ -487,7 +486,7 @@ object RulesSpec extends Specification {
         }
 
       val jsonR = {
-        import play.api.data.mapping.json.Rules._
+        
         genR[JsValue](optionR(_))
       }
 
