@@ -27,11 +27,20 @@ class FunctionalBuilder[M[_]](canBuild: FunctionalCanBuild[M]) {
 
     def apply[B](f: B => (A1, A2))(implicit fu: Contravariant[M]): M[B] =
       fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2) = f(b); new ~(a1, a2) })
+      
+    def apply[B](f: B => Option[(A1, A2)])(implicit fu: Contravariant[M], d: DummyImplicit): M[B] =
+      fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2) = f(b).get; new ~(a1, a2) })
 
     def apply[B](f1: (A1, A2) => B, f2: B => (A1, A2))(implicit fu: Invariant[M]): M[B] =
       fu.imap[A1 ~ A2, B](
         canBuild(m1, m2))({ case a1 ~ a2 => f1(a1, a2) })(
         (b: B) => { val (a1, a2) = f2(b); new ~(a1, a2) }
+      )
+        
+    def apply[B](f1: (A1, A2) => B, f2: B => Option[(A1, A2)])(implicit fu: Invariant[M], d: DummyImplicit): M[B] =
+      fu.imap[A1 ~ A2, B](
+        canBuild(m1, m2))({ case a1 ~ a2 => f1(a1, a2) })(
+        (b: B) => { val (a1, a2) = f2(b).get; new ~(a1, a2) }
       )
       
     def tupled(implicit fu: Invariant[M]): M[(A1, A2)] = apply[(A1, A2)]({ (a1: A1, a2: A2) => (a1, a2) }, { (a: (A1, A2)) => (a._1, a._2) })(fu)
@@ -46,11 +55,20 @@ class FunctionalBuilder[M[_]](canBuild: FunctionalCanBuild[M]) {
 
     def apply[B](f: B => (A1, A2, A3))(implicit fu: Contravariant[M]): M[B] =
       fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3) = f(b); new ~(new ~(a1, a2), a3) })
+      
+    def apply[B](f: B => Option[(A1, A2, A3)])(implicit fu: Contravariant[M], d: DummyImplicit): M[B] =
+      fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3) = f(b).get; new ~(new ~(a1, a2), a3) })
 
     def apply[B](f1: (A1, A2, A3) => B, f2: B => (A1, A2, A3))(implicit fu: Invariant[M]): M[B] =
       fu.imap[A1 ~ A2 ~ A3, B](
         canBuild(m1, m2))({ case a1 ~ a2 ~ a3 => f1(a1, a2, a3) })(
         (b: B) => { val (a1, a2, a3) = f2(b); new ~(new ~(a1, a2), a3) }
+      )
+        
+    def apply[B](f1: (A1, A2, A3) => B, f2: B => Option[(A1, A2, A3)])(implicit fu: Invariant[M], d: DummyImplicit): M[B] =
+      fu.imap[A1 ~ A2 ~ A3, B](
+        canBuild(m1, m2))({ case a1 ~ a2 ~ a3 => f1(a1, a2, a3) })(
+        (b: B) => { val (a1, a2, a3) = f2(b).get; new ~(new ~(a1, a2), a3) }
       )
       
     def tupled(implicit fu: Invariant[M]): M[(A1, A2, A3)] = apply[(A1, A2, A3)]({ (a1: A1, a2: A2, a3: A3) => (a1, a2, a3) }, { (a: (A1, A2, A3)) => (a._1, a._2, a._3) })(fu)
@@ -65,11 +83,20 @@ class FunctionalBuilder[M[_]](canBuild: FunctionalCanBuild[M]) {
 
     def apply[B](f: B => (A1, A2, A3, A4))(implicit fu: Contravariant[M]): M[B] =
       fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4) = f(b); new ~(new ~(new ~(a1, a2), a3), a4) })
+      
+    def apply[B](f: B => Option[(A1, A2, A3, A4)])(implicit fu: Contravariant[M], d: DummyImplicit): M[B] =
+      fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4) = f(b).get; new ~(new ~(new ~(a1, a2), a3), a4) })
 
     def apply[B](f1: (A1, A2, A3, A4) => B, f2: B => (A1, A2, A3, A4))(implicit fu: Invariant[M]): M[B] =
       fu.imap[A1 ~ A2 ~ A3 ~ A4, B](
         canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 => f1(a1, a2, a3, a4) })(
         (b: B) => { val (a1, a2, a3, a4) = f2(b); new ~(new ~(new ~(a1, a2), a3), a4) }
+      )
+        
+    def apply[B](f1: (A1, A2, A3, A4) => B, f2: B => Option[(A1, A2, A3, A4)])(implicit fu: Invariant[M], d: DummyImplicit): M[B] =
+      fu.imap[A1 ~ A2 ~ A3 ~ A4, B](
+        canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 => f1(a1, a2, a3, a4) })(
+        (b: B) => { val (a1, a2, a3, a4) = f2(b).get; new ~(new ~(new ~(a1, a2), a3), a4) }
       )
         
     def tupled(implicit fu: Invariant[M]): M[(A1, A2, A3, A4)] = apply[(A1, A2, A3, A4)]({ (a1: A1, a2: A2, a3: A3, a4: A4) => (a1, a2, a3, a4) }, { (a: (A1, A2, A3, A4)) => (a._1, a._2, a._3, a._4) })(fu)
@@ -84,11 +111,20 @@ class FunctionalBuilder[M[_]](canBuild: FunctionalCanBuild[M]) {
 
     def apply[B](f: B => (A1, A2, A3, A4, A5))(implicit fu: Contravariant[M]): M[B] =
       fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5) = f(b); new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5) })
+      
+    def apply[B](f: B => Option[(A1, A2, A3, A4, A5)])(implicit fu: Contravariant[M], d: DummyImplicit): M[B] =
+      fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5) = f(b).get; new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5) })
 
     def apply[B](f1: (A1, A2, A3, A4, A5) => B, f2: B => (A1, A2, A3, A4, A5))(implicit fu: Invariant[M]): M[B] =
       fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5, B](
         canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 => f1(a1, a2, a3, a4, a5) })(
         (b: B) => { val (a1, a2, a3, a4, a5) = f2(b); new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5) }
+      )
+        
+    def apply[B](f1: (A1, A2, A3, A4, A5) => B, f2: B => Option[(A1, A2, A3, A4, A5)])(implicit fu: Invariant[M], d: DummyImplicit): M[B] =
+      fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5, B](
+        canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 => f1(a1, a2, a3, a4, a5) })(
+        (b: B) => { val (a1, a2, a3, a4, a5) = f2(b).get; new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5) }
       )
   }
 
@@ -101,11 +137,20 @@ class FunctionalBuilder[M[_]](canBuild: FunctionalCanBuild[M]) {
 
     def apply[B](f: B => (A1, A2, A3, A4, A5, A6))(implicit fu: Contravariant[M]): M[B] =
       fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6) = f(b); new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6) })
+      
+    def apply[B](f: B => Option[(A1, A2, A3, A4, A5, A6)])(implicit fu: Contravariant[M], d: DummyImplicit): M[B] =
+      fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6) = f(b).get; new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6) })
 
     def apply[B](f1: (A1, A2, A3, A4, A5, A6) => B, f2: B => (A1, A2, A3, A4, A5, A6))(implicit fu: Invariant[M]): M[B] =
       fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6, B](
         canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 => f1(a1, a2, a3, a4, a5, a6) })(
         (b: B) => { val (a1, a2, a3, a4, a5, a6) = f2(b); new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6) }
+      )
+        
+    def apply[B](f1: (A1, A2, A3, A4, A5, A6) => B, f2: B => Option[(A1, A2, A3, A4, A5, A6)])(implicit fu: Invariant[M], d: DummyImplicit): M[B] =
+      fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6, B](
+        canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 => f1(a1, a2, a3, a4, a5, a6) })(
+        (b: B) => { val (a1, a2, a3, a4, a5, a6) = f2(b).get; new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6) }
       )
   }
 
@@ -118,11 +163,20 @@ class FunctionalBuilder[M[_]](canBuild: FunctionalCanBuild[M]) {
 
     def apply[B](f: B => (A1, A2, A3, A4, A5, A6, A7))(implicit fu: Contravariant[M]): M[B] =
       fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7) = f(b); new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7) })
+      
+    def apply[B](f: B => Option[(A1, A2, A3, A4, A5, A6, A7)])(implicit fu: Contravariant[M], d: DummyImplicit): M[B] =
+      fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7) = f(b).get; new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7) })
 
     def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7) => B, f2: B => (A1, A2, A3, A4, A5, A6, A7))(implicit fu: Invariant[M]): M[B] =
       fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7, B](
         canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 => f1(a1, a2, a3, a4, a5, a6, a7) })(
         (b: B) => { val (a1, a2, a3, a4, a5, a6, a7) = f2(b); new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7) }
+      )
+        
+    def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7) => B, f2: B => Option[(A1, A2, A3, A4, A5, A6, A7)])(implicit fu: Invariant[M], d: DummyImplicit): M[B] =
+      fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7, B](
+        canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 => f1(a1, a2, a3, a4, a5, a6, a7) })(
+        (b: B) => { val (a1, a2, a3, a4, a5, a6, a7) = f2(b).get; new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7) }
       )
   }
 
@@ -135,11 +189,20 @@ class FunctionalBuilder[M[_]](canBuild: FunctionalCanBuild[M]) {
 
     def apply[B](f: B => (A1, A2, A3, A4, A5, A6, A7, A8))(implicit fu: Contravariant[M]): M[B] =
       fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8) = f(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8) })
+      
+    def apply[B](f: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8)])(implicit fu: Contravariant[M], d: DummyImplicit): M[B] =
+      fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8) = f(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8) })
 
     def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8) => B, f2: B => (A1, A2, A3, A4, A5, A6, A7, A8))(implicit fu: Invariant[M]): M[B] =
       fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8, B](
         canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 => f1(a1, a2, a3, a4, a5, a6, a7, a8) })(
         (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8) = f2(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8) }
+      )
+        
+    def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8) => B, f2: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8)])(implicit fu: Invariant[M], d: DummyImplicit): M[B] =
+      fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8, B](
+        canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 => f1(a1, a2, a3, a4, a5, a6, a7, a8) })(
+        (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8) = f2(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8) }
       )
   }
 
@@ -152,11 +215,20 @@ class FunctionalBuilder[M[_]](canBuild: FunctionalCanBuild[M]) {
 
     def apply[B](f: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9))(implicit fu: Contravariant[M]): M[B] =
       fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9) = f(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9) })
+      
+    def apply[B](f: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9)])(implicit fu: Contravariant[M], d: DummyImplicit): M[B] =
+      fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9) = f(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9) })
 
     def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9) => B, f2: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9))(implicit fu: Invariant[M]): M[B] =
       fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9, B](
         canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9) })(
         (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9) = f2(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9) }
+      )
+        
+    def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9) => B, f2: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9)])(implicit fu: Invariant[M], d: DummyImplicit): M[B] =
+      fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9, B](
+        canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9) })(
+        (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9) = f2(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9) }
       )
   }
 
@@ -169,11 +241,20 @@ class FunctionalBuilder[M[_]](canBuild: FunctionalCanBuild[M]) {
 
     def apply[B](f: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10))(implicit fu: Contravariant[M]): M[B] =
       fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10) = f(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10) })
+      
+    def apply[B](f: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10)])(implicit fu: Contravariant[M], d: DummyImplicit): M[B] =
+      fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10) = f(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10) })
 
     def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10) => B, f2: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10))(implicit fu: Invariant[M]): M[B] =
       fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9 ~ A10, B](
         canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 ~ a10 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10) })(
         (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10) = f2(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10) }
+      )
+        
+    def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10) => B, f2: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10)])(implicit fu: Invariant[M], d: DummyImplicit): M[B] =
+      fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9 ~ A10, B](
+        canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 ~ a10 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10) })(
+        (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10) = f2(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10) }
       )
   }
 
@@ -186,11 +267,20 @@ class FunctionalBuilder[M[_]](canBuild: FunctionalCanBuild[M]) {
 
     def apply[B](f: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11))(implicit fu: Contravariant[M]): M[B] =
       fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11) = f(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11) })
+      
+    def apply[B](f: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11)])(implicit fu: Contravariant[M], d: DummyImplicit): M[B] =
+      fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11) = f(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11) })
 
     def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11) => B, f2: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11))(implicit fu: Invariant[M]): M[B] =
       fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9 ~ A10 ~ A11, B](
         canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 ~ a10 ~ a11 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11) })(
         (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11) = f2(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11) }
+      )
+        
+    def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11) => B, f2: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11)])(implicit fu: Invariant[M], d: DummyImplicit): M[B] =
+      fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9 ~ A10 ~ A11, B](
+        canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 ~ a10 ~ a11 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11) })(
+        (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11) = f2(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11) }
       )
   }
 
@@ -203,11 +293,20 @@ class FunctionalBuilder[M[_]](canBuild: FunctionalCanBuild[M]) {
 
     def apply[B](f: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12))(implicit fu: Contravariant[M]): M[B] =
       fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12) = f(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12) })
+      
+    def apply[B](f: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12)])(implicit fu: Contravariant[M], d: DummyImplicit): M[B] =
+      fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12) = f(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12) })
 
     def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12) => B, f2: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12))(implicit fu: Invariant[M]): M[B] =
       fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9 ~ A10 ~ A11 ~ A12, B](
         canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 ~ a10 ~ a11 ~ a12 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12) })(
         (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12) = f2(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12) }
+      )
+        
+    def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12) => B, f2: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12)])(implicit fu: Invariant[M], d: DummyImplicit): M[B] =
+      fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9 ~ A10 ~ A11 ~ A12, B](
+        canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 ~ a10 ~ a11 ~ a12 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12) })(
+        (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12) = f2(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12) }
       )
   }
 
@@ -220,11 +319,20 @@ class FunctionalBuilder[M[_]](canBuild: FunctionalCanBuild[M]) {
 
     def apply[B](f: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13))(implicit fu: Contravariant[M]): M[B] =
       fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13) = f(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13) })
+      
+    def apply[B](f: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13)])(implicit fu: Contravariant[M], d: DummyImplicit): M[B] =
+      fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13) = f(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13) })
 
     def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13) => B, f2: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13))(implicit fu: Invariant[M]): M[B] =
       fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9 ~ A10 ~ A11 ~ A12 ~ A13, B](
         canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 ~ a10 ~ a11 ~ a12 ~ a13 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13) })(
         (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13) = f2(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13) }
+      )
+        
+    def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13) => B, f2: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13)])(implicit fu: Invariant[M], d: DummyImplicit): M[B] =
+      fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9 ~ A10 ~ A11 ~ A12 ~ A13, B](
+        canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 ~ a10 ~ a11 ~ a12 ~ a13 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13) })(
+        (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13) = f2(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13) }
       )
   }
 
@@ -237,11 +345,20 @@ class FunctionalBuilder[M[_]](canBuild: FunctionalCanBuild[M]) {
 
     def apply[B](f: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14))(implicit fu: Contravariant[M]): M[B] =
       fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14) = f(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14) })
+      
+    def apply[B](f: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14)])(implicit fu: Contravariant[M], d: DummyImplicit): M[B] =
+      fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14) = f(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14) })
 
     def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14) => B, f2: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14))(implicit fu: Invariant[M]): M[B] =
       fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9 ~ A10 ~ A11 ~ A12 ~ A13 ~ A14, B](
         canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 ~ a10 ~ a11 ~ a12 ~ a13 ~ a14 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14) })(
         (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14) = f2(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14) }
+      )
+        
+    def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14) => B, f2: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14)])(implicit fu: Invariant[M], d: DummyImplicit): M[B] =
+      fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9 ~ A10 ~ A11 ~ A12 ~ A13 ~ A14, B](
+        canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 ~ a10 ~ a11 ~ a12 ~ a13 ~ a14 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14) })(
+        (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14) = f2(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14) }
       )
   }
 
@@ -254,11 +371,20 @@ class FunctionalBuilder[M[_]](canBuild: FunctionalCanBuild[M]) {
 
     def apply[B](f: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15))(implicit fu: Contravariant[M]): M[B] =
       fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15) = f(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15) })
+      
+    def apply[B](f: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15)])(implicit fu: Contravariant[M], d: DummyImplicit): M[B] =
+      fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15) = f(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15) })
 
     def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15) => B, f2: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15))(implicit fu: Invariant[M]): M[B] =
       fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9 ~ A10 ~ A11 ~ A12 ~ A13 ~ A14 ~ A15, B](
         canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 ~ a10 ~ a11 ~ a12 ~ a13 ~ a14 ~ a15 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15) })(
         (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15) = f2(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15) }
+      )
+        
+    def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15) => B, f2: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15)])(implicit fu: Invariant[M], d: DummyImplicit): M[B] =
+      fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9 ~ A10 ~ A11 ~ A12 ~ A13 ~ A14 ~ A15, B](
+        canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 ~ a10 ~ a11 ~ a12 ~ a13 ~ a14 ~ a15 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15) })(
+        (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15) = f2(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15) }
       )
   }
 
@@ -271,11 +397,20 @@ class FunctionalBuilder[M[_]](canBuild: FunctionalCanBuild[M]) {
 
     def apply[B](f: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16))(implicit fu: Contravariant[M]): M[B] =
       fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16) = f(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16) })
+      
+    def apply[B](f: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16)])(implicit fu: Contravariant[M], d: DummyImplicit): M[B] =
+      fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16) = f(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16) })
 
     def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16) => B, f2: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16))(implicit fu: Invariant[M]): M[B] =
       fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9 ~ A10 ~ A11 ~ A12 ~ A13 ~ A14 ~ A15 ~ A16, B](
         canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 ~ a10 ~ a11 ~ a12 ~ a13 ~ a14 ~ a15 ~ a16 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16) })(
         (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16) = f2(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16) }
+      )
+        
+    def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16) => B, f2: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16)])(implicit fu: Invariant[M], d: DummyImplicit): M[B] =
+      fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9 ~ A10 ~ A11 ~ A12 ~ A13 ~ A14 ~ A15 ~ A16, B](
+        canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 ~ a10 ~ a11 ~ a12 ~ a13 ~ a14 ~ a15 ~ a16 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16) })(
+        (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16) = f2(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16) }
       )
   }
 
@@ -288,11 +423,20 @@ class FunctionalBuilder[M[_]](canBuild: FunctionalCanBuild[M]) {
 
     def apply[B](f: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17))(implicit fu: Contravariant[M]): M[B] =
       fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17) = f(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16), a17) })
+      
+    def apply[B](f: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17)])(implicit fu: Contravariant[M], d: DummyImplicit): M[B] =
+      fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17) = f(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16), a17) })
 
     def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17) => B, f2: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17))(implicit fu: Invariant[M]): M[B] =
       fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9 ~ A10 ~ A11 ~ A12 ~ A13 ~ A14 ~ A15 ~ A16 ~ A17, B](
         canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 ~ a10 ~ a11 ~ a12 ~ a13 ~ a14 ~ a15 ~ a16 ~ a17 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17) })(
         (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17) = f2(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16), a17) }
+      )
+        
+    def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17) => B, f2: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17)])(implicit fu: Invariant[M], d: DummyImplicit): M[B] =
+      fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9 ~ A10 ~ A11 ~ A12 ~ A13 ~ A14 ~ A15 ~ A16 ~ A17, B](
+        canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 ~ a10 ~ a11 ~ a12 ~ a13 ~ a14 ~ a15 ~ a16 ~ a17 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17) })(
+        (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17) = f2(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16), a17) }
       )
   }
 
@@ -305,11 +449,20 @@ class FunctionalBuilder[M[_]](canBuild: FunctionalCanBuild[M]) {
 
     def apply[B](f: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18))(implicit fu: Contravariant[M]): M[B] =
       fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18) = f(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16), a17), a18) })
+      
+    def apply[B](f: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18)])(implicit fu: Contravariant[M], d: DummyImplicit): M[B] =
+      fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18) = f(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16), a17), a18) })
 
     def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18) => B, f2: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18))(implicit fu: Invariant[M]): M[B] =
       fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9 ~ A10 ~ A11 ~ A12 ~ A13 ~ A14 ~ A15 ~ A16 ~ A17 ~ A18, B](
         canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 ~ a10 ~ a11 ~ a12 ~ a13 ~ a14 ~ a15 ~ a16 ~ a17 ~ a18 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18) })(
         (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18) = f2(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16), a17), a18) }
+      )
+        
+    def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18) => B, f2: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18)])(implicit fu: Invariant[M], d: DummyImplicit): M[B] =
+      fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9 ~ A10 ~ A11 ~ A12 ~ A13 ~ A14 ~ A15 ~ A16 ~ A17 ~ A18, B](
+        canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 ~ a10 ~ a11 ~ a12 ~ a13 ~ a14 ~ a15 ~ a16 ~ a17 ~ a18 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18) })(
+        (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18) = f2(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16), a17), a18) }
       )
   }
 
@@ -322,11 +475,20 @@ class FunctionalBuilder[M[_]](canBuild: FunctionalCanBuild[M]) {
 
     def apply[B](f: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19))(implicit fu: Contravariant[M]): M[B] =
       fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19) = f(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16), a17), a18), a19) })
+      
+    def apply[B](f: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19)])(implicit fu: Contravariant[M], d: DummyImplicit): M[B] =
+      fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19) = f(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16), a17), a18), a19) })
 
     def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19) => B, f2: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19))(implicit fu: Invariant[M]): M[B] =
       fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9 ~ A10 ~ A11 ~ A12 ~ A13 ~ A14 ~ A15 ~ A16 ~ A17 ~ A18 ~ A19, B](
         canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 ~ a10 ~ a11 ~ a12 ~ a13 ~ a14 ~ a15 ~ a16 ~ a17 ~ a18 ~ a19 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19) })(
         (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19) = f2(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16), a17), a18), a19) }
+      )
+        
+    def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19) => B, f2: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19)])(implicit fu: Invariant[M], d: DummyImplicit): M[B] =
+      fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9 ~ A10 ~ A11 ~ A12 ~ A13 ~ A14 ~ A15 ~ A16 ~ A17 ~ A18 ~ A19, B](
+        canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 ~ a10 ~ a11 ~ a12 ~ a13 ~ a14 ~ a15 ~ a16 ~ a17 ~ a18 ~ a19 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19) })(
+        (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19) = f2(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16), a17), a18), a19) }
       )
   }
 
@@ -339,11 +501,20 @@ class FunctionalBuilder[M[_]](canBuild: FunctionalCanBuild[M]) {
 
     def apply[B](f: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20))(implicit fu: Contravariant[M]): M[B] =
       fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20) = f(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16), a17), a18), a19), a20) })
+      
+    def apply[B](f: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20)])(implicit fu: Contravariant[M], d: DummyImplicit): M[B] =
+      fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20) = f(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16), a17), a18), a19), a20) })
 
     def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20) => B, f2: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20))(implicit fu: Invariant[M]): M[B] =
       fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9 ~ A10 ~ A11 ~ A12 ~ A13 ~ A14 ~ A15 ~ A16 ~ A17 ~ A18 ~ A19 ~ A20, B](
         canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 ~ a10 ~ a11 ~ a12 ~ a13 ~ a14 ~ a15 ~ a16 ~ a17 ~ a18 ~ a19 ~ a20 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20) })(
         (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20) = f2(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16), a17), a18), a19), a20) }
+      )
+        
+    def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20) => B, f2: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20)])(implicit fu: Invariant[M], d: DummyImplicit): M[B] =
+      fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9 ~ A10 ~ A11 ~ A12 ~ A13 ~ A14 ~ A15 ~ A16 ~ A17 ~ A18 ~ A19 ~ A20, B](
+        canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 ~ a10 ~ a11 ~ a12 ~ a13 ~ a14 ~ a15 ~ a16 ~ a17 ~ a18 ~ a19 ~ a20 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20) })(
+        (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20) = f2(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16), a17), a18), a19), a20) }
       )
   }
 
@@ -355,11 +526,20 @@ class FunctionalBuilder[M[_]](canBuild: FunctionalCanBuild[M]) {
 
     def apply[B](f: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20, A21))(implicit fu: Contravariant[M]): M[B] =
       fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21) = f(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16), a17), a18), a19), a20), a21) })
+      
+    def apply[B](f: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20, A21)])(implicit fu: Contravariant[M], d: DummyImplicit): M[B] =
+      fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21) = f(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16), a17), a18), a19), a20), a21) })
 
     def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20, A21) => B, f2: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20, A21))(implicit fu: Invariant[M]): M[B] =
       fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9 ~ A10 ~ A11 ~ A12 ~ A13 ~ A14 ~ A15 ~ A16 ~ A17 ~ A18 ~ A19 ~ A20 ~ A21, B](
         canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 ~ a10 ~ a11 ~ a12 ~ a13 ~ a14 ~ a15 ~ a16 ~ a17 ~ a18 ~ a19 ~ a20 ~ a21 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21) })(
         (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21) = f2(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16), a17), a18), a19), a20), a21) }
+      )
+        
+    def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20, A21) => B, f2: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20, A21)])(implicit fu: Invariant[M], d: DummyImplicit): M[B] =
+      fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9 ~ A10 ~ A11 ~ A12 ~ A13 ~ A14 ~ A15 ~ A16 ~ A17 ~ A18 ~ A19 ~ A20 ~ A21, B](
+        canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 ~ a10 ~ a11 ~ a12 ~ a13 ~ a14 ~ a15 ~ a16 ~ a17 ~ a18 ~ a19 ~ a20 ~ a21 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21) })(
+        (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21) = f2(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16), a17), a18), a19), a20), a21) }
       )
   }
 
@@ -370,11 +550,20 @@ class FunctionalBuilder[M[_]](canBuild: FunctionalCanBuild[M]) {
 
     def apply[B](f: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20, A21, A22))(implicit fu: Contravariant[M]): M[B] =
       fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22) = f(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16), a17), a18), a19), a20), a21), a22) })
+      
+    def apply[B](f: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20, A21, A22)])(implicit fu: Contravariant[M], d: DummyImplicit): M[B] =
+      fu.contramap(canBuild(m1, m2))((b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22) = f(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16), a17), a18), a19), a20), a21), a22) })
 
     def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20, A21, A22) => B, f2: B => (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20, A21, A22))(implicit fu: Invariant[M]): M[B] =
       fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9 ~ A10 ~ A11 ~ A12 ~ A13 ~ A14 ~ A15 ~ A16 ~ A17 ~ A18 ~ A19 ~ A20 ~ A21 ~ A22, B](
         canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 ~ a10 ~ a11 ~ a12 ~ a13 ~ a14 ~ a15 ~ a16 ~ a17 ~ a18 ~ a19 ~ a20 ~ a21 ~ a22 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22) })(
         (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22) = f2(b); new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16), a17), a18), a19), a20), a21), a22) }
+      )
+        
+    def apply[B](f1: (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20, A21, A22) => B, f2: B => Option[(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20, A21, A22)])(implicit fu: Invariant[M], d: DummyImplicit): M[B] =
+      fu.imap[A1 ~ A2 ~ A3 ~ A4 ~ A5 ~ A6 ~ A7 ~ A8 ~ A9 ~ A10 ~ A11 ~ A12 ~ A13 ~ A14 ~ A15 ~ A16 ~ A17 ~ A18 ~ A19 ~ A20 ~ A21 ~ A22, B](
+        canBuild(m1, m2))({ case a1 ~ a2 ~ a3 ~ a4 ~ a5 ~ a6 ~ a7 ~ a8 ~ a9 ~ a10 ~ a11 ~ a12 ~ a13 ~ a14 ~ a15 ~ a16 ~ a17 ~ a18 ~ a19 ~ a20 ~ a21 ~ a22 => f1(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22) })(
+        (b: B) => { val (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22) = f2(b).get; new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(a1, a2), a3), a4), a5), a6), a7), a8), a9), a10), a11), a12), a13), a14), a15), a16), a17), a18), a19), a20), a21), a22) }
       )
   }
 }

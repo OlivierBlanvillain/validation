@@ -252,14 +252,14 @@ class WritesSpec extends Specification {
       implicit val contactInformation = To[JObject] { __ =>
         ((__ \ "label").write[String] ~
           (__ \ "email").write[Option[String]] ~
-          (__ \ "phones").write[Seq[String]]) (unlift(ContactInformation.unapply _))
+          (__ \ "phones").write[Seq[String]]) (ContactInformation.unapply _)
       }
 
       implicit val contactWrite = To[JObject] { __ =>
         ((__ \ "firstname").write[String] ~
          (__ \ "lastname").write[String] ~
          (__ \ "company").write[Option[String]] ~
-         (__ \ "informations").write[Seq[ContactInformation]]) (unlift(Contact.unapply _))
+         (__ \ "informations").write[Seq[ContactInformation]]) (Contact.unapply _)
       }
 
       contactWrite.writes(contact) mustEqual contactJson
@@ -284,18 +284,18 @@ class WritesSpec extends Specification {
       "using explicit notation" in {
         lazy val w: Write[RecUser, JObject] = To[JObject]{ __ =>
           ((__ \ "name").write[String] ~
-           (__ \ "friends").write(seqW(w)))(unlift(RecUser.unapply _))
+           (__ \ "friends").write(seqW(w)))(RecUser.unapply _)
         }
         w.writes(u) mustEqual m
 
         lazy val w2: Write[RecUser, JObject] =
           ((Path \ "name").write[String, JObject] ~
-           (Path \ "friends").write(seqW(w2)))(unlift(RecUser.unapply _))
+           (Path \ "friends").write(seqW(w2)))(RecUser.unapply _)
         w2.writes(u) mustEqual m
 
         lazy val w3: Write[User1, JObject] = To[JObject]{ __ =>
           ((__ \ "name").write[String] ~
-           (__ \ "friend").write(optionW(w3)))(unlift(User1.unapply _))
+           (__ \ "friend").write(optionW(w3)))(User1.unapply _)
         }
         w3.writes(u1) mustEqual m1
       }
@@ -303,13 +303,13 @@ class WritesSpec extends Specification {
       "using implicit notation" in {
         implicit lazy val w: Write[RecUser, JObject] = To[JObject]{ __ =>
           ((__ \ "name").write[String] ~
-           (__ \ "friends").write[Seq[RecUser]])(unlift(RecUser.unapply _))
+           (__ \ "friends").write[Seq[RecUser]])(RecUser.unapply _)
         }
         w.writes(u) mustEqual m
 
         implicit lazy val w3: Write[User1, JObject] = To[JObject]{ __ =>
           ((__ \ "name").write[String] ~
-           (__ \ "friend").write[Option[User1]])(unlift(User1.unapply _))
+           (__ \ "friend").write[Option[User1]])(User1.unapply _)
         }
         w3.writes(u1) mustEqual m1
       }

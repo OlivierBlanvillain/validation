@@ -20,6 +20,7 @@ package object validation {
   type Constraint[T] = Mapping[ValidationError, T, T]
   type VA[O] = Validation[(Path, Seq[ValidationError]), O]
   
+  @deprecated("unlift can now be omitted", "2.0")
   def unlift[A, B](f: A => Option[B]): A => B = Function.unlift(f)
   
   implicit def toFunctionalBuilderOps[M[_], A](a: M[A])(implicit fcb: FunctionalCanBuild[M]): FunctionalBuilderOps[M, A] = new FunctionalBuilderOps[M, A](a)(fcb)
