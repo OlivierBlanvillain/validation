@@ -31,7 +31,7 @@ object Boilerplate {
     val template = FunctionalBuilder
     val tgtFile = template.filename(dir)
     IO.write(tgtFile, template.body)
-    tgtFile
+    Seq(tgtFile)
   }
 
   class TemplateVals(val arity: Int) {
@@ -94,6 +94,11 @@ object Boilerplate {
       else
         ""
 
+      val and = if (arity + 1 <= maxArity)
+        s"def and[A$arity](m3: M[A$arity]) = this.~(m3)"
+      else
+        ""
+
       block"""
         |package jto.validation
         |
@@ -117,6 +122,8 @@ object Boilerplate {
         |
         -  class CanBuild$arity[${`A..N`}](m1: M[${`A~N-1`}], m2: M[A${arity-1}]) {
         -    $next
+        -
+        -    $and
         -    
         -    def apply[B](f: (${`A..N`}) => B)(implicit fu: Functor[M]): M[B] =
         -      fu.map[${`A~N`}, B](canBuild(m1, m2))({ case ${`a~n`} => f(${`a..n`}) })

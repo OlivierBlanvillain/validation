@@ -98,10 +98,14 @@ scala> case class Computer(id: Option[Long] = None, name: String, introduced: Op
 defined class Computer
 
 scala> import play.api.data.mapping._
-import play.api.data.mapping._
+<console>:12: error: object mapping is not a member of package play.api.data
+       import play.api.data.mapping._
+                            ^
 
 scala> import play.api.data.mapping.forms.UrlFormEncoded
-import play.api.data.mapping.forms.UrlFormEncoded
+<console>:12: error: object mapping is not a member of package play.api.data
+       import play.api.data.mapping.forms.UrlFormEncoded
+                            ^
 
 scala> implicit val computerValidation = From[UrlFormEncoded] { __ =>
      |   import play.api.data.mapping.forms.Rules._
@@ -111,7 +115,15 @@ scala> implicit val computerValidation = From[UrlFormEncoded] { __ =>
      |    (__ \ "discontinued").read(optionR(date("yyyy-MM-dd"))) ~
      |    (__ \ "company").read[Option[Long]]) (Computer.apply _)
      | }
-computerValidation: play.api.data.mapping.Rule[play.api.data.mapping.forms.UrlFormEncoded,Computer] = play.api.data.mapping.Rule$$anon$2@7528e567
+<console>:14: error: not found: value From
+       implicit val computerValidation = From[UrlFormEncoded] { __ =>
+                                         ^
+<console>:14: error: not found: type UrlFormEncoded
+       implicit val computerValidation = From[UrlFormEncoded] { __ =>
+                                              ^
+<console>:15: error: object mapping is not a member of package play.api.data
+         import play.api.data.mapping.forms.Rules._
+                              ^
 ```
 
 You start by defining a simple validation for each field.
@@ -147,10 +159,8 @@ You can use the `Form.fill` method to create a `Form` from a class.
 `Form.fill` needs an instance of `Write[T, UrlFormEncoded]`, where `T` is your class type.
 
 ```scala
-scala>  import play.api.libs.functional.syntax.unlift
-import play.api.libs.functional.syntax.unlift
-
-scala> implicit val computerW = To[UrlFormEncoded] { __ =>
+     |  import play.api.libs.functional.syntax.unlift
+     | implicit val computerW = To[UrlFormEncoded] { __ =>
      |   import play.api.data.mapping.forms.Writes._
      |   ((__ \ "id").write[Option[Long]] ~
      |    (__ \ "name").write[String] ~
@@ -158,7 +168,6 @@ scala> implicit val computerW = To[UrlFormEncoded] { __ =>
      |    (__ \ "discontinued").write(optionW(date("yyyy-MM-dd"))) ~
      |    (__ \ "company").write[Option[Long]]) (unlift(Computer.unapply _))
      | }
-computerW: play.api.data.mapping.Write[Computer,play.api.data.mapping.forms.UrlFormEncoded] = play.api.data.mapping.Write$$anon$2@30ac3e92
 ```
 
 > Note that this `Write` takes care of formatting.

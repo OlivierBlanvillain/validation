@@ -11,10 +11,13 @@ All you need to do is to define a `Write` from `Float` to `String`:
 
 ```scala
 scala> import play.api.data.mapping._
-import play.api.data.mapping._
-
+<console>:11: error: object mapping is not a member of package play.api.data
+       import play.api.data.mapping._
+                            ^
 scala> def floatToString: Write[Float, String] = ???
-floatToString: play.api.data.mapping.Write[Float,String]
+<console>:11: error: not found: type Write
+       def floatToString: Write[Float, String] = ???
+                          ^
 ```
 
 For now we'll not implement `floatToString`, actually the validation API comes with a number of built-in Writes, including `Writes.floatW[T]`.
@@ -23,20 +26,26 @@ All you have to do is import the default Writes.
 
 ```scala
 scala> object Writes extends NumericTypes2StringWrites
-defined object Writes
-
+<console>:11: error: not found: type NumericTypes2StringWrites
+       object Writes extends NumericTypes2StringWrites
+                             ^
 scala> Writes.floatW
-res0: play.api.data.mapping.Write[Float,String] = play.api.data.mapping.Write$$anon$3@809ec6d
+<console>:12: error: not found: value Writes
+       Writes.floatW
+       ^
 ```
 
 Let's now test it against different `Float` values:
 
 ```scala
 scala> Writes.floatW.writes(12.8F)
-res1: String = 12.8
-
+<console>:12: error: not found: value Writes
+       Writes.floatW.writes(12.8F)
+       ^
 scala> Writes.floatW.writes(12F)
-res2: String = 12.0
+<console>:12: error: not found: value Writes
+       Writes.floatW.writes(12F)
+       ^
 ```
 
 ## Defining your own `Write`
@@ -51,14 +60,15 @@ scala> val currency = Write[Double, String]{ money =>
      |   val f = NumberFormat.getCurrencyInstance(Locale.FRANCE)
      |   f.format(money)
      | }
-currency: play.api.data.mapping.Write[Double,String] = play.api.data.mapping.Write$$anon$3@31a53c55
+<console>:11: error: not found: value Write
+       val currency = Write[Double, String]{ money =>
+                      ^
 ```
 
 Testing it:
 
 ```scala
-scala> currency.writes(9.99)
-res3: String = 9,99 €
+     | currency.writes(9.99)
 ```
 
 ## Composing Writes
@@ -71,8 +81,7 @@ Let's see we're working working on a e-commerce website. We have defined a `Prod
 Each product has a name and a price:
 
 ```scala
-scala> case class Product(name: String, price: Double)
-defined class Product
+     | case class Product(name: String, price: Double)
 ```
 
 Now we'd like to create a `Write[Product, String]` that serializes a product to a `String` of it price: `Product("demo", 123)` becomes `123,00 €`
@@ -81,22 +90,19 @@ We have already defined `currency: Write[Double, String]`, so we'd like to reuse
 First, we'll create a `Write[Product, Double]` extracting the price of the product:
 
 ```scala
-scala> val productPrice = Write[Product, Double]{ _.price }
-productPrice: play.api.data.mapping.Write[Product,Double] = play.api.data.mapping.Write$$anon$3@4852c923
+     | val productPrice = Write[Product, Double]{ _.price }
 ```
 
 Now we just have to compose it with `currency`:
 
 ```scala
-scala> val productAsPrice: Write[Product,String] = productPrice compose currency
-productAsPrice: play.api.data.mapping.Write[Product,String] = play.api.data.mapping.Write$$anon$3@7c5768c1
+     | val productAsPrice: Write[Product,String] = productPrice compose currency
 ```
 
 Let's test our new `Write`:
 
 ```scala
-scala> productAsPrice.writes(Product("Awesome product", 9.99))
-res4: String = 9,99 €
+     | productAsPrice.writes(Product("Awesome product", 9.99))
 ```
 
 > **Next:** [Complex serialization with Writes combinators](ScalaValidationWriteCombinators.md)

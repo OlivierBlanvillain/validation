@@ -71,10 +71,16 @@ The validation API defines a class named `Path`. A `Path` represents a location.
 
 ```scala
 scala> import play.api.data.mapping.Path
-import play.api.data.mapping.Path
-
+<console>:14: error: object mapping is not a member of package play.api.data
+       import play.api.data.mapping.Path
+                            ^
 scala> val location: Path = Path \ "user" \ "friend"
-location: play.api.data.mapping.Path = /user/friend
+<console>:14: error: not found: type Path
+       val location: Path = Path \ "user" \ "friend"
+                     ^
+<console>:14: error: not found: value Path
+       val location: Path = Path \ "user" \ "friend"
+                            ^
 ```
 
 `Path` has a `read` method. Just as in the Json API, read will build a `Rule` looking for data of the given type, at that location.
@@ -86,12 +92,17 @@ But let's try something much much easier for now:
 
 ```scala
 scala> import play.api.data.mapping.Rule
-import play.api.data.mapping.Rule
+<console>:14: error: object mapping is not a member of package play.api.data
+       import play.api.data.mapping.Rule
+                            ^
 
 scala> val findFriend: Rule[JsValue, JsValue] = location.read[JsValue, JsValue]
-<console>:14: error: No implicit view available from play.api.data.mapping.Path => play.api.data.mapping.RuleLike[play.api.libs.json.JsValue,play.api.libs.json.JsValue].
+<console>:14: error: not found: type Rule
        val findFriend: Rule[JsValue, JsValue] = location.read[JsValue, JsValue]
-                                                             ^
+                       ^
+<console>:14: error: not found: value location
+       val findFriend: Rule[JsValue, JsValue] = location.read[JsValue, JsValue]
+                                                ^
 ```
 
 `location.read[JsValue, JsValue]` means the we're trying lookup at `location` in a `JsValue`, and we expect to find a `JsValue` there. Effectivelly, we're just defining a `Rule` that is picking a subtree in a Json.
@@ -102,7 +113,9 @@ The scala compiler is complaining about not finding an implicit Function of type
 
 ```scala
 scala> import play.api.data.mapping.json.Rules._
-import play.api.data.mapping.json.Rules._
+<console>:14: error: object mapping is not a member of package play.api.data
+       import play.api.data.mapping.json.Rules._
+                            ^
 ```
 
 By convention, all usefull validation methods for a given type are to be found in an object called `Rules`. That object contains a bunch of implicits defining how to lookup in the data, and how to coerce some of the possible values of those data into Scala types.
@@ -111,7 +124,12 @@ With those implicits in scope, we can finally create our `Rule`.
 
 ```scala
 scala> val findFriend: Rule[JsValue, JsValue] = location.read[JsValue, JsValue]
-findFriend: play.api.data.mapping.Rule[play.api.libs.json.JsValue,play.api.libs.json.JsValue] = play.api.data.mapping.Rule$$anon$1@9f77d6
+<console>:14: error: not found: type Rule
+       val findFriend: Rule[JsValue, JsValue] = location.read[JsValue, JsValue]
+                       ^
+<console>:14: error: not found: value location
+       val findFriend: Rule[JsValue, JsValue] = location.read[JsValue, JsValue]
+                                                ^
 ```
 
 Alright, so far we've defined a `Rule` looking for some data of type JsValue, in an object of type JsValue, at `/user/friend`.
@@ -119,7 +137,9 @@ Now we need to apply this `Rule` to our data.
 
 ```scala
 scala> findFriend.validate(json)
-res0: play.api.data.mapping.VA[play.api.libs.json.JsValue] = Success({"name":"tata","age":20,"email":"tata@coldmail.com"})
+<console>:16: error: not found: value findFriend
+       findFriend.validate(json)
+       ^
 ```
 
 When we apply a `Rule`, we have no guarantee whatsoever that it's going to succeed. There's various things that could fail, so instead of just returning some data of type `O`, `validate` returns an instance of `Validation`.
@@ -129,7 +149,9 @@ Let's try something that we know will fail: We'll try to lookup for a JsValue at
 
 ```scala
 scala> (Path \ "somenonexistinglocation").read[JsValue, JsValue].validate(json)
-res1: play.api.data.mapping.VA[play.api.libs.json.JsValue] = Failure(List((/somenonexistinglocation,List(ValidationError(error.required,WrappedArray())))))
+<console>:16: error: not found: value Path
+       (Path \ "somenonexistinglocation").read[JsValue, JsValue].validate(json)
+        ^
 ```
 
 This time `validate` returns `Failure`. There's nothing at `somenonexistinglocation` and this failure tells us just that. We required a `JsValue` to be found at that Path, but our requirement was not fullfiled. Note that the `Failure` does not just contain a `Path` and an error message. It contains a `List[(Path, List[ValidationError])]`. We'll see later that a  single validation could find several errors at a given `Path`, AND find errors at different `Path`

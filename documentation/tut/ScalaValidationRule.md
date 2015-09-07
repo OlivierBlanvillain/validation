@@ -11,10 +11,13 @@ All you need to do is to define a `Rule` from String to Float:
 
 ```scala
 scala> import play.api.data.mapping._
-import play.api.data.mapping._
-
+<console>:11: error: object mapping is not a member of package play.api.data
+       import play.api.data.mapping._
+                            ^
 scala>  def isFloat: Rule[String, Float] = ???
-isFloat: play.api.data.mapping.Rule[String,Float]
+<console>:11: error: not found: type Rule
+        def isFloat: Rule[String, Float] = ???
+                     ^
  ```
 
 When a `String` is parsed into an `Float`, two scenario are possible, either:
@@ -34,39 +37,51 @@ All you have to do is import the default Rules.
 
 ```scala
 scala> import play.api.data.mapping._
-import play.api.data.mapping._
-
+<console>:11: error: object mapping is not a member of package play.api.data
+       import play.api.data.mapping._
+                            ^
 scala> object Rules extends GenericRules with ParsingRules
-defined object Rules
-
+<console>:11: error: not found: type GenericRules
+       object Rules extends GenericRules with ParsingRules
+                            ^
+<console>:11: error: not found: type ParsingRules
+       object Rules extends GenericRules with ParsingRules
+                                              ^
 scala> Rules.floatR
-res0: play.api.data.mapping.Rule[String,Float] = play.api.data.mapping.Rule$$anon$1@5c2f09b9
+<console>:12: error: not found: value Rules
+       Rules.floatR
+       ^
 ```
 
 Let's now test it against different String values:
 
 ```scala
 scala> Rules.floatR.validate("1")
-res1: play.api.data.mapping.VA[Float] = Success(1.0)
-
+<console>:12: error: not found: value Rules
+       Rules.floatR.validate("1")
+       ^
 scala> Rules.floatR.validate("-13.7")
-res2: play.api.data.mapping.VA[Float] = Success(-13.7)
-
+<console>:12: error: not found: value Rules
+       Rules.floatR.validate("-13.7")
+       ^
 scala> Rules.floatR.validate("abc")
-res3: play.api.data.mapping.VA[Float] = Failure(List((/,List(ValidationError(error.number,WrappedArray(Float))))))
+<console>:12: error: not found: value Rules
+       Rules.floatR.validate("abc")
+       ^
 ```
 
 > `Rule` is typesafe. You can't apply a `Rule` on an unsupported type, the compiler won't let you:
 >
 ```scala
 scala> Rules.floatR
-res4: play.api.data.mapping.Rule[String,Float] = play.api.data.mapping.Rule$$anon$1@72fc446e
+<console>:12: error: not found: value Rules
+       Rules.floatR
+       ^
+
 scala> Rules.floatR.validate(Seq(32))
-<console>:16: error: type mismatch;
- found   : Seq[Int]
- required: String
-              Rules.floatR.validate(Seq(32))
-                                       ^
+<console>:12: error: not found: value Rules
+       Rules.floatR.validate(Seq(32))
+       ^
 ```
 
 "abc" is not a valid `Float` but no exception was thrown. Instead of relying on exceptions, `validate` is returning an object of type `Validation` (here `VA` is just a fancy alias for a special kind of validation).
@@ -94,33 +109,40 @@ scala> val headInt: Rule[List[Int], Int] = Rule.fromMapping {
      |   case Nil => Failure(Seq(ValidationError("error.emptyList")))
      |   case head :: _ => Success(head)
      | }
-headInt: play.api.data.mapping.Rule[List[Int],Int] = play.api.data.mapping.Rule$$anon$1@65e450d9
+<console>:11: error: not found: type Rule
+       val headInt: Rule[List[Int], Int] = Rule.fromMapping {
+                    ^
+<console>:11: error: not found: value Rule
+       val headInt: Rule[List[Int], Int] = Rule.fromMapping {
+                                           ^
+<console>:12: error: not found: value Failure
+         case Nil => Failure(Seq(ValidationError("error.emptyList")))
+                     ^
+<console>:12: error: not found: value ValidationError
+         case Nil => Failure(Seq(ValidationError("error.emptyList")))
+                                 ^
+<console>:13: error: not found: value Success
+         case head :: _ => Success(head)
+                           ^
 ```
 
 ```scala
-scala> headInt.validate(List(1, 2, 3, 4, 5))
-res6: play.api.data.mapping.VA[Int] = Success(1)
-
-scala> headInt.validate(Nil)
-res7: play.api.data.mapping.VA[Int] = Failure(List((/,List(ValidationError(error.emptyList,WrappedArray())))))
+     | headInt.validate(List(1, 2, 3, 4, 5))
+     | headInt.validate(Nil)
 ```
 
 We can make this rule a bit more generic:
 
 ```scala
-scala> def head[T]: Rule[List[T], T] = Rule.fromMapping {
+     | def head[T]: Rule[List[T], T] = Rule.fromMapping {
      |   case Nil => Failure(Seq(ValidationError("error.emptyList")))
      |   case head :: _ => Success(head)
      | }
-head: [T]=> play.api.data.mapping.Rule[List[T],T]
 ```
 
 ```scala
-scala> head.validate(List('a', 'b', 'c', 'd'))
-res8: play.api.data.mapping.VA[Char] = Success(a)
-
-scala> head.validate(List[Char]())
-res9: play.api.data.mapping.VA[Char] = Failure(List((/,List(ValidationError(error.emptyList,WrappedArray())))))
+     | head.validate(List('a', 'b', 'c', 'd'))
+     | head.validate(List[Char]())
 ```
 
 ## Composing Rules
@@ -145,49 +167,27 @@ We've done almost all the work already. We just have to create a new `Rule` the 
 It would be fairly easy to create such a `Rule` "manually", but we don't have to. A method doing just that is already available:
 
 ```scala
-scala> val firstFloat: Rule[List[String], Float] = head.compose(Rules.floatR)
-firstFloat: play.api.data.mapping.Rule[List[String],Float] = play.api.data.mapping.Rule$$anon$1@323e95e8
-
-scala> firstFloat.validate(List("1", "2"))
-res10: play.api.data.mapping.VA[Float] = Success(1.0)
-
-scala> firstFloat.validate(List("1.2", "foo"))
-res11: play.api.data.mapping.VA[Float] = Success(1.2)
+     | val firstFloat: Rule[List[String], Float] = head.compose(Rules.floatR)
+     | firstFloat.validate(List("1", "2"))
+     | firstFloat.validate(List("1.2", "foo"))
 ```
 
 If the list is empty, we get the error from `head`
 
 ```scala
-scala> firstFloat.validate(List())
-res12: play.api.data.mapping.VA[Float] = Failure(List((/,List(ValidationError(error.emptyList,WrappedArray())))))
+     | firstFloat.validate(List())
 ```
 
 If the first element is not parseable, we get the error from `Rules.float`.
 
 ```scala
-scala> firstFloat.validate(List("foo", "2"))
-res13: play.api.data.mapping.VA[Float] = Failure(List((/,List(ValidationError(error.number,WrappedArray(Float))))))
+     | firstFloat.validate(List("foo", "2"))
 ```
 
 Of course everything is still typesafe:
 
 ```scala
-scala> firstFloat.validate(List(1, 2, 3))
-<console>:18: error: type mismatch;
- found   : Int(1)
- required: String
-              firstFloat.validate(List(1, 2, 3))
-                                       ^
-<console>:18: error: type mismatch;
- found   : Int(2)
- required: String
-              firstFloat.validate(List(1, 2, 3))
-                                          ^
-<console>:18: error: type mismatch;
- found   : Int(3)
- required: String
-              firstFloat.validate(List(1, 2, 3))
-                                             ^
+     | firstFloat.validate(List(1, 2, 3))
 ```
 
 #### Improving reporting.
@@ -198,11 +198,8 @@ When a parsing error happens, the `Failure` does not tells us that it happened o
 To fix that, we can pass  an additionnal parameter to `compose`:
 
 ```scala
-scala> val firstFloat2: Rule[List[String],Float] = head.compose(Path \ 0)(Rules.floatR)
-firstFloat2: play.api.data.mapping.Rule[List[String],Float] = play.api.data.mapping.Rule$$anon$1@2ed8bb8d
-
-scala> firstFloat2.validate(List("foo", "2"))
-res15: play.api.data.mapping.VA[Float] = Failure(List(([0],List(ValidationError(error.number,WrappedArray(Float))))))
+     | val firstFloat2: Rule[List[String],Float] = head.compose(Path \ 0)(Rules.floatR)
+     | firstFloat2.validate(List("foo", "2"))
 ```
 
 ### "Parallel" composition
@@ -215,34 +212,23 @@ Consider the following example: We want to write a `Rule` that given a `Int`, ch
 The validation API already provides `Rules.min`, we have to define `even` ourselves:
 
 ```scala
-scala> val positive: Rule[Int,Int] = Rules.min(0)
-positive: play.api.data.mapping.Rule[Int,Int] = play.api.data.mapping.Rule$$anon$1@610755cb
-
-scala> val even: Rule[Int,Int] = Rules.validateWith[Int]("error.even"){ _ % 2 == 0 }
-even: play.api.data.mapping.Rule[Int,Int] = play.api.data.mapping.Rule$$anon$1@332605a1
+     | val positive: Rule[Int,Int] = Rules.min(0)
+     | val even: Rule[Int,Int] = Rules.validateWith[Int]("error.even"){ _ % 2 == 0 }
 ```
 
 Now we can compose those rules using `|+|`
 
 ```scala
-scala> val positiveAndEven: Rule[Int,Int] = positive |+| even
-positiveAndEven: play.api.data.mapping.Rule[Int,Int] = play.api.data.mapping.Rule$$anon$1@6283ed44
+     | val positiveAndEven: Rule[Int,Int] = positive |+| even
 ```
 
 Let's test our new `Rule`:
 
 ```scala
-scala> positiveAndEven.validate(12)
-res16: play.api.data.mapping.VA[Int] = Success(12)
-
-scala> positiveAndEven.validate(-12)
-res17: play.api.data.mapping.VA[Int] = Failure(ArrayBuffer((/,List(ValidationError(error.min,WrappedArray(0))))))
-
-scala> positiveAndEven.validate(13)
-res18: play.api.data.mapping.VA[Int] = Failure(ArrayBuffer((/,List(ValidationError(error.even,WrappedArray())))))
-
-scala> positiveAndEven.validate(-13)
-res19: play.api.data.mapping.VA[Int] = Failure(ArrayBuffer((/,List(ValidationError(error.min,WrappedArray(0)), ValidationError(error.even,WrappedArray())))))
+     | positiveAndEven.validate(12)
+     | positiveAndEven.validate(-12)
+     | positiveAndEven.validate(13)
+     | positiveAndEven.validate(-13)
 ```
 
 Note that both rules are applied. If both fail, we get two `ValidationError`.

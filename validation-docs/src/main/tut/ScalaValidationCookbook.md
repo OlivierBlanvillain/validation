@@ -7,26 +7,26 @@
 ### Typical case class validation
 
 ```tut
-	import play.api.libs.json._, play.api.data.mapping._
+import jto.validation._, jto.validation.json._, play.api.libs.json._
 
-  case class Creature(
-    name: String,
-    isDead: Boolean,
-    weight: Float)
+case class Creature(
+  name: String,
+  isDead: Boolean,
+  weight: Float)
 
-  implicit val creatureRule = From[JsValue]{ __ =>
-    import play.api.data.mapping.json.Rules._
-    (
-      (__ \ "name").read[String] ~
-      (__ \ "isDead").read[Boolean] ~
-      (__ \ "weight").read[Float]
-    )(Creature.apply _)
-  }
+implicit val creatureRule = From[JsValue]{ __ =>
+  import Rules._
+  (
+    (__ \ "name").read[String] ~
+    (__ \ "isDead").read[Boolean] ~
+    (__ \ "weight").read[Float]
+  )(Creature.apply _)
+}
 
-  val js = Json.obj( "name" -> "gremlins", "isDead" -> false, "weight" -> 1.0f)
-  From[JsValue, Creature](js)
+val js = Json.obj( "name" -> "gremlins", "isDead" -> false, "weight" -> 1.0f)
+From[JsValue, Creature](js)
 
-  From[JsValue, Creature](Json.obj())
+From[JsValue, Creature](Json.obj())
 ```
 
 ### Dependent values
@@ -37,14 +37,10 @@ A common example of this use case is the validation of `password` and `password 
 2. Then, given the two values, you need to validate that they are equals.
 
 ```tut
-import play.api.libs.json._
-import play.api.libs.functional._
-import play.api.libs.functional.syntax._
-
-import play.api.data.mapping._
+import jto.validation._, jto.validation.json._, play.api.libs.json._
 
 val passRule = From[JsValue] { __ =>
-  import play.api.data.mapping.json.Rules, Rules._
+  import Rules._
   // This code creates a `Rule[JsValue, (String, String)]` each of of the String must be non-empty
   ((__ \ "password").read(notEmpty) ~
    (__ \ "verify").read(notEmpty)).tupled
@@ -84,16 +80,16 @@ case class User(
 ```
 
 ```tut
-import play.api.libs.json._, play.api.data.mapping._
+import jto.validation._, jto.validation.json._, play.api.libs.json._
 
 // Note the lazy keyword, and the explicit typing
 implicit lazy val userRule: Rule[JsValue, User] = From[JsValue] { __ =>
-  import play.api.data.mapping.json.Rules._
+  import Rules._
 
-  ((__ \ "name").read[String] and
-   (__ \ "age").read[Int] and
-   (__ \ "email").read[Option[String]] and
-   (__ \ "isAlive").read[Boolean] and
+  ((__ \ "name").read[String] ~
+   (__ \ "age").read[Int] ~
+   (__ \ "email").read[Option[String]] ~
+   (__ \ "isAlive").read[Boolean] ~
    (__ \ "friend").read[Option[User]])(User.apply _)
 }
 ```
@@ -101,7 +97,7 @@ implicit lazy val userRule: Rule[JsValue, User] = From[JsValue] { __ =>
 or using macros:
 
 ```tut
-import play.api.libs.json._, play.api.data.mapping._, play.api.data.mapping.json.Rules._
+import jto.validation._, jto.validation.json.Rules._, play.api.libs.json._
 
 // Note the lazy keyword, and the explicit typing
 implicit lazy val userRule: Rule[JsValue, User] = Rule.gen[JsValue, User]
@@ -110,7 +106,7 @@ implicit lazy val userRule: Rule[JsValue, User] = Rule.gen[JsValue, User]
 ### Read keys
 
 ```tut
-import play.api.libs.json._, play.api.data.mapping._
+import jto.validation._, jto.validation.json._, play.api.libs.json._
 
 val js = Json.parse("""
 {
@@ -122,10 +118,10 @@ val js = Json.parse("""
 """)
 
 val r = From[JsValue] { __ =>
-  import play.api.data.mapping.json.Rules._
+  import Rules._
 
-  val tupleR = Rule.fromMapping[JsValue, (String, String)]{
-    case JsObject(Seq((key, JsString(value)))) =>  Success(key -> value)
+  val tupleR = Rule.fromMapping[JsValue, (String, String)] {
+    case JsObject(Seq((key, JsString(value)))) => Success(key.toString -> value)
     case _ => Failure(Seq(ValidationError("BAAAM")))
   }
 
@@ -152,13 +148,13 @@ val e = Json.obj("name" -> "E", "eee" -> 6)
 #### Trying all the possible rules implementations
 
 ```tut
-val rb: Rule[JsValue, A] = From[JsValue]{ __ =>
-  import play.api.data.mapping.json.Rules, Rules._
+val rb: Rule[JsValue, A] = From[JsValue] { __ =>
+  import jto.validation.json.Rules._
   (__ \ "name").read(Rules.equalTo("B")) *> (__ \ "foo").read[Int].map(B.apply _)
 }
 
-val rc: Rule[JsValue, A] = From[JsValue]{ __ =>
-  import play.api.data.mapping.json.Rules, Rules._
+val rc: Rule[JsValue, A] = From[JsValue] { __ =>
+  import jto.validation.json.Rules._
   (__ \ "name").read(Rules.equalTo("C")) *> (__ \ "bar").read[Int].map(C.apply _)
 }
 
@@ -176,7 +172,7 @@ rule.validate(e)
 val typeFailure = Failure(Seq(Path -> Seq(ValidationError("validation.unknownType"))))
 
 val rule = From[JsValue] { __ =>
-	import play.api.data.mapping.json.Rules._
+  import jto.validation.json.Rules._
 	(__ \ "name").read[String].flatMap[A] {
 	  case "B" => (__ \ "foo").read[Int].map(B.apply _)
 	  case "C" => (__ \ "bar").read[Int].map(C.apply _)
@@ -194,22 +190,20 @@ rule.validate(e)
 ### typical case class `Write`
 
 ```tut
-import play.api.libs.json._
-import play.api.data.mapping._
-import play.api.libs.functional.syntax.unlift
+import jto.validation._, jto.validation.json._, play.api.libs.json.JsObject
 
 case class Creature(
   name: String,
   isDead: Boolean,
   weight: Float)
 
-implicit val creatureWrite = To[JsObject]{ __ =>
-  import play.api.data.mapping.json.Writes._
+implicit val creatureWrite = To[JsObject] { __ =>
+  import Writes._
   (
     (__ \ "name").write[String] ~
     (__ \ "isDead").write[Boolean] ~
     (__ \ "weight").write[Float]
-  )(unlift(Creature.unapply _))
+  )(Creature.unapply _)
 }
 
 To[Creature, JsObject](Creature("gremlins", false, 1f))
@@ -218,26 +212,22 @@ To[Creature, JsObject](Creature("gremlins", false, 1f))
 ### Adding static values to a `Write`
 
 ```tut
-import play.api.libs.json._
-import play.api.libs.functional._
-import play.api.libs.functional.syntax._
-
-import play.api.data.mapping._
+import jto.validation._, jto.validation.json._, play.api.libs.json._
 
 case class LatLong(lat: Float, long: Float)
 
 implicit val latLongWrite = {
-  import play.api.data.mapping.json.Writes._
+  import Writes._
   To[JsObject] { __ =>
     ((__ \ "lat").write[Float] ~
-     (__ \ "long").write[Float])(unlift(LatLong.unapply _))
+     (__ \ "long").write[Float])(LatLong.unapply _)
   }
 }
 
 case class Point(coords: LatLong)
 
 implicit val pointWrite = {
-  import play.api.data.mapping.json.Writes._
+  import jto.validation.json.Writes._
   To[JsObject] { __ =>
     ((__ \ "coords").write[LatLong] ~
      (__ \ "type").write[String])((_: Point).coords -> "point")
@@ -247,8 +237,3 @@ implicit val pointWrite = {
 val p = Point(LatLong(123.3F, 334.5F))
 pointWrite.writes(p)
 ```
-
-
-
-
-
