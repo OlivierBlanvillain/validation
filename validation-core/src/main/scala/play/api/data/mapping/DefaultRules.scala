@@ -157,8 +157,6 @@ trait GenericRules {
    */
   implicit def setR[I, O](implicit r: RuleLike[I, O]): Rule[Seq[I], Set[O]] =
     seqR[I, O](r).map(_.toSet)
-    // Rule.functorRule[Seq[I]]
-    //   .map(seqR[I, O](r))(_.toSet)
 
   /**
    * lift a `Rule[I, O]` to a Rule of `Rule[Seq[I], Seq[O]]`
@@ -188,6 +186,7 @@ trait GenericRules {
    */
   implicit def listR[I, O](implicit r: RuleLike[I, O]): Rule[Seq[I], List[O]] =
     seqR[I, O](r).map(_.toList)
+
   /**
    * Create a Rule validation that a Seq[I] is not empty, and attempt to convert it's first element as a `O`
    * {{{

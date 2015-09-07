@@ -198,13 +198,13 @@ e: play.api.libs.json.JsObject = {"name":"E","eee":6}
 ```scala
 scala> val rb: Rule[JsValue, A] = From[JsValue]{ __ =>
      |   import play.api.data.mapping.json.Rules, Rules._
-     |   (__ \ "name").read(Rules.equalTo("B")) ~> (__ \ "foo").read[Int].map(B.apply _)
+     |   (__ \ "name").read(Rules.equalTo("B")) *> (__ \ "foo").read[Int].map(B.apply _)
      | }
 rb: play.api.data.mapping.Rule[play.api.libs.json.JsValue,A] = play.api.data.mapping.Rule$$anon$2@4dbfbe84
 
 scala> val rc: Rule[JsValue, A] = From[JsValue]{ __ =>
      |   import play.api.data.mapping.json.Rules, Rules._
-     |   (__ \ "name").read(Rules.equalTo("C")) ~> (__ \ "bar").read[Int].map(C.apply _)
+     |   (__ \ "name").read(Rules.equalTo("C")) *> (__ \ "bar").read[Int].map(C.apply _)
      | }
 rc: play.api.data.mapping.Rule[play.api.libs.json.JsValue,A] = play.api.data.mapping.Rule$$anon$2@7e21b559
 

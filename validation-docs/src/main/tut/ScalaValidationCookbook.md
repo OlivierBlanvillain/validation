@@ -154,12 +154,12 @@ val e = Json.obj("name" -> "E", "eee" -> 6)
 ```tut
 val rb: Rule[JsValue, A] = From[JsValue]{ __ =>
   import play.api.data.mapping.json.Rules, Rules._
-  (__ \ "name").read(Rules.equalTo("B")) ~> (__ \ "foo").read[Int].map(B.apply _)
+  (__ \ "name").read(Rules.equalTo("B")) *> (__ \ "foo").read[Int].map(B.apply _)
 }
 
 val rc: Rule[JsValue, A] = From[JsValue]{ __ =>
   import play.api.data.mapping.json.Rules, Rules._
-  (__ \ "name").read(Rules.equalTo("C")) ~> (__ \ "bar").read[Int].map(C.apply _)
+  (__ \ "name").read(Rules.equalTo("C")) *> (__ \ "bar").read[Int].map(C.apply _)
 }
 
 val typeFailure = Failure(Seq(Path -> Seq(ValidationError("validation.unknownType"))))

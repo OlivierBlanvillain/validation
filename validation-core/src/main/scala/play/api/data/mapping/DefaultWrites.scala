@@ -41,7 +41,7 @@ trait DateWrites {
   implicit val jodaDate: Write[org.joda.time.DateTime, String] = jodaDate("yyyy-MM-dd")
 
   def sqlDate(pattern: String): Write[java.sql.Date, String] =
-    date(pattern).contramap((d: java.sql.Date) => new java.util.Date(d.getTime))  
+    date(pattern).contramap((d: java.sql.Date) => new java.util.Date(d.getTime))
 
   val sqlDate: Write[java.sql.Date, String] = sqlDate("yyyy-MM-dd")
 }
@@ -49,7 +49,9 @@ trait DateWrites {
 trait DefaultWrites extends DateWrites {
   protected def optionW[I, J, O](r: => WriteLike[I, J], empty: O)(implicit w: Path => WriteLike[J, O]) =
     (p: Path) => Write[Option[I], O] { maybeI =>
-      maybeI.map { i => Write.toWrite(w(p)).contramap(r.writes _) .writes(i) }.getOrElse(empty)
+      maybeI.map { i =>
+        Write.toWrite(w(p)).contramap(r.writes).writes(i)
+      }.getOrElse(empty)
     }
 
   implicit def seqW[I, O](implicit w: WriteLike[I, O]) = Write[Seq[I], Seq[O]] {

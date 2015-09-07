@@ -1,7 +1,7 @@
 package play.api.data.mapping
 
 import scala.annotation.implicitNotFound
-import cats._
+import cats.Monoid
 import cats.functor.Invariant
 
 @implicitNotFound("No Format found for types ${IR},${IW}, ${O}. Try to implement an implicit Format[${IR}, ${IW}, ${O}].")
