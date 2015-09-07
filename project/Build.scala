@@ -124,7 +124,8 @@ object ValidationBuild extends Build {
     .settings(kindProjector: _*)
     .settings(macrosDep: _*)
     .settings(specsDep: _*)
-
+    .settings(sourceGenerators in Compile <+= (sourceManaged in Compile).map(Boilerplate.gen))
+  
   lazy val json = Project("validation-json", file("validation-json"))
     .settings(commonSettings: _*)
     .settings(playDep: _*)
