@@ -15,9 +15,6 @@ object RuleLike {
   implicit def zero[O]: RuleLike[O, O] = Rule[O, O](Success.apply)
 }
 
-/**
- * A Rule is
- */
 trait Rule[I, O] extends RuleLike[I, O] {
 
   /**
@@ -77,14 +74,15 @@ trait Rule[I, O] extends RuleLike[I, O] {
    *   (Path \ "firstname").read(composed).validate(valid) // Success("Julien")
    *  }}}
    */
-  def |+|[OO <: O](r2: RuleLike[I, OO]) = Rule[I, O] { v =>
-    (this.validate(v) *> r2.validate(v)).fail.map {
-      _.groupBy(_._1).map {
-        case (path, errs) =>
-          path -> errs.flatMap(_._2)
-      }.toSeq
+  def |+|[OO <: O](r2: RuleLike[I, OO]): Rule[I, O] =
+    Rule[I, O] { v =>
+      (this.validate(v) *> r2.validate(v)).fail.map {
+        _.groupBy(_._1).map {
+          case (path, errs) =>
+            path -> errs.flatMap(_._2)
+        }.toSeq
+      }
     }
-  }
 
   /**
    * This methods allows you to modify the Path of errors (if the result is a Failure) when aplying the Rule
@@ -101,15 +99,16 @@ trait Rule[I, O] extends RuleLike[I, O] {
   def map[B](f: O => B): Rule[I, B] =
     Rule(d => this.validate(d).map(f))
   
-  def ap[A](mf: Rule[I, O => A]): Rule[I, A] = Rule { d =>
-    val a = validate(d)
-    val f = mf.validate(d)
-    (f *> a).viaEither { _.right.flatMap(x => f.asEither.right.map(_(x))) }
-  }
+  def ap[A](mf: Rule[I, O => A]): Rule[I, A] =
+    Rule { d =>
+      val a = validate(d)
+      val f = mf.validate(d)
+      (f *> a).viaEither { _.right.flatMap(x => f.asEither.right.map(_(x))) }
+    }
 }
 
 object Rule {
-  // def gen[I, O]: Rule[I, O] = macro MappingMacros.rule[I, O]
+  def gen[I, O]: Rule[I, O] = macro MappingMacros.rule[I, O]
 
   /**
    * Turn a `A => Rule[B, C]` into a `Rule[(A, B), C]`
@@ -123,19 +122,23 @@ object Rule {
   def uncurry[A, B, C](f: A => Rule[B, C]): Rule[(A, B), C] =
     Rule { case (a, b) => f(a).validate(b) }
 
-  def zero[O]: Rule[O, O] = toRule(RuleLike.zero[O])
+  def zero[O]: Rule[O, O] =
+    toRule(RuleLike.zero[O])
   
-  def pure[I, O](o: O): Rule[I, O] = Rule(_ => Success(o))
+  def pure[I, O](o: O): Rule[I, O] =
+    Rule(_ => Success(o))
 
-  def apply[I, O](m: Mapping[(Path, Seq[ValidationError]), I, O]) = new Rule[I, O] {
-    def validate(data: I): VA[O] = m(data)
-  }
+  def apply[I, O](m: Mapping[(Path, Seq[ValidationError]), I, O]): Rule[I, O] =
+    new Rule[I, O] {
+      def validate(data: I): VA[O] = m(data)
+    }
 
-  def toRule[I, O](r: RuleLike[I, O]) = new Rule[I, O] {
-    def validate(data: I): VA[O] = r.validate(data)
-  }
+  def toRule[I, O](r: RuleLike[I, O]): Rule[I, O] =
+    new Rule[I, O] {
+      def validate(data: I): VA[O] = r.validate(data)
+    }
 
-  def fromMapping[I, O](f: Mapping[ValidationError, I, O]) =
+  def fromMapping[I, O](f: Mapping[ValidationError, I, O]): Rule[I, O] =
     Rule[I, O](f(_: I).fail.map(errs => Seq(Path -> errs)))
 
   implicit def applicativeRule[I]: Applicative[Rule[I, ?]] =

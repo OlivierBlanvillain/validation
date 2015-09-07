@@ -11,14 +11,13 @@ trait Format[IR, +IW, O] extends RuleLike[IR, O] with WriteLike[O, IW]
  * Default formatters.
  */
 object Format {
-  // def gen[IR, IW, O]: Format[IR, IW, O] = macro MappingMacros.format[IR, IW, O]
+  def gen[IR, IW, O]: Format[IR, IW, O] = macro MappingMacros.format[IR, IW, O]
 
-  def apply[IR, IW, O](r: RuleLike[IR, O], w: WriteLike[O, IW]): Format[IR, IW, O] = {
+  def apply[IR, IW, O](r: RuleLike[IR, O], w: WriteLike[O, IW]): Format[IR, IW, O] =
     new Format[IR, IW, O] {
       def validate(i: IR) = r.validate(i)
       def writes(o: O): IW = w.writes(o)
     }
-  }
 
   implicit def invariantFormat[IR, IW]: Invariant[Format[IR, IW, ?]] =
     new Invariant[Format[IR, IW, ?]] {
@@ -32,6 +31,6 @@ object Format {
         Format[IR, IW, A ~ B](rcb(Rule.toRule(fa), Rule.toRule(fb)), wcb(Write.toWrite(fa), Write.toWrite(fb)))
     }
 
-  implicit def fboFormat[IR, IW : Monoid, O](f: Format[IR, IW, O])(implicit fcb: FunctionalCanBuild[Format[IR, IW, ?]]) =
+  implicit def fboFormat[IR, IW : Monoid, O](f: Format[IR, IW, O])(implicit fcb: FunctionalCanBuild[Format[IR, IW, ?]]): FunctionalBuilderOps[Format[IR, IW, ?], O] =
     toFunctionalBuilderOps[Format[IR, IW, ?], O](f)(fcb)
 }
