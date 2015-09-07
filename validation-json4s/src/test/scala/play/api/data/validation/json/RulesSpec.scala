@@ -2,7 +2,6 @@ import jto.validation._
 import jto.validation.json4s._
 import org.specs2.mutable._
 import org.json4s._
-import cats.syntax.all._
 
 object RulesSpec extends Specification {
 

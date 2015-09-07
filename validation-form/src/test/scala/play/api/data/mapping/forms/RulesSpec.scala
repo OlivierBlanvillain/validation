@@ -1,7 +1,6 @@
 import jto.validation._
 import jto.validation.forms._
 import org.specs2.mutable._
-import cats.syntax.all._
 
 object RulesSpec extends Specification {
 

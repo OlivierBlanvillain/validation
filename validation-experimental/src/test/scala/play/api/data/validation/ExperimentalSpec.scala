@@ -1,6 +1,5 @@
 import jto.validation._
 import org.specs2.mutable._
-import cats.syntax.all._
 
 object ExperimentalSpec extends Specification {
 

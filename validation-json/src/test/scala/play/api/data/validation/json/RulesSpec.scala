@@ -1,7 +1,6 @@
 import jto.validation._
 import jto.validation.json._
 import org.specs2.mutable._
-import cats.syntax.all._
 import play.api.libs.json.{JsValue, JsObject, Json, JsString, JsNumber, JsBoolean, JsArray, JsNull}
 
 object RulesSpec extends Specification {

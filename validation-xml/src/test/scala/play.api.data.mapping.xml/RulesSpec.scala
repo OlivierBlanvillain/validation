@@ -1,7 +1,6 @@
 import jto.validation._
 import jto.validation.xml._
 import jto.validation.xml.Rules._
-import cats.syntax.all._
 import java.math.{BigDecimal => jBigDecimal}
 import java.util.Date
 import org.joda.time.{LocalDate, DateTime}
