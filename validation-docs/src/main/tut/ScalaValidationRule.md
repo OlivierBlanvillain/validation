@@ -10,9 +10,9 @@ Let's say you want to coerce a `String` into an `Float`.
 All you need to do is to define a `Rule` from String to Float:
 
 ```tut
-import play.api.data.mapping._
- def isFloat: Rule[String, Float] = ???
- ```
+import jto.validation._
+def isFloat: Rule[String, Float] = ???
+```
 
 When a `String` is parsed into an `Float`, two scenario are possible, either:
 
@@ -30,7 +30,7 @@ Back, to our `Rule`. For now we'll not implement `isFloat`, actually the validat
 All you have to do is import the default Rules.
 
 ```tut
-import play.api.data.mapping._
+import jto.validation._
 object Rules extends GenericRules with ParsingRules
 Rules.floatR
 ```

@@ -68,7 +68,7 @@ The validation API defines a class named `Path`. A `Path` represents a location.
 ### Navigating in data using `Path`
 
 ```tut
-import play.api.data.mapping.Path
+import jto.validation.Path
 val location: Path = Path \ "user" \ "friend"
 ```
 
@@ -80,7 +80,7 @@ For example, `(Path \ "foo").read[JsValue, Int]`, means the we want to parse a v
 But let's try something much much easier for now:
 
 ```tut:nofail
-import play.api.data.mapping.Rule
+import jto.validation.Rule
 val findFriend: Rule[JsValue, JsValue] = location.read[JsValue, JsValue]
 ```
 
@@ -91,7 +91,7 @@ As you can see, the compiler gives us an error!
 The scala compiler is complaining about not finding an implicit Function of type Path => Rule[JsValue, JsValue]. Indeed, unlike the Json API, you have to provide a method to "lookup" into the data you expect to validate. Fortunatelly, such method already exists and is provided for Json. All you have to do is import it:
 
 ```tut
-import play.api.data.mapping.json.Rules._
+import jto.validation.json.Rules._
 ```
 
 By convention, all usefull validation methods for a given type are to be found in an object called `Rules`. That object contains a bunch of implicits defining how to lookup in the data, and how to coerce some of the possible values of those data into Scala types.

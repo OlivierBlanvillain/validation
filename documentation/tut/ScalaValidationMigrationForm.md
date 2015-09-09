@@ -19,18 +19,13 @@ import play.api._
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
-
 import anorm._
-
 import views._
 import models._
 
 object Application extends Controller {
 
-
-  /**
-   * Describe the computer form (used in both edit and create screens).
-   */
+  /** Describe the computer form (used in both edit and create screens). */
   val computerForm = Form(
     mapping(
       "id" -> ignored(NotAssigned:Pk[Long]),
@@ -97,33 +92,21 @@ import java.util.Date
 scala> case class Computer(id: Option[Long] = None, name: String, introduced: Option[Date], discontinued: Option[Date], companyId: Option[Long])
 defined class Computer
 
-scala> import play.api.data.mapping._
-<console>:12: error: object mapping is not a member of package play.api.data
-       import play.api.data.mapping._
-                            ^
+scala> import jto.validation._
+import jto.validation._
 
-scala> import play.api.data.mapping.forms.UrlFormEncoded
-<console>:12: error: object mapping is not a member of package play.api.data
-       import play.api.data.mapping.forms.UrlFormEncoded
-                            ^
+scala> import jto.validation.forms.UrlFormEncoded
+import jto.validation.forms.UrlFormEncoded
 
 scala> implicit val computerValidation = From[UrlFormEncoded] { __ =>
-     |   import play.api.data.mapping.forms.Rules._
+     |   import jto.validation.forms.Rules._
      |   ((__ \ "id").read(ignored[UrlFormEncoded, Option[Long]](None)) ~
      |    (__ \ "name").read(notEmpty) ~
      |    (__ \ "introduced").read(optionR(date("yyyy-MM-dd"))) ~
      |    (__ \ "discontinued").read(optionR(date("yyyy-MM-dd"))) ~
      |    (__ \ "company").read[Option[Long]]) (Computer.apply _)
      | }
-<console>:14: error: not found: value From
-       implicit val computerValidation = From[UrlFormEncoded] { __ =>
-                                         ^
-<console>:14: error: not found: type UrlFormEncoded
-       implicit val computerValidation = From[UrlFormEncoded] { __ =>
-                                              ^
-<console>:15: error: object mapping is not a member of package play.api.data
-         import play.api.data.mapping.forms.Rules._
-                              ^
+computerValidation: jto.validation.Rule[jto.validation.forms.UrlFormEncoded,Computer] = jto.validation.Rule$$anon$3@6e7f2e8e
 ```
 
 You start by defining a simple validation for each field.
@@ -159,15 +142,15 @@ You can use the `Form.fill` method to create a `Form` from a class.
 `Form.fill` needs an instance of `Write[T, UrlFormEncoded]`, where `T` is your class type.
 
 ```scala
-     |  import play.api.libs.functional.syntax.unlift
-     | implicit val computerW = To[UrlFormEncoded] { __ =>
-     |   import play.api.data.mapping.forms.Writes._
+scala> implicit val computerW = To[UrlFormEncoded] { __ =>
+     |   import jto.validation.forms.Writes._
      |   ((__ \ "id").write[Option[Long]] ~
      |    (__ \ "name").write[String] ~
      |    (__ \ "introduced").write(optionW(date("yyyy-MM-dd"))) ~
      |    (__ \ "discontinued").write(optionW(date("yyyy-MM-dd"))) ~
-     |    (__ \ "company").write[Option[Long]]) (unlift(Computer.unapply _))
+     |    (__ \ "company").write[Option[Long]]) (Computer.unapply _)
      | }
+computerW: jto.validation.Write[Computer,jto.validation.forms.UrlFormEncoded] = jto.validation.Write$$anon$3@6a8c5cee
 ```
 
 > Note that this `Write` takes care of formatting.

@@ -19,7 +19,7 @@ Most of the time, a `Path` is our entry point into the Validation API.
 A `Path` is declared using this syntax:
 
 ```tut
-import play.api.data.mapping.Path
+import jto.validation.Path
 val path = Path \ "foo" \ "bar"
 ```
 
@@ -62,7 +62,7 @@ Assuming you'd like to validate that `friend` exists and is valid in this json, 
 We start by creating a `Path` representing the location of the data we're interested in:
 
 ```tut
-import play.api.data.mapping._
+import jto.validation._
 val location: Path = Path \ "user" \ "friend"
 ```
 
@@ -71,8 +71,8 @@ val location: Path = Path \ "user" \ "friend"
 But let's try something much easier for now:
 
 ```tut:silent:nofail
-import play.api.libs.json.JsValue
-import play.api.data.mapping._
+import jto.validation._
+import play.api.libs.json._
 
 val location: Path = Path \ "user" \ "friend"
 val findFriend: Rule[JsValue, JsValue] = location.read[JsValue, JsValue]
@@ -93,7 +93,7 @@ The Scala compiler is complaining about not finding an implicit function of type
 Fortunately, such method already exists. All you have to do is to import it:
 
 ```tut
-import play.api.data.mapping.json.Rules._
+import jto.validation.json.Rules._
 ```
 
 > By convention, all useful validation methods for a given type are to be found in an object called `Rules`. That object contains a bunch of implicits defining how to lookup in the data, and how to coerce some of the possible values of those data into Scala types.
@@ -227,9 +227,9 @@ properAge.validate(jsBig)
 ### Full example
 
 ```tut
-import play.api.libs.json.Json
-import play.api.data.mapping._
-import play.api.data.mapping.json.Rules._
+import jto.validation._
+import jto.validation.json.Rules._
+import play.api.libs.json._
 
 val js = Json.parse("""{
   "user": {
@@ -265,15 +265,15 @@ case class User(
 We need to create a `Rule[JsValue, User]`. Creating this Rule is simply a matter of combining together the rules parsing each field of the json.
 
 ```tut
+import jto.validation._
 import play.api.libs.json._
-import play.api.data.mapping._
 
 val userRule = From[JsValue] { __ =>
-  import play.api.data.mapping.json.Rules._
-  ((__ \ "name").read[String] and
-   (__ \ "age").read[Int] and
-   (__ \ "email").read[Option[String]] and
-   (__ \ "isAlive").read[Boolean])(User.apply _)
+  import jto.validation.json.Rules._
+  ((__ \ "name").read[String] ~
+   (__ \ "age").read[Int] ~
+   (__ \ "email").read[Option[String]] ~
+   (__ \ "isAlive").read[Boolean]) (User.apply _)
 }
 ```
 
@@ -283,9 +283,9 @@ It is recommended to always follow this pattern, as it nicely scopes the implici
 `From[JsValue]` defines the `I` type of the rules we're combining. We could have written:
 
 ```scala
- (Path \ "name").read[JsValue, String] and
- (Path \ "age").read[JsValue, Int] and
- //...
+(Path \ "name").read[JsValue, String] ~
+(Path \ "age").read[JsValue, Int] ~
+//...
 ```
 
 but repeating `JsValue` all over the place is just not very DRY.

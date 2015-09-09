@@ -26,17 +26,17 @@ Using the json API, you would have defined something like:
 
 ```scala
 scala> {
-     | 	import play.api.libs.json._
-     | 	import play.api.libs.functional.syntax._
+     |   import play.api.libs.json._
+     |   import play.api.libs.functional.syntax._
      | 
-     | 	implicit val creatureReads = (
-     | 	  (__ \ "name").read[String] ~
-     | 	  (__ \ "isDead").read[Boolean] ~
-     | 	  (__ \ "weight").read[Float]
-     | 	)(Creature.apply _)
+     |   implicit val creatureReads = (
+     |     (__ \ "name").read[String] and
+     |     (__ \ "isDead").read[Boolean] and
+     |     (__ \ "weight").read[Float]
+     |   )(Creature.apply _)
      | 
-     | 	val js = Json.obj( "name" -> "gremlins", "isDead" -> false, "weight" -> 1.0F)
-     | 	Json.fromJson[Creature](js)
+     |   val js = Json.obj( "name" -> "gremlins", "isDead" -> false, "weight" -> 1.0F)
+     |   Json.fromJson[Creature](js)
      | }
 res0: play.api.libs.json.JsResult[Creature] = JsSuccess(Creature(gremlins,false,1.0),)
 ```
@@ -44,31 +44,25 @@ res0: play.api.libs.json.JsResult[Creature] = JsSuccess(Creature(gremlins,false,
 Using the new API, this code becomes:
 
 ```scala
+scala> import jto.validation._
+import jto.validation._
+
 scala> import play.api.libs.json._
 import play.api.libs.json._
 
-scala> import play.api.data.mapping._
-<console>:14: error: object mapping is not a member of package play.api.data
-       import play.api.data.mapping._
-                            ^
-
-scala> implicit val creatureRule = From[JsValue]{ __ =>
-     |   import play.api.data.mapping.json.Rules._
-     |   (
-     |     (__ \ "name").read[String] ~
-     |     (__ \ "isDead").read[Boolean] ~
-     |     (__ \ "weight").read[Float]
-     |   )(Creature.apply _)
+scala> implicit val creatureRule = From[JsValue] { __ =>
+     |   import jto.validation.json.Rules._
+     |   ((__ \ "name").read[String] ~
+     |    (__ \ "isDead").read[Boolean] ~
+     |    (__ \ "weight").read[Float]) (Creature.apply _)
      | }
-<console>:16: error: not found: value From
-       implicit val creatureRule = From[JsValue]{ __ =>
-                                   ^
-<console>:17: error: object mapping is not a member of package play.api.data
-         import play.api.data.mapping.json.Rules._
-                              ^
-     | 
-     | val js = Json.obj( "name" -> "gremlins", "isDead" -> false, "weight" -> 1.0F)
-     | From[JsValue, Creature](js)
+creatureRule: jto.validation.Rule[play.api.libs.json.JsValue,Creature] = jto.validation.Rule$$anon$3@5c1bb592
+
+scala> val js = Json.obj( "name" -> "gremlins", "isDead" -> false, "weight" -> 1.0F)
+js: play.api.libs.json.JsObject = {"name":"gremlins","isDead":false,"weight":1}
+
+scala> From[JsValue, Creature](js)
+res1: jto.validation.VA[Creature] = Success(Creature(gremlins,false,1.0))
 ```
 
 Which appart from the extra imports is very similar. Notice the `From[JsValue]{...}` block, that's one of the nice features of the new validation API. Not only it avoids type repetition, but it also scopes the implicits.
@@ -81,18 +75,29 @@ It is recommended to always follow this pattern, as it nicely scopes the implici
 The readNullable method does not exists anymore. Just use a `Rule[JsValue, Option[T]]` instead. `null` and non existing Path will be handled correctly and give you a `None`:
 
 ```scala
-     | val nullableStringRule = From[JsValue]{ __ =>
-     |   import play.api.data.mapping.json.Rules._
+scala> val nullableStringRule = From[JsValue] { __ =>
+     |   import jto.validation.json.Rules._
      |   (__ \ "foo").read[Option[String]]
      | }
-     | 
-     | val js1 = Json.obj("foo" -> "bar")
-     | val js2 = Json.obj("foo" -> JsNull)
-     | val js3 = Json.obj()
-     | 
-     | nullableStringRule.validate(js1)
-     | nullableStringRule.validate(js2)
-     | nullableStringRule.validate(js3)
+nullableStringRule: jto.validation.Rule[play.api.libs.json.JsValue,Option[String]] = jto.validation.Rule$$anon$3@6ce5cb1d
+
+scala> val js1 = Json.obj("foo" -> "bar")
+js1: play.api.libs.json.JsObject = {"foo":"bar"}
+
+scala> val js2 = Json.obj("foo" -> JsNull)
+js2: play.api.libs.json.JsObject = {"foo":null}
+
+scala> val js3 = Json.obj()
+js3: play.api.libs.json.JsObject = {}
+
+scala> nullableStringRule.validate(js1)
+res2: jto.validation.VA[Option[String]] = Success(Some(bar))
+
+scala> nullableStringRule.validate(js2)
+res3: jto.validation.VA[Option[String]] = Success(None)
+
+scala> nullableStringRule.validate(js3)
+res4: jto.validation.VA[Option[String]] = Success(None)
 ```
 
 ### keepAnd
@@ -100,21 +105,23 @@ The readNullable method does not exists anymore. Just use a `Rule[JsValue, Optio
 The general use for `keepAnd` is to apply two validation on the same `JsValue`, for example:
 
 ```scala
-     | {
-     | 	import play.api.libs.json._
+scala> {
+     |   import play.api.libs.json._
      |   import Reads._
      |   import play.api.libs.functional.syntax._
      | 	(JsPath \ "key1").read[String](email keepAnd minLength[String](5))
      | }
+res5: play.api.libs.json.Reads[String] = play.api.libs.json.Reads$$anon$8@5d9aecf8
 ```
 
 You can achieve the same think in the Validation API using [Rules composition](ScalaValidationRule.md)
 
 ```scala
-     | From[JsValue]{ __ =>
-     |   import play.api.data.mapping.json.Rules._
+scala> From[JsValue] { __ =>
+     |   import jto.validation.json.Rules._
      |   (__ \ "key1").read(email |+| minLength(5))
      | }
+res6: jto.validation.Rule[play.api.libs.json.JsValue,String] = jto.validation.Rule$$anon$3@1244a455
 ```
 
 ### lazy reads
@@ -122,8 +129,8 @@ You can achieve the same think in the Validation API using [Rules composition](S
 Reads are always lazy in the new validation API, therefore you don't need to use any specific function, even for recursive types:
 
 ```scala
-     | {
-     | 	import play.api.libs.json._
+scala> {
+     |   import play.api.libs.json._
      |   import play.api.libs.functional.syntax._
      | 
      |   case class User(id: Long, name: String, friend: Option[User] = None)
@@ -141,28 +148,31 @@ Reads are always lazy in the new validation API, therefore you don't need to use
      | 
      |   Json.fromJson[User](js)
      | }
+res7: play.api.libs.json.JsResult[User] forSome { type User <: Product with Serializable{val id: Long; val name: String; val friend: Option[User]; def copy(id: Long,name: String,friend: Option[User]): User; def copy$default$1: Long @scala.annotation.unchecked.uncheckedVariance; def copy$default$2: String @scala.annotation.unchecked.uncheckedVariance; def copy$default$3: Option[User] @scala.annotation.unchecked.uncheckedVariance} } = JsSuccess(User(123,bob,Some(User(124,john,None))),)
 ```
 
 becomes:
 
 ```scala
-     | case class User(id: Long, name: String, friend: Option[User] = None)
-     | 
-     | implicit lazy val userRule: Rule[JsValue, User] = From[JsValue]{ __ =>
-     |   import play.api.data.mapping.json.Rules._
-     |   (
-     |     (__ \ "id").read[Long] and
-     |     (__ \ "name").read[String] and
-     |     (__ \ "friend").read(optionR(userRule))
-     |   )(User.apply _)
+scala> case class User(id: Long, name: String, friend: Option[User] = None)
+defined class User
+
+scala> implicit lazy val userRule: Rule[JsValue, User] = From[JsValue]{ __ =>
+     |   import jto.validation.json.Rules._
+     |   ((__ \ "id").read[Long] ~
+     |    (__ \ "name").read[String] ~
+     |    (__ \ "friend").read(optionR(userRule))) (User.apply _)
      | }
-     | 
-     | val js = Json.obj(
+userRule: jto.validation.Rule[play.api.libs.json.JsValue,User] = <lazy>
+
+scala> val js = Json.obj(
      |   "id" -> 123L,
      |   "name" -> "bob",
      |   "friend" -> Json.obj("id" -> 124L, "name" -> "john", "friend" -> JsNull))
-     | 
-     | From[JsValue, User](js)
+js: play.api.libs.json.JsObject = {"id":123,"name":"bob","friend":{"id":124,"name":"john","friend":null}}
+
+scala> From[JsValue, User](js)
+res8: jto.validation.VA[User] = Success(User(123,bob,Some(User(124,john,None))))
 ```
 
 ### Numeric types
@@ -172,16 +182,24 @@ You should be aware that numeric type coercion is a bit stricter in the validati
 For example:
 
 ```scala
-     | val js = Json.obj("n" -> 42.5f)
-     | js.validate((__ \ "n").read[Int]) // JsSuccess(42, /n)
+scala> val js = Json.obj("n" -> 42.5f)
+js: play.api.libs.json.JsObject = {"n":42.5}
+
+scala> js.validate((__ \ "n").read[Int]) // JsSuccess(42, /n)
+res9: play.api.libs.json.JsResult[Int] = JsError(List((/n,List(ValidationError(List(error.expected.int),WrappedArray())))))
 ```
 
 whereas with the validation API, an `Int` must really be an `Int`:
 
 ```scala
-     | import json.Rules._
-     | val js = Json.obj("n" -> 42.5f)
-     | (Path \ "n").read[JsValue, Int].validate(js)
+scala> import json.Rules._
+import json.Rules._
+
+scala> val js = Json.obj("n" -> 42.5f)
+js: play.api.libs.json.JsObject = {"n":42.5}
+
+scala> (Path \ "n").read[JsValue, Int].validate(js)
+res10: jto.validation.VA[Int] = Failure(List((/n,List(ValidationError(List(error.number),WrappedArray(Int))))))
 ```
 
 ### `json.apply` and `path.as[T]`
@@ -191,16 +209,18 @@ Those methods do not exist in the validation API. Even in the json API, it is ge
 The preferred solution is to use `path.read[T]` and to handle failure properly.
 
 ```scala
-     | {
+scala> {
      | 	val js = Json.obj("foo" -> "bar")
      | 	(js \ "foo").as[String]
      | }
+res11: String = bar
 ```
 
 becomes
 
 ```scala
-     | (Path \ "foo").read[JsValue, String]
+scala> (Path \ "foo").read[JsValue, String]
+res12: jto.validation.Rule[play.api.libs.json.JsValue,String] = jto.validation.Rule$$anon$2@4c476ca9
 ```
 
 ### pickBranch
@@ -210,7 +230,7 @@ becomes
 For example, given the following json object, we can extract a sub tree:
 
 ```scala
-     | {
+scala> {
      | 	import play.api.libs.json._
      | 
      | 	val js = Json.obj(
@@ -224,28 +244,35 @@ For example, given the following json object, we can extract a sub tree:
      | 	val pick = (__ \ "field3").json.pickBranch
      | 	pick.reads(js) // Success({"field3":{"field31":"beta","field32":345}})
      | }
+res13: play.api.libs.json.JsResult[play.api.libs.json.JsObject] = JsSuccess({"field3":{"field31":"beta","field32":345}},/field3)
 ```
 
 In the validation API, you simply use `read` to create a rule picking a branch:
 
 ```scala
-     | import play.api.libs.json._
-     | import play.api.data.mapping._
-     | 
-     | val js = Json.obj(
+scala> import jto.validation._
+import jto.validation._
+
+scala> import play.api.libs.json._
+import play.api.libs.json._
+
+scala> val js = Json.obj(
      | 	"field1" -> "alpha",
      | 	"field2" -> 123L,
      | 	"field3" -> Json.obj(
      | 	  "field31" -> "beta",
      | 	  "field32"-> 345
      | 	))
-     | 
-     | val pick = From[JsValue]{ __ =>
-     | 	import play.api.data.mapping.json.Rules._
+js: play.api.libs.json.JsObject = {"field1":"alpha","field2":123,"field3":{"field31":"beta","field32":345}}
+
+scala> val pick = From[JsValue] { __ =>
+     | 	import jto.validation.json.Rules._
      | 	(__ \ "field3").read[JsValue]
      | }
-     | 
-     | pick.validate(js) // Success({"field31":"beta","field32":345})
+pick: jto.validation.Rule[play.api.libs.json.JsValue,play.api.libs.json.JsValue] = jto.validation.Rule$$anon$3@52b1221
+
+scala> pick.validate(js) // Success({"field31":"beta","field32":345})
+res14: jto.validation.VA[play.api.libs.json.JsValue] = Success({"field31":"beta","field32":345})
 ```
 
 ## `Writes` migration
@@ -255,48 +282,51 @@ In the validation API, you simply use `read` to create a rule picking a branch:
 For example, you would have defined a `Writes` for the `Creature` case class this way:
 
 ```scala
-     | {
+scala> {
      | 	import play.api.libs.json._
-     | 	import play.api.libs.functional.syntax._
+     |   import play.api.libs.functional.syntax._
      | 
      | 	case class Creature(
      | 	  name: String,
      | 	  isDead: Boolean,
      | 	  weight: Float)
      | 
-     | 	implicit val creatureWrite =
-     | 		(
-     | 		  (__ \ "name").write[String] ~
-     | 		  (__ \ "isDead").write[Boolean] ~
-     | 		  (__ \ "weight").write[Float]
-     | 		)(unlift(Creature.unapply _))
+     | 	implicit val creatureWrite = (
+     | 	  (__ \ "name").write[String] and
+     | 	  (__ \ "isDead").write[Boolean] and
+     | 	  (__ \ "weight").write[Float]
+     | 	)(unlift(Creature.unapply _))
      | 
      | 	Json.toJson(Creature("gremlins", false, 1f))
      | }
+res15: play.api.libs.json.JsValue = {"name":"gremlins","isDead":false,"weight":1}
 ```
 
 With the validation API:
 
 ```scala
-     | import play.api.libs.json._
-     | import play.api.data.mapping._
-     | import play.api.libs.functional.syntax.unlift
-     | 
-     | case class Creature(
+scala> import jto.validation._
+import jto.validation._
+
+scala> import play.api.libs.json._
+import play.api.libs.json._
+
+scala> case class Creature(
      |   name: String,
      |   isDead: Boolean,
      |   weight: Float)
-     | 
-     | implicit val creatureWrite = To[JsObject]{ __ =>
-     | 	import play.api.data.mapping.json.Writes._
-     | 	(
-     | 	  (__ \ "name").write[String] ~
-     | 	  (__ \ "isDead").write[Boolean] ~
-     | 	  (__ \ "weight").write[Float]
-     | 	)(unlift(Creature.unapply _))
+defined class Creature
+
+scala> implicit val creatureWrite = To[JsObject]{ __ =>
+     |   import jto.validation.json.Writes._
+     | 	((__ \ "name").write[String] ~
+     | 	 (__ \ "isDead").write[Boolean] ~
+     | 	 (__ \ "weight").write[Float]) (Creature.unapply _)
      | }
-     | 
-     | val c = To[Creature, JsObject](Creature("gremlins", false, 1f))
+creatureWrite: jto.validation.Write[Creature,play.api.libs.json.JsObject] = jto.validation.Write$$anon$3@6bf2a14f
+
+scala> val c = To[Creature, JsObject](Creature("gremlins", false, 1f))
+c: play.api.libs.json.JsObject = {"name":"gremlins","isDead":false,"weight":1}
 ```
 
 ## `Format` migration

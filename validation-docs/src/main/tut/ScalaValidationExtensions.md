@@ -13,8 +13,8 @@ The base of all Rules is the capacity to extract a subset of some input data.
 For the type `JsValue`, we need to be able to extract a `JsValue` at a given `Path`:
 
 ```tut
-import play.api.data.mapping._
-import play.api.libs.json.{ KeyPathNode => JSKeyPathNode, IdxPathNode => JIdxPathNode, _ }
+import jto.validation._
+import play.api.libs.json.{KeyPathNode => JSKeyPathNode, IdxPathNode => JIdxPathNode, _}
 object Ex1 {
 
 	def pathToJsPath(p: Path) =
@@ -136,7 +136,7 @@ Despite the type signature funkiness, this function is actually **really** simpl
 
 ```tut
 val maybeEmail = From[JsValue]{ __ =>
-  import play.api.data.mapping.json.Rules._
+  import jto.validation.json.Rules._
   (__ \ "email").read(optionR(email))
 }
 
@@ -158,7 +158,7 @@ implicit def option[O](p: Path)(implicit pick: Path => Rule[JsValue, JsValue], c
 
 ```tut
 val maybeAge = From[JsValue]{ __ =>
-  import play.api.data.mapping.json.Rules._
+  import jto.validation.json.Rules._
   (__ \ "age").read[Option[Int]]
 }
 ```
@@ -175,9 +175,9 @@ val u = RecUser(
   Seq(RecUser("tom")))
 
 lazy val w: Rule[JsValue, RecUser] = From[JsValue]{ __ =>
-  import play.api.data.mapping.json.Rules._
+  import jto.validation.json.Rules._
   ((__ \ "name").read[String] ~
-   (__ \ "friends").read(seqR(w)))(RecUser.apply _) // !!! recursive rule definition
+   (__ \ "friends").read(seqR(w))) (RecUser.apply _) // !!! recursive rule definition
 }
 ```
 
@@ -205,10 +205,10 @@ In order to be able to use writes combinators, you also need to create an implem
 
 ```tut
 {
-	import play.api.libs.functional.Monoid
+	import cats.Monoid
   implicit def jsonMonoid = new Monoid[JsObject] {
-    def append(a1: JsObject, a2: JsObject) = a1 deepMerge a2
-    def identity = Json.obj()
+    def combine(a1: JsObject, a2: JsObject) = a1 deepMerge a2
+    def empty = Json.obj()
   }
 }
 ```
@@ -216,10 +216,8 @@ In order to be able to use writes combinators, you also need to create an implem
 from there you're able to create complex writes like:
 
 ```tut
+import jto.validation._
 import play.api.libs.json._
-import play.api.data.mapping._
-import play.api.data.mapping.json.Writes._
-import play.api.libs.functional.syntax.unlift
 
 case class User(
   name: String,
@@ -228,11 +226,11 @@ case class User(
   isAlive: Boolean)
 
 val userWrite = To[JsObject] { __ =>
-  import play.api.data.mapping.json.Writes._
-  ((__ \ "name").write[String] and
-   (__ \ "age").write[Int] and
-   (__ \ "email").write[Option[String]] and
-   (__ \ "isAlive").write[Boolean])(unlift(User.unapply _))
+  import jto.validation.json.Writes._
+  ((__ \ "name").write[String] ~
+   (__ \ "age").write[Int] ~
+   (__ \ "email").write[Option[String]] ~
+   (__ \ "isAlive").write[Boolean]) (User.unapply _)
 }
 ```
 

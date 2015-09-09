@@ -19,14 +19,11 @@ Most of the time, a `Path` is our entry point into the Validation API.
 A `Path` is declared using this syntax:
 
 ```scala
-scala> import play.api.data.mapping.Path
-<console>:11: error: object mapping is not a member of package play.api.data
-       import play.api.data.mapping.Path
-                            ^
+scala> import jto.validation.Path
+import jto.validation.Path
+
 scala> val path = Path \ "foo" \ "bar"
-<console>:11: error: not found: value Path
-       val path = Path \ "foo" \ "bar"
-                  ^
+path: jto.validation.Path = /foo/bar
 ```
 
 `Path` here is the empty `Path` object. One may call it the root path.
@@ -35,9 +32,7 @@ A path can also reference indexed data, such as a `Seq`
 
 ```scala
 scala> val pi = Path \ "foo" \ 0
-<console>:11: error: not found: value Path
-       val pi = Path \ "foo" \ 0
-                ^
+pi: jto.validation.Path = /foo[0]
 ```
 
 ### Extracting data using `Path`
@@ -73,17 +68,11 @@ Assuming you'd like to validate that `friend` exists and is valid in this json, 
 We start by creating a `Path` representing the location of the data we're interested in:
 
 ```scala
-scala> import play.api.data.mapping._
-<console>:14: error: object mapping is not a member of package play.api.data
-       import play.api.data.mapping._
-                            ^
+scala> import jto.validation._
+import jto.validation._
+
 scala> val location: Path = Path \ "user" \ "friend"
-<console>:14: error: not found: type Path
-       val location: Path = Path \ "user" \ "friend"
-                     ^
-<console>:14: error: not found: value Path
-       val location: Path = Path \ "user" \ "friend"
-                            ^
+location: jto.validation.Path = /user/friend
 ```
 
 `Path` has a `read[I, O]` method, where `I` represents the input we're trying to parse, and `O` the output type. For example, `(Path \ "foo").read[JsValue, Int]`, will try to read a value located at path `/foo` in a `JsValue` as an `Int`.
@@ -91,8 +80,8 @@ scala> val location: Path = Path \ "user" \ "friend"
 But let's try something much easier for now:
 
 ```scala
-import play.api.libs.json.JsValue
-import play.api.data.mapping._
+import jto.validation._
+import play.api.libs.json._
 
 val location: Path = Path \ "user" \ "friend"
 val findFriend: Rule[JsValue, JsValue] = location.read[JsValue, JsValue]
@@ -105,12 +94,9 @@ If you try to run that code, the compiler gives you the following error:
 
 ```scala
 scala> val findFriend: Rule[JsValue, JsValue] = location.read[JsValue, JsValue]
-<console>:15: error: not found: type Rule
+<console>:25: error: No implicit view available from jto.validation.Path => jto.validation.RuleLike[play.api.libs.json.JsValue,play.api.libs.json.JsValue].
        val findFriend: Rule[JsValue, JsValue] = location.read[JsValue, JsValue]
-                       ^
-<console>:15: error: not found: value location
-       val findFriend: Rule[JsValue, JsValue] = location.read[JsValue, JsValue]
-                                                ^
+                                                             ^
 ```
 
 
@@ -119,10 +105,8 @@ The Scala compiler is complaining about not finding an implicit function of type
 Fortunately, such method already exists. All you have to do is to import it:
 
 ```scala
-scala> import play.api.data.mapping.json.Rules._
-<console>:15: error: object mapping is not a member of package play.api.data
-       import play.api.data.mapping.json.Rules._
-                            ^
+scala> import jto.validation.json.Rules._
+import jto.validation.json.Rules._
 ```
 
 > By convention, all useful validation methods for a given type are to be found in an object called `Rules`. That object contains a bunch of implicits defining how to lookup in the data, and how to coerce some of the possible values of those data into Scala types.
@@ -131,12 +115,7 @@ With those implicits in scope, we can finally create our `Rule`:
 
 ```scala
 scala> val findFriend: Rule[JsValue, JsValue] = location.read[JsValue, JsValue]
-<console>:15: error: not found: type Rule
-       val findFriend: Rule[JsValue, JsValue] = location.read[JsValue, JsValue]
-                       ^
-<console>:15: error: not found: value location
-       val findFriend: Rule[JsValue, JsValue] = location.read[JsValue, JsValue]
-                                                ^
+findFriend: jto.validation.Rule[play.api.libs.json.JsValue,play.api.libs.json.JsValue] = jto.validation.Rule$$anon$2@20c3655c
 ```
 
 Alright, so far we've defined a `Rule` looking for some data of type `JsValue`, located at `/user/friend` in an object of type `JsValue`.
@@ -145,18 +124,14 @@ Now we need to apply this `Rule` to our data:
 
 ```scala
 scala> findFriend.validate(js)
-<console>:17: error: not found: value findFriend
-       findFriend.validate(js)
-       ^
+res1: jto.validation.VA[play.api.libs.json.JsValue] = Success({"name":"tata","age":20,"email":"tata@coldmail.com"})
 ```
 
 If we can't find anything, applying a `Rule` leads to a `Failure`:
 
 ```scala
 scala> (Path \ "foobar").read[JsValue, JsValue].validate(js)
-<console>:17: error: not found: value Path
-       (Path \ "foobar").read[JsValue, JsValue].validate(js)
-        ^
+res2: jto.validation.VA[play.api.libs.json.JsValue] = Failure(List((/foobar,List(ValidationError(List(error.required),WrappedArray())))))
 ```
 
 ### Type coercion
@@ -165,27 +140,21 @@ We now are capable of extracting data at a given `Path`. Let's do it again on a 
 
 ```scala
 scala> val age = (Path \ "user" \ "age").read[JsValue, JsValue]
-<console>:15: error: not found: value Path
-       val age = (Path \ "user" \ "age").read[JsValue, JsValue]
-                  ^
+age: jto.validation.Rule[play.api.libs.json.JsValue,play.api.libs.json.JsValue] = jto.validation.Rule$$anon$2@3f5a74ab
 ```
 
 Let's apply this new `Rule`:
 
 ```scala
 scala> age.validate(js)
-<console>:17: error: not found: value age
-       age.validate(js)
-       ^
+res3: jto.validation.VA[play.api.libs.json.JsValue] = Success(25)
 ```
 
 Again, if the json is invalid:
 
 ```scala
 scala> age.validate(Json.obj())
-<console>:16: error: not found: value age
-       age.validate(Json.obj())
-       ^
+res4: jto.validation.VA[play.api.libs.json.JsValue] = Failure(List((/user/age,List(ValidationError(List(error.required),WrappedArray())))))
 ```
 
 The `Failure` informs us that it could not find `/user/age` in that `JsValue`.
@@ -195,27 +164,21 @@ All we have to do is to change the output type in our `Rule` definition:
 
 ```scala
 scala> val age = (Path \ "user" \ "age").read[JsValue, Int]
-<console>:15: error: not found: value Path
-       val age = (Path \ "user" \ "age").read[JsValue, Int]
-                  ^
+age: jto.validation.Rule[play.api.libs.json.JsValue,Int] = jto.validation.Rule$$anon$2@3d1c35d1
 ```
 
 And apply it:
 
 ```scala
 scala> age.validate(js)
-<console>:17: error: not found: value age
-       age.validate(js)
-       ^
+res5: jto.validation.VA[Int] = Success(25)
 ```
 
 If we try to parse something that is not an `Int`, we get a `Failure` with the appropriate Path and error:
 
 ```scala
 scala> (Path \ "user" \ "name").read[JsValue, Int].validate(js)
-<console>:17: error: not found: value Path
-       (Path \ "user" \ "name").read[JsValue, Int].validate(js)
-        ^
+res6: jto.validation.VA[Int] = Failure(List((/user/name,List(ValidationError(List(error.number),WrappedArray(Int))))))
 ```
 
 So scala *automagically* figures out how to transform a `JsValue` into an `Int`. How does this happens ?
@@ -236,61 +199,78 @@ So when use `(Path \ "user" \ "age").read[JsValue, Int]`, the compiler looks for
 So far we've managed to lookup for a `JsValue` and transform that `JsValue` into an `Int`. Problem is: not every `Int` is a valid age. An age should always be a positive `Int`.
 
 ```scala
-     | val js = Json.parse("""{
+scala> val js = Json.parse("""{
      |   "user": {
      |     "age" : -33
      |   }
      | }""")
-     | 
-     | val age = (Path \ "user" \ "age").read[JsValue, Int]
+js: play.api.libs.json.JsValue = {"user":{"age":-33}}
+
+scala> val age = (Path \ "user" \ "age").read[JsValue, Int]
+age: jto.validation.Rule[play.api.libs.json.JsValue,Int] = jto.validation.Rule$$anon$2@5ea27ccd
 ```
 
 Our current implementation of `age` is rather unsatisfying...
 
 ```scala
-     | age.validate(js)
+scala> age.validate(js)
+res8: jto.validation.VA[Int] = Success(-33)
 ```
 
 We can fix that very simply using `from`, and a built-in `Rule`:
 
 ```scala
-     | val positiveAge = (Path \ "user" \ "age").from[JsValue](min(0))
+scala> val positiveAge = (Path \ "user" \ "age").from[JsValue](min(0))
+positiveAge: jto.validation.Rule[play.api.libs.json.JsValue,Int] = jto.validation.Rule$$anon$2@25479f4c
 ```
 
 Let's try that again:
 
 ```scala
-     | positiveAge.validate(js)
+scala> positiveAge.validate(js)
+res9: jto.validation.VA[Int] = Failure(List((/user/age,List(ValidationError(List(error.min),WrappedArray(0))))))
 ```
 
 That's better, but still not perfect: 8765 is considered valid:
 
 ```scala
-     | val js2 = Json.parse("""{ "user": { "age" : 8765 } }""")
-     | positiveAge.validate(js2)
+scala> val js2 = Json.parse("""{ "user": { "age" : 8765 } }""")
+js2: play.api.libs.json.JsValue = {"user":{"age":8765}}
+
+scala> positiveAge.validate(js2)
+res10: jto.validation.VA[Int] = Success(8765)
 ```
 
 Let's fix our `age` `Rule`:
 
 ```scala
-     | val properAge = (Path \ "user" \ "age").from[JsValue](min(0) |+| max(130))
+scala> val properAge = (Path \ "user" \ "age").from[JsValue](min(0) |+| max(130))
+properAge: jto.validation.Rule[play.api.libs.json.JsValue,Int] = jto.validation.Rule$$anon$2@74b76db5
 ```
 
 and test it:
 
 ```scala
-     | val jsBig = Json.parse("""{ "user": { "age" : 8765 } }""")
-     | properAge.validate(jsBig)
+scala> val jsBig = Json.parse("""{ "user": { "age" : 8765 } }""")
+jsBig: play.api.libs.json.JsValue = {"user":{"age":8765}}
+
+scala> properAge.validate(jsBig)
+res11: jto.validation.VA[Int] = Failure(ArrayBuffer((/user/age,List(ValidationError(List(error.max),WrappedArray(130))))))
 ```
 
 ### Full example
 
 ```scala
-     | import play.api.libs.json.Json
-     | import play.api.data.mapping._
-     | import play.api.data.mapping.json.Rules._
-     | 
-     | val js = Json.parse("""{
+scala> import jto.validation._
+import jto.validation._
+
+scala> import jto.validation.json.Rules._
+import jto.validation.json.Rules._
+
+scala> import play.api.libs.json._
+import play.api.libs.json._
+
+scala> val js = Json.parse("""{
      |   "user": {
      |     "name" : "toto",
      |     "age" : 25,
@@ -303,9 +283,13 @@ and test it:
      |     }
      |   }
      | }""")
-     | 
-     | val age = (Path \ "user" \ "age").from[JsValue](min(0) |+| max(130))
-     | age.validate(js)
+js: play.api.libs.json.JsValue = {"user":{"name":"toto","age":25,"email":"toto@jmail.com","isAlive":true,"friend":{"name":"tata","age":20,"email":"tata@coldmail.com"}}}
+
+scala> val age = (Path \ "user" \ "age").from[JsValue](min(0) |+| max(130))
+age: jto.validation.Rule[play.api.libs.json.JsValue,Int] = jto.validation.Rule$$anon$2@730bc83a
+
+scala> age.validate(js)
+res12: jto.validation.VA[Int] = Success(25)
 ```
 
 ## Combining Rules
@@ -314,26 +298,31 @@ So far we've validated only fragments of our json object.
 Now we'd like to validate the entire object, and turn it into a instance of the `User` class defined below:
 
 ```scala
-     | case class User(
+scala> case class User(
      |   name: String,
      |   age: Int,
      |   email: Option[String],
      |   isAlive: Boolean)
+defined class User
 ```
 
 We need to create a `Rule[JsValue, User]`. Creating this Rule is simply a matter of combining together the rules parsing each field of the json.
 
 ```scala
-     | import play.api.libs.json._
-     | import play.api.data.mapping._
-     | 
-     | val userRule = From[JsValue] { __ =>
-     |   import play.api.data.mapping.json.Rules._
-     |   ((__ \ "name").read[String] and
-     |    (__ \ "age").read[Int] and
-     |    (__ \ "email").read[Option[String]] and
-     |    (__ \ "isAlive").read[Boolean])(User.apply _)
+scala> import jto.validation._
+import jto.validation._
+
+scala> import play.api.libs.json._
+import play.api.libs.json._
+
+scala> val userRule = From[JsValue] { __ =>
+     |   import jto.validation.json.Rules._
+     |   ((__ \ "name").read[String] ~
+     |    (__ \ "age").read[Int] ~
+     |    (__ \ "email").read[Option[String]] ~
+     |    (__ \ "isAlive").read[Boolean]) (User.apply _)
      | }
+userRule: jto.validation.Rule[play.api.libs.json.JsValue,User] = jto.validation.Rule$$anon$3@bd6722
 ```
 
 > **Important:** Note that we're importing `Rules._` **inside** the `From[I]{...}` block.
@@ -342,9 +331,9 @@ It is recommended to always follow this pattern, as it nicely scopes the implici
 `From[JsValue]` defines the `I` type of the rules we're combining. We could have written:
 
 ```scala
- (Path \ "name").read[JsValue, String] and
- (Path \ "age").read[JsValue, Int] and
- //...
+(Path \ "name").read[JsValue, String] ~
+(Path \ "age").read[JsValue, Int] ~
+//...
 ```
 
 but repeating `JsValue` all over the place is just not very DRY.

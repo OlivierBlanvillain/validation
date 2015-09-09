@@ -10,15 +10,12 @@ Let's say you want to coerce a `String` into an `Float`.
 All you need to do is to define a `Rule` from String to Float:
 
 ```scala
-scala> import play.api.data.mapping._
-<console>:11: error: object mapping is not a member of package play.api.data
-       import play.api.data.mapping._
-                            ^
-scala>  def isFloat: Rule[String, Float] = ???
-<console>:11: error: not found: type Rule
-        def isFloat: Rule[String, Float] = ???
-                     ^
- ```
+scala> import jto.validation._
+import jto.validation._
+
+scala> def isFloat: Rule[String, Float] = ???
+isFloat: jto.validation.Rule[String,Float]
+```
 
 When a `String` is parsed into an `Float`, two scenario are possible, either:
 
@@ -36,52 +33,41 @@ Back, to our `Rule`. For now we'll not implement `isFloat`, actually the validat
 All you have to do is import the default Rules.
 
 ```scala
-scala> import play.api.data.mapping._
-<console>:11: error: object mapping is not a member of package play.api.data
-       import play.api.data.mapping._
-                            ^
+scala> import jto.validation._
+import jto.validation._
+
 scala> object Rules extends GenericRules with ParsingRules
-<console>:11: error: not found: type GenericRules
-       object Rules extends GenericRules with ParsingRules
-                            ^
-<console>:11: error: not found: type ParsingRules
-       object Rules extends GenericRules with ParsingRules
-                                              ^
+defined object Rules
+
 scala> Rules.floatR
-<console>:12: error: not found: value Rules
-       Rules.floatR
-       ^
+res0: jto.validation.Rule[String,Float] = jto.validation.Rule$$anon$2@6ef893b6
 ```
 
 Let's now test it against different String values:
 
 ```scala
 scala> Rules.floatR.validate("1")
-<console>:12: error: not found: value Rules
-       Rules.floatR.validate("1")
-       ^
+res1: jto.validation.VA[Float] = Success(1.0)
+
 scala> Rules.floatR.validate("-13.7")
-<console>:12: error: not found: value Rules
-       Rules.floatR.validate("-13.7")
-       ^
+res2: jto.validation.VA[Float] = Success(-13.7)
+
 scala> Rules.floatR.validate("abc")
-<console>:12: error: not found: value Rules
-       Rules.floatR.validate("abc")
-       ^
+res3: jto.validation.VA[Float] = Failure(List((/,List(ValidationError(List(error.number),WrappedArray(Float))))))
 ```
 
 > `Rule` is typesafe. You can't apply a `Rule` on an unsupported type, the compiler won't let you:
 >
 ```scala
 scala> Rules.floatR
-<console>:12: error: not found: value Rules
-       Rules.floatR
-       ^
+res4: jto.validation.Rule[String,Float] = jto.validation.Rule$$anon$2@1ce99774
 
 scala> Rules.floatR.validate(Seq(32))
-<console>:12: error: not found: value Rules
+<console>:19: error: type mismatch;
+ found   : Seq[Int]
+ required: String
        Rules.floatR.validate(Seq(32))
-       ^
+                                ^
 ```
 
 "abc" is not a valid `Float` but no exception was thrown. Instead of relying on exceptions, `validate` is returning an object of type `Validation` (here `VA` is just a fancy alias for a special kind of validation).
@@ -109,40 +95,33 @@ scala> val headInt: Rule[List[Int], Int] = Rule.fromMapping {
      |   case Nil => Failure(Seq(ValidationError("error.emptyList")))
      |   case head :: _ => Success(head)
      | }
-<console>:11: error: not found: type Rule
-       val headInt: Rule[List[Int], Int] = Rule.fromMapping {
-                    ^
-<console>:11: error: not found: value Rule
-       val headInt: Rule[List[Int], Int] = Rule.fromMapping {
-                                           ^
-<console>:12: error: not found: value Failure
-         case Nil => Failure(Seq(ValidationError("error.emptyList")))
-                     ^
-<console>:12: error: not found: value ValidationError
-         case Nil => Failure(Seq(ValidationError("error.emptyList")))
-                                 ^
-<console>:13: error: not found: value Success
-         case head :: _ => Success(head)
-                           ^
+headInt: jto.validation.Rule[List[Int],Int] = jto.validation.Rule$$anon$2@10b513e8
 ```
 
 ```scala
-     | headInt.validate(List(1, 2, 3, 4, 5))
-     | headInt.validate(Nil)
+scala> headInt.validate(List(1, 2, 3, 4, 5))
+res6: jto.validation.VA[Int] = Success(1)
+
+scala> headInt.validate(Nil)
+res7: jto.validation.VA[Int] = Failure(List((/,List(ValidationError(List(error.emptyList),WrappedArray())))))
 ```
 
 We can make this rule a bit more generic:
 
 ```scala
-     | def head[T]: Rule[List[T], T] = Rule.fromMapping {
+scala> def head[T]: Rule[List[T], T] = Rule.fromMapping {
      |   case Nil => Failure(Seq(ValidationError("error.emptyList")))
      |   case head :: _ => Success(head)
      | }
+head: [T]=> jto.validation.Rule[List[T],T]
 ```
 
 ```scala
-     | head.validate(List('a', 'b', 'c', 'd'))
-     | head.validate(List[Char]())
+scala> head.validate(List('a', 'b', 'c', 'd'))
+res8: jto.validation.VA[Char] = Success(a)
+
+scala> head.validate(List[Char]())
+res9: jto.validation.VA[Char] = Failure(List((/,List(ValidationError(List(error.emptyList),WrappedArray())))))
 ```
 
 ## Composing Rules
@@ -167,27 +146,49 @@ We've done almost all the work already. We just have to create a new `Rule` the 
 It would be fairly easy to create such a `Rule` "manually", but we don't have to. A method doing just that is already available:
 
 ```scala
-     | val firstFloat: Rule[List[String], Float] = head.compose(Rules.floatR)
-     | firstFloat.validate(List("1", "2"))
-     | firstFloat.validate(List("1.2", "foo"))
+scala> val firstFloat: Rule[List[String], Float] = head.compose(Rules.floatR)
+firstFloat: jto.validation.Rule[List[String],Float] = jto.validation.Rule$$anon$2@da05e81
+
+scala> firstFloat.validate(List("1", "2"))
+res10: jto.validation.VA[Float] = Success(1.0)
+
+scala> firstFloat.validate(List("1.2", "foo"))
+res11: jto.validation.VA[Float] = Success(1.2)
 ```
 
 If the list is empty, we get the error from `head`
 
 ```scala
-     | firstFloat.validate(List())
+scala> firstFloat.validate(List())
+res12: jto.validation.VA[Float] = Failure(List((/,List(ValidationError(List(error.emptyList),WrappedArray())))))
 ```
 
 If the first element is not parseable, we get the error from `Rules.float`.
 
 ```scala
-     | firstFloat.validate(List("foo", "2"))
+scala> firstFloat.validate(List("foo", "2"))
+res13: jto.validation.VA[Float] = Failure(List((/,List(ValidationError(List(error.number),WrappedArray(Float))))))
 ```
 
 Of course everything is still typesafe:
 
 ```scala
-     | firstFloat.validate(List(1, 2, 3))
+scala> firstFloat.validate(List(1, 2, 3))
+<console>:21: error: type mismatch;
+ found   : Int(1)
+ required: String
+       firstFloat.validate(List(1, 2, 3))
+                                ^
+<console>:21: error: type mismatch;
+ found   : Int(2)
+ required: String
+       firstFloat.validate(List(1, 2, 3))
+                                   ^
+<console>:21: error: type mismatch;
+ found   : Int(3)
+ required: String
+       firstFloat.validate(List(1, 2, 3))
+                                      ^
 ```
 
 #### Improving reporting.
@@ -198,8 +199,11 @@ When a parsing error happens, the `Failure` does not tells us that it happened o
 To fix that, we can pass  an additionnal parameter to `compose`:
 
 ```scala
-     | val firstFloat2: Rule[List[String],Float] = head.compose(Path \ 0)(Rules.floatR)
-     | firstFloat2.validate(List("foo", "2"))
+scala> val firstFloat2: Rule[List[String],Float] = head.compose(Path \ 0)(Rules.floatR)
+firstFloat2: jto.validation.Rule[List[String],Float] = jto.validation.Rule$$anon$2@2aa9f6fd
+
+scala> firstFloat2.validate(List("foo", "2"))
+res15: jto.validation.VA[Float] = Failure(List(([0],List(ValidationError(List(error.number),WrappedArray(Float))))))
 ```
 
 ### "Parallel" composition
@@ -212,23 +216,34 @@ Consider the following example: We want to write a `Rule` that given a `Int`, ch
 The validation API already provides `Rules.min`, we have to define `even` ourselves:
 
 ```scala
-     | val positive: Rule[Int,Int] = Rules.min(0)
-     | val even: Rule[Int,Int] = Rules.validateWith[Int]("error.even"){ _ % 2 == 0 }
+scala> val positive: Rule[Int,Int] = Rules.min(0)
+positive: jto.validation.Rule[Int,Int] = jto.validation.Rule$$anon$2@42b4e3ec
+
+scala> val even: Rule[Int,Int] = Rules.validateWith[Int]("error.even"){ _ % 2 == 0 }
+even: jto.validation.Rule[Int,Int] = jto.validation.Rule$$anon$2@7924419f
 ```
 
 Now we can compose those rules using `|+|`
 
 ```scala
-     | val positiveAndEven: Rule[Int,Int] = positive |+| even
+scala> val positiveAndEven: Rule[Int,Int] = positive |+| even
+positiveAndEven: jto.validation.Rule[Int,Int] = jto.validation.Rule$$anon$2@db0979e
 ```
 
 Let's test our new `Rule`:
 
 ```scala
-     | positiveAndEven.validate(12)
-     | positiveAndEven.validate(-12)
-     | positiveAndEven.validate(13)
-     | positiveAndEven.validate(-13)
+scala> positiveAndEven.validate(12)
+res16: jto.validation.VA[Int] = Success(12)
+
+scala> positiveAndEven.validate(-12)
+res17: jto.validation.VA[Int] = Failure(ArrayBuffer((/,List(ValidationError(List(error.min),WrappedArray(0))))))
+
+scala> positiveAndEven.validate(13)
+res18: jto.validation.VA[Int] = Failure(ArrayBuffer((/,List(ValidationError(List(error.even),WrappedArray())))))
+
+scala> positiveAndEven.validate(-13)
+res19: jto.validation.VA[Int] = Failure(ArrayBuffer((/,List(ValidationError(List(error.min),WrappedArray(0)), ValidationError(List(error.even),WrappedArray())))))
 ```
 
 Note that both rules are applied. If both fail, we get two `ValidationError`.
