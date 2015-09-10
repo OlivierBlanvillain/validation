@@ -107,7 +107,7 @@ object Dependencies {
   val docDeps = libraryDependencies += "com.typesafe.play" %% "play" % playVersion
 }
 
-object ValidationBuild extends Build {
+object ValidatedBuild extends Build {
 
   import BuildSettings._
   import Dependencies._

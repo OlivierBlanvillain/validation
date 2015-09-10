@@ -2,19 +2,19 @@
 
 ## Introduction
 
-We've already explained what a `Rule` is in [the previous chapter](ScalaValidationRule.md).
-Those examples were only covering simple rules. However most of the time, rules are used to validate and transform complex hierarchical objects, like [Json](ScalaValidationJson.md), or [Forms](ScalaValidationMigrationForm.md).
+We've already explained what a `Rule` is in [the previous chapter](ScalaValidatedRule.md).
+Those examples were only covering simple rules. However most of the time, rules are used to validate and transform complex hierarchical objects, like [Json](ScalaValidatedJson.md), or [Forms](ScalaValidatedMigrationForm.md).
 
 The validation API allows complex object rules creation by combining simple rules together. This chapter explains how to create complex rules.
 
 > Despite examples below are validating Json objects, the API is not dedicated only to Json and can be used on any type.
-> Please refer to [Validating Json](ScalaValidationJson.md), [Validating Forms](ScalaValidationMigrationForm.md), and [Supporting new types](ScalaValidationExtensions.md) for more information.
+> Please refer to [Validating Json](ScalaValidatedJson.md), [Validating Forms](ScalaValidatedMigrationForm.md), and [Supporting new types](ScalaValidatedExtensions.md) for more information.
 
 ## Path
 
 The validation API defines a class named `Path`. A `Path` represents the location of a data among a complex object.
 Unlike `JsPath` it is not related to any specific type. It's just a location in some data.
-Most of the time, a `Path` is our entry point into the Validation API.
+Most of the time, a `Path` is our entry point into the Validated API.
 
 A `Path` is declared using this syntax:
 
@@ -124,14 +124,14 @@ Now we need to apply this `Rule` to our data:
 
 ```scala
 scala> findFriend.validate(js)
-res1: jto.validation.VA[play.api.libs.json.JsValue] = Success({"name":"tata","age":20,"email":"tata@coldmail.com"})
+res1: jto.validation.VA[play.api.libs.json.JsValue] = Valid({"name":"tata","age":20,"email":"tata@coldmail.com"})
 ```
 
-If we can't find anything, applying a `Rule` leads to a `Failure`:
+If we can't find anything, applying a `Rule` leads to a `Invalid`:
 
 ```scala
 scala> (Path \ "foobar").read[JsValue, JsValue].validate(js)
-res2: jto.validation.VA[play.api.libs.json.JsValue] = Failure(List((/foobar,List(ValidationError(List(error.required),WrappedArray())))))
+res2: jto.validation.VA[play.api.libs.json.JsValue] = Invalid(List((/foobar,List(ValidatedError(List(error.required),WrappedArray())))))
 ```
 
 ### Type coercion
@@ -147,17 +147,17 @@ Let's apply this new `Rule`:
 
 ```scala
 scala> age.validate(js)
-res3: jto.validation.VA[play.api.libs.json.JsValue] = Success(25)
+res3: jto.validation.VA[play.api.libs.json.JsValue] = Valid(25)
 ```
 
 Again, if the json is invalid:
 
 ```scala
 scala> age.validate(Json.obj())
-res4: jto.validation.VA[play.api.libs.json.JsValue] = Failure(List((/user/age,List(ValidationError(List(error.required),WrappedArray())))))
+res4: jto.validation.VA[play.api.libs.json.JsValue] = Invalid(List((/user/age,List(ValidatedError(List(error.required),WrappedArray())))))
 ```
 
-The `Failure` informs us that it could not find `/user/age` in that `JsValue`.
+The `Invalid` informs us that it could not find `/user/age` in that `JsValue`.
 
 That example is nice, but we'd certainly prefer to extract `age` as an `Int` rather than a `JsValue`.
 All we have to do is to change the output type in our `Rule` definition:
@@ -171,14 +171,14 @@ And apply it:
 
 ```scala
 scala> age.validate(js)
-res5: jto.validation.VA[Int] = Success(25)
+res5: jto.validation.VA[Int] = Valid(25)
 ```
 
-If we try to parse something that is not an `Int`, we get a `Failure` with the appropriate Path and error:
+If we try to parse something that is not an `Int`, we get a `Invalid` with the appropriate Path and error:
 
 ```scala
 scala> (Path \ "user" \ "name").read[JsValue, Int].validate(js)
-res6: jto.validation.VA[Int] = Failure(List((/user/name,List(ValidationError(List(error.number),WrappedArray(Int))))))
+res6: jto.validation.VA[Int] = Invalid(List((/user/name,List(ValidatedError(List(error.number),WrappedArray(Int))))))
 ```
 
 So scala *automagically* figures out how to transform a `JsValue` into an `Int`. How does this happens ?
@@ -194,7 +194,7 @@ It's fairly simple. The definition of `read` looks like this:
 So when use `(Path \ "user" \ "age").read[JsValue, Int]`, the compiler looks for an `implicit Path => Rule[JsValue, Int]`, which happens to exist in `play.api.data.mapping.json.Rules`.
 
 
-### Validation
+### Validated
 
 So far we've managed to lookup for a `JsValue` and transform that `JsValue` into an `Int`. Problem is: not every `Int` is a valid age. An age should always be a positive `Int`.
 
@@ -214,7 +214,7 @@ Our current implementation of `age` is rather unsatisfying...
 
 ```scala
 scala> age.validate(js)
-res8: jto.validation.VA[Int] = Success(-33)
+res8: jto.validation.VA[Int] = Valid(-33)
 ```
 
 We can fix that very simply using `from`, and a built-in `Rule`:
@@ -228,7 +228,7 @@ Let's try that again:
 
 ```scala
 scala> positiveAge.validate(js)
-res9: jto.validation.VA[Int] = Failure(List((/user/age,List(ValidationError(List(error.min),WrappedArray(0))))))
+res9: jto.validation.VA[Int] = Invalid(List((/user/age,List(ValidatedError(List(error.min),WrappedArray(0))))))
 ```
 
 That's better, but still not perfect: 8765 is considered valid:
@@ -238,7 +238,7 @@ scala> val js2 = Json.parse("""{ "user": { "age" : 8765 } }""")
 js2: play.api.libs.json.JsValue = {"user":{"age":8765}}
 
 scala> positiveAge.validate(js2)
-res10: jto.validation.VA[Int] = Success(8765)
+res10: jto.validation.VA[Int] = Valid(8765)
 ```
 
 Let's fix our `age` `Rule`:
@@ -255,7 +255,7 @@ scala> val jsBig = Json.parse("""{ "user": { "age" : 8765 } }""")
 jsBig: play.api.libs.json.JsValue = {"user":{"age":8765}}
 
 scala> properAge.validate(jsBig)
-res11: jto.validation.VA[Int] = Failure(ArrayBuffer((/user/age,List(ValidationError(List(error.max),WrappedArray(130))))))
+res11: jto.validation.VA[Int] = Invalid(ArrayBuffer((/user/age,List(ValidatedError(List(error.max),WrappedArray(130))))))
 ```
 
 ### Full example
@@ -289,7 +289,7 @@ scala> val age = (Path \ "user" \ "age").from[JsValue](min(0) |+| max(130))
 age: jto.validation.Rule[play.api.libs.json.JsValue,Int] = jto.validation.Rule$$anon$2@730bc83a
 
 scala> age.validate(js)
-res12: jto.validation.VA[Int] = Success(25)
+res12: jto.validation.VA[Int] = Valid(25)
 ```
 
 ## Combining Rules
@@ -338,5 +338,5 @@ It is recommended to always follow this pattern, as it nicely scopes the implici
 
 but repeating `JsValue` all over the place is just not very DRY.
 
-> **Next:** - [Serialization with Write](ScalaValidationWrite.md)
-> **For more examples and snippets:** - [Cookbook](ScalaValidationCookbook.md)
+> **Next:** - [Serialization with Write](ScalaValidatedWrite.md)
+> **For more examples and snippets:** - [Cookbook](ScalaValidatedCookbook.md)

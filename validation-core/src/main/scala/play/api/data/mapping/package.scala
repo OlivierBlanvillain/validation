@@ -17,9 +17,9 @@ import cats.syntax.{ApplyOps, ApplySyntax1}
  */
 package object validation {
   @annotation.implicitNotFound("No implicit Mapping found from ${I} to ${O}. Try to define an implicit Mapping[${E}, ${I}, ${O}].")
-  type Mapping[E, I, O] = I => Validation[E, O]
-  type Constraint[T] = Mapping[ValidationError, T, T]
-  type VA[O] = Validation[(Path, Seq[ValidationError]), O]
+  type Mapping[E, I, O] = I => Validated[E, O]
+  type Constraint[T] = Mapping[ValidatedError, T, T]
+  type VA[O] = Validated[(Path, Seq[ValidatedError]), O]
   
   type Validated[+E, +A] = cats.data.Validated[E, A]
   val Validated = cats.data.Validated

@@ -59,11 +59,11 @@ val json: JsValue = Json.parse("""
 ```
 
 This sample is used in all next samples.
-The Validation API will work on the JsValue.
+The Validated API will work on the JsValue.
 
 ## Accessing Path in a JSON tree
 
-The validation API defines a class named `Path`. A `Path` represents a location. Contrarely to `JsPath`, it's not related to any specific type, it's just a location in some data. Most of the time, a `Path` is our entry point into the Validation API.
+The validation API defines a class named `Path`. A `Path` represents a location. Contrarely to `JsPath`, it's not related to any specific type, it's just a location in some data. Most of the time, a `Path` is our entry point into the Validated API.
 
 ### Navigating in data using `Path`
 
@@ -109,8 +109,8 @@ Now we need to apply this `Rule` to our data.
 findFriend.validate(json)
 ```
 
-When we apply a `Rule`, we have no guarantee whatsoever that it's going to succeed. There's various things that could fail, so instead of just returning some data of type `O`, `validate` returns an instance of `Validation`.
-A `Validation` can only have two types: It's either a `Success` containing the result we expect, or a `Failure` containing all the errors along with their locations.
+When we apply a `Rule`, we have no guarantee whatsoever that it's going to succeed. There's various things that could fail, so instead of just returning some data of type `O`, `validate` returns an instance of `Validated`.
+A `Validated` can only have two types: It's either a `Valid` containing the result we expect, or a `Invalid` containing all the errors along with their locations.
 
 Let's try something that we know will fail: We'll try to lookup for a JsValue at a non existing location:
 
@@ -118,4 +118,4 @@ Let's try something that we know will fail: We'll try to lookup for a JsValue at
 (Path \ "somenonexistinglocation").read[JsValue, JsValue].validate(json)
 ```
 
-This time `validate` returns `Failure`. There's nothing at `somenonexistinglocation` and this failure tells us just that. We required a `JsValue` to be found at that Path, but our requirement was not fullfiled. Note that the `Failure` does not just contain a `Path` and an error message. It contains a `List[(Path, List[ValidationError])]`. We'll see later that a  single validation could find several errors at a given `Path`, AND find errors at different `Path`
+This time `validate` returns `Invalid`. There's nothing at `somenonexistinglocation` and this failure tells us just that. We required a `JsValue` to be found at that Path, but our requirement was not fullfiled. Note that the `Invalid` does not just contain a `Path` and an error message. It contains a `List[(Path, List[ValidatedError])]`. We'll see later that a  single validation could find several errors at a given `Path`, AND find errors at different `Path`

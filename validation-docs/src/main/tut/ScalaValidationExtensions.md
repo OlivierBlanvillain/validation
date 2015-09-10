@@ -26,8 +26,8 @@ object Ex1 {
 	implicit def pickInJson(p: Path): Rule[JsValue, JsValue] =
 		Rule[JsValue, JsValue] { json =>
 		  pathToJsPath(p)(json) match {
-		    case Nil => Failure(Seq(Path -> Seq(ValidationError("error.required"))))
-		    case js :: _ => Success(js)
+		    case Nil => Invalid(Seq(Path -> Seq(ValidatedError("error.required"))))
+		    case js :: _ => Valid(js)
 		  }
 		}
 }
@@ -69,8 +69,8 @@ Instead of doing so, we're going to make `pickInJson` a bit smarter by adding an
 implicit def pickInJson[O](p: Path)(implicit r: Rule[JsValue, O]): Rule[JsValue, O] =
     Rule[JsValue, JsValue] { json =>
       pathToJsPath(p)(json) match {
-        case Nil => Failure(Seq(Path -> Seq(ValidationError("error.required"))))
-        case js :: _ => Success(js)
+        case Nil => Invalid(Seq(Path -> Seq(ValidatedError("error.required"))))
+        case js :: _ => Valid(js)
       }
     }.compose(r)
 ```
@@ -78,17 +78,17 @@ implicit def pickInJson[O](p: Path)(implicit r: Rule[JsValue, O]): Rule[JsValue,
 The now all we have to do is to write a `Rule[JsValue, O]`, and we automatically get the ` Path => Rule[JsValue, O]` we're interested in. The rest is just a matter of defining all the prmitives rules, for example:
 
 ```tut
-def jsonAs[T](f: PartialFunction[JsValue, Validation[ValidationError, T]])(args: Any*) =
+def jsonAs[T](f: PartialFunction[JsValue, Validated[ValidatedError, T]])(args: Any*) =
 	Rule.fromMapping[JsValue, T](
-	  f.orElse{ case j => Failure(Seq(ValidationError("validation.invalid", args: _*)))
+	  f.orElse{ case j => Invalid(Seq(ValidatedError("validation.invalid", args: _*)))
 	})
 
 def stringRule = jsonAs[String] {
-	case JsString(v) => Success(v)
+	case JsString(v) => Valid(v)
 }("String")
 
 def booleanRule = jsonAs[Boolean]{
-	case JsBoolean(v) => Success(v)
+	case JsBoolean(v) => Valid(v)
 }("Boolean")
 ```
 
@@ -110,7 +110,7 @@ Supporting primitives is nice, but not enough. Users are going to deal with `Seq
 
 ### Option
 
-What we want to do is to implement a function that takes a `Path => Rule[JsValue, O]`, an lift it into a `Path => Rule[JsValue, Option[O]]` for any type `O`. The reason we're working on the fully defined `Path => Rule[JsValue, O]` and not just `Rule[JsValue, O]` is because a non existent `Path` must be validated as a `Success(None)`. If we were to use `pickInJson` on a `Rule[JsValue, Option[O]]`, we would end up with a `Failure` in the case of non-existing `Path`.
+What we want to do is to implement a function that takes a `Path => Rule[JsValue, O]`, an lift it into a `Path => Rule[JsValue, Option[O]]` for any type `O`. The reason we're working on the fully defined `Path => Rule[JsValue, O]` and not just `Rule[JsValue, O]` is because a non existent `Path` must be validated as a `Valid(None)`. If we were to use `pickInJson` on a `Rule[JsValue, Option[O]]`, we would end up with a `Invalid` in the case of non-existing `Path`.
 
 The `play.api.data.mapping.DefaultRules[I]` traits provides a helper for building the desired method. It's signature is:
 
@@ -238,4 +238,4 @@ val userWrite = To[JsObject] { __ =>
 
 We highly recommend you to test your rules as much as possible. There's a few tricky cases you need to handle properly. You should port the tests in `RulesSpec.scala` and use them on your rules.
 
-> **Next:** - [Cookbook](ScalaValidationCookbook.md)
+> **Next:** - [Cookbook](ScalaValidatedCookbook.md)

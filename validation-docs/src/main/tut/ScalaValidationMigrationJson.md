@@ -1,6 +1,6 @@
 # Migration from the Json API
 
-The Json API and the new validation API are really similar. One could see the new Validation API as just an evolution of the Json API.
+The Json API and the new validation API are really similar. One could see the new Validated API as just an evolution of the Json API.
 
 > The json validation API **still works just fine** but we recommend you use the new validation API for new code, and to port your old code whenever it's possible.
 
@@ -93,7 +93,7 @@ The general use for `keepAnd` is to apply two validation on the same `JsValue`, 
 }
 ```
 
-You can achieve the same think in the Validation API using [Rules composition](ScalaValidationRule.md)
+You can achieve the same think in the Validated API using [Rules composition](ScalaValidatedRule.md)
 
 ```tut
 From[JsValue] { __ =>
@@ -156,7 +156,7 @@ For example:
 
 ```tut
 val js = Json.obj("n" -> 42.5f)
-js.validate((__ \ "n").read[Int]) // JsSuccess(42, /n)
+js.validate((__ \ "n").read[Int]) // JsValid(42, /n)
 ```
 
 whereas with the validation API, an `Int` must really be an `Int`:
@@ -205,7 +205,7 @@ For example, given the following json object, we can extract a sub tree:
 		))
 
 	val pick = (__ \ "field3").json.pickBranch
-	pick.reads(js) // Success({"field3":{"field31":"beta","field32":345}})
+	pick.reads(js) // Valid({"field3":{"field31":"beta","field32":345}})
 }
 ```
 
@@ -228,7 +228,7 @@ val pick = From[JsValue] { __ =>
 	(__ \ "field3").read[JsValue]
 }
 
-pick.validate(js) // Success({"field31":"beta","field32":345})
+pick.validate(js) // Valid({"field31":"beta","field32":345})
 ```
 
 ## `Writes` migration
@@ -284,6 +284,6 @@ The validation API does not have an equivalent for `Format`. We find that genera
 
 ## Json Inception (macro)
 
-Macros are also available for the validation API. See [Validation Inception](ScalaValidationMacros.md).
+Macros are also available for the validation API. See [Validated Inception](ScalaValidatedMacros.md).
 
-> **Next:** - [Migration from 2.1.x Form API](ScalaValidationMigrationForm.md)
+> **Next:** - [Migration from 2.1.x Form API](ScalaValidatedMigrationForm.md)

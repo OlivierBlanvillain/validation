@@ -1,6 +1,6 @@
 # Form API migration
 
-Although the new Validation API differs significantly from the `Form` API, migrating to to new API is straightforward.
+Although the new Validated API differs significantly from the `Form` API, migrating to to new API is straightforward.
 This example is a case study of the migration of one of play sample application: "computer database".
 
 We'll consider `Application.scala`. This controller take care of Computer creation, and edition. The models are defined in `Models.scala`
@@ -76,7 +76,7 @@ object Application extends Controller {
 
 ```
 
-### Validation rules migration
+### Validated rules migration
 
 The first thing we must change is the definition of the `Computer` validations.
 Instead of using `play.api.data.Form`, we must define a `Rule[UrlFormEncoded, Computer]`.
@@ -93,7 +93,7 @@ case class Computer(id: Option[Long] = None, name: String, introduced: Option[Da
 import jto.validation._
 import jto.validation.forms.UrlFormEncoded
 
-implicit val computerValidation = From[UrlFormEncoded] { __ =>
+implicit val computerValidated = From[UrlFormEncoded] { __ =>
   import jto.validation.forms.Rules._
   ((__ \ "id").read(ignored[UrlFormEncoded, Option[Long]](None)) ~
    (__ \ "name").read(notEmpty) ~
@@ -154,7 +154,7 @@ Handling validation errors is vastly similar to the old api, the main difference
 
 ```scala
 def save = Action(parse.urlFormEncoded) { implicit request =>
-  val r = computerValidation.validate(request.body)
+  val r = computerValidated.validate(request.body)
   r.fold(
     err => BadRequest(html.createForm((request.body, r), Company.options)),
     computer => {
@@ -165,4 +165,4 @@ def save = Action(parse.urlFormEncoded) { implicit request =>
 }
 ```
 
-> **Next:** - [Cookbook](ScalaValidationCookbook.md)
+> **Next:** - [Cookbook](ScalaValidatedCookbook.md)

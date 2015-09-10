@@ -12,7 +12,7 @@ trait RuleLike[I, O] {
 }
 
 object RuleLike {
-  implicit def zero[O]: RuleLike[O, O] = Rule[O, O](Success.apply)
+  implicit def zero[O]: RuleLike[O, O] = Rule[O, O](Valid.apply)
 }
 
 trait Rule[I, O] extends RuleLike[I, O] {
@@ -25,7 +25,7 @@ trait Rule[I, O] extends RuleLike[I, O] {
    *   val r = r1.compose(r2)
    *
    * }}}
-   * @param path a prefix for the errors path if the result is a `Failure`
+   * @param path a prefix for the errors path if the result is a `Invalid`
    * @param sub the second Rule to apply
    * @return The combination of the two Rules
    */
@@ -37,7 +37,7 @@ trait Rule[I, O] extends RuleLike[I, O] {
       this.validate(d)
         .map(f)
         .fold(
-          es => Failure(es),
+          es => Invalid(es),
           r => r.validate(d))
     }
 
@@ -51,7 +51,7 @@ trait Rule[I, O] extends RuleLike[I, O] {
    *   val rc: Rule[JsValue, A] = From[JsValue]{ __ =>
    *     ((__ \ "name").read[String] ~ (__ \ "bar").read[Int])(C.apply _)
    *   }
-   *   val rule = rb orElse rc orElse Rule(_ => typeFailure)
+   *   val rule = rb orElse rc orElse Rule(_ => typeInvalid)
    * }}}
    * @param t an alternative Rule
    * @return a Rule
@@ -61,7 +61,7 @@ trait Rule[I, O] extends RuleLike[I, O] {
 
   // would be nice to have Kleisli in play
   def compose[P](sub: => RuleLike[O, P]): Rule[I, P] = compose(Path)(sub)
-  def compose[P](m: Mapping[ValidationError, O, P]): Rule[I, P] = compose(Rule.fromMapping(m))
+  def compose[P](m: Mapping[ValidatedError, O, P]): Rule[I, P] = compose(Rule.fromMapping(m))
 
   /**
    * Create a new Rule the validate `this` Rule and `r2` simultaneously
@@ -71,7 +71,7 @@ trait Rule[I, O] extends RuleLike[I, O] {
    *      "firstname" -> "Julien",
    *      "lastname" -> "Tournay")
    *   val composed = notEmpty |+| minLength(3)
-   *   (Path \ "firstname").read(composed).validate(valid) // Success("Julien")
+   *   (Path \ "firstname").read(composed).validate(valid) // Valid("Julien")
    *  }}}
    */
   def |+|[OO <: O](r2: RuleLike[I, OO]): Rule[I, O] =
@@ -85,7 +85,7 @@ trait Rule[I, O] extends RuleLike[I, O] {
     }
 
   /**
-   * This methods allows you to modify the Path of errors (if the result is a Failure) when aplying the Rule
+   * This methods allows you to modify the Path of errors (if the result is a Invalid) when aplying the Rule
    */
   def repath(f: Path => Path): Rule[I, O] =
     Rule { d =>
@@ -126,9 +126,9 @@ object Rule {
     toRule(RuleLike.zero[O])
   
   def pure[I, O](o: O): Rule[I, O] =
-    Rule(_ => Success(o))
+    Rule(_ => Valid(o))
 
-  def apply[I, O](m: Mapping[(Path, Seq[ValidationError]), I, O]): Rule[I, O] =
+  def apply[I, O](m: Mapping[(Path, Seq[ValidatedError]), I, O]): Rule[I, O] =
     new Rule[I, O] {
       def validate(data: I): VA[O] = m(data)
     }
@@ -138,7 +138,7 @@ object Rule {
       def validate(data: I): VA[O] = r.validate(data)
     }
 
-  def fromMapping[I, O](f: Mapping[ValidationError, I, O]): Rule[I, O] =
+  def fromMapping[I, O](f: Mapping[ValidatedError, I, O]): Rule[I, O] =
     Rule[I, O](f(_: I).fail.map(errs => Seq(Path -> errs)))
 
   implicit def applicativeRule[I]: Applicative[Rule[I, ?]] =

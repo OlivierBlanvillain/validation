@@ -19,7 +19,7 @@ object Writes extends DefaultWrites with DefaultMonoids with GenericWrites[JsVal
     case KeyPathNode(key) => Json.obj(key -> j)
   }
 
-  implicit val validationError = Write[ValidationError, JsValue] { err =>
+  implicit val validationError = Write[ValidatedError, JsValue] { err =>
     Json.obj(
       "msg" -> JsString(err.message),
       "args" -> err.args.foldLeft(Json.arr()) { (arr, arg) =>
@@ -37,13 +37,13 @@ object Writes extends DefaultWrites with DefaultMonoids with GenericWrites[JsVal
       })
   }
 
-  implicit def errors(implicit wErrs: WriteLike[Seq[ValidationError], JsValue]) = Write[(Path, Seq[ValidationError]), JsObject] {
+  implicit def errors(implicit wErrs: WriteLike[Seq[ValidatedError], JsValue]) = Write[(Path, Seq[ValidatedError]), JsObject] {
     case (p, errs) =>
       Json.obj(p.toString -> wErrs.writes(errs))
   }
 
-  implicit def failure[O](implicit w: WriteLike[(Path, Seq[ValidationError]), JsObject]) = Write[Failure[(Path, Seq[ValidationError]), O], JsObject] {
-    case Failure(errs) =>
+  implicit def failure[O](implicit w: WriteLike[(Path, Seq[ValidatedError]), JsObject]) = Write[Invalid[(Path, Seq[ValidatedError]), O], JsObject] {
+    case Invalid(errs) =>
       errs.map(w.writes).reduce(_ ++ _)
   }
 

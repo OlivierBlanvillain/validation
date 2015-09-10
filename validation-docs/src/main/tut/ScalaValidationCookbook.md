@@ -1,6 +1,6 @@
 # Cookbook
 
-> All the examples below are validating Json objects. The API is not dedicated only to Json, it can be used on any type. Please refer to [Validating Json](ScalaValidationJson.md), [Validating Forms](ScalaValidationMigrationForm.md), and [Supporting new types](ScalaValidationExtensions.md) for more information.
+> All the examples below are validating Json objects. The API is not dedicated only to Json, it can be used on any type. Please refer to [Validating Json](ScalaValidatedJson.md), [Validating Forms](ScalaValidatedMigrationForm.md), and [Supporting new types](ScalaValidatedExtensions.md) for more information.
 
 ## `Rule`
 
@@ -47,7 +47,7 @@ val passRule = From[JsValue] { __ =>
    	// We then create a `Rule[(String, String), String]` validating that given a `(String, String)`,
    	// both strings are equals. Those rules are then composed together.
     .compose(Rule.uncurry(json.Rules.equalTo[String])
-    // In case of `Failure`, we want to control the field holding the errors.
+    // In case of `Invalid`, we want to control the field holding the errors.
     // We change the `Path` of errors using `repath`
     .repath(_ => (Path \ "verify")))
 }
@@ -125,8 +125,8 @@ val r = From[JsValue] { __ =>
   import jto.validation.json.Rules._
   
   val tupleR = Rule.fromMapping[JsValue, (String, String)] {
-    case JsObject(Seq((key, JsString(value)))) => Success(key.toString -> value)
-    case _ => Failure(Seq(ValidationError("BAAAM")))
+    case JsObject(Seq((key, JsString(value)))) => Valid(key.toString -> value)
+    case _ => Invalid(Seq(ValidatedError("BAAAM")))
   }
 
   (__ \ "values").read(seqR(tupleR))
@@ -162,8 +162,8 @@ val rc: Rule[JsValue, A] = From[JsValue] { __ =>
   (__ \ "name").read(json.Rules.equalTo("C")) *> (__ \ "bar").read[Int].map(C.apply _)
 }
 
-val typeFailure = Failure(Seq(Path -> Seq(ValidationError("validation.unknownType"))))
-val rule = rb orElse rc orElse Rule(_ => typeFailure)
+val typeInvalid = Invalid(Seq(Path -> Seq(ValidatedError("validation.unknownType"))))
+val rule = rb orElse rc orElse Rule(_ => typeInvalid)
 
 rule.validate(b)
 rule.validate(c)
@@ -173,14 +173,14 @@ rule.validate(e)
 #### Using class discovery based on field discrimination
 
 ```tut
-val typeFailure = Failure(Seq(Path -> Seq(ValidationError("validation.unknownType"))))
+val typeInvalid = Invalid(Seq(Path -> Seq(ValidatedError("validation.unknownType"))))
 
 val rule = From[JsValue] { __ =>
   import jto.validation.json.Rules._
 	(__ \ "name").read[String].flatMap[A] {
 	  case "B" => (__ \ "foo").read[Int].map(B.apply _)
 	  case "C" => (__ \ "bar").read[Int].map(C.apply _)
-	  case _ => Rule(_ => typeFailure)
+	  case _ => Rule(_ => typeInvalid)
 	}
 }
 

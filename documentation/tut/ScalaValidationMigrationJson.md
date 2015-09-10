@@ -1,6 +1,6 @@
 # Migration from the Json API
 
-The Json API and the new validation API are really similar. One could see the new Validation API as just an evolution of the Json API.
+The Json API and the new validation API are really similar. One could see the new Validated API as just an evolution of the Json API.
 
 > The json validation API **still works just fine** but we recommend you use the new validation API for new code, and to port your old code whenever it's possible.
 
@@ -38,7 +38,7 @@ scala> {
      |   val js = Json.obj( "name" -> "gremlins", "isDead" -> false, "weight" -> 1.0F)
      |   Json.fromJson[Creature](js)
      | }
-res0: play.api.libs.json.JsResult[Creature] = JsSuccess(Creature(gremlins,false,1.0),)
+res0: play.api.libs.json.JsResult[Creature] = JsValid(Creature(gremlins,false,1.0),)
 ```
 
 Using the new API, this code becomes:
@@ -62,7 +62,7 @@ scala> val js = Json.obj( "name" -> "gremlins", "isDead" -> false, "weight" -> 1
 js: play.api.libs.json.JsObject = {"name":"gremlins","isDead":false,"weight":1}
 
 scala> From[JsValue, Creature](js)
-res1: jto.validation.VA[Creature] = Success(Creature(gremlins,false,1.0))
+res1: jto.validation.VA[Creature] = Valid(Creature(gremlins,false,1.0))
 ```
 
 Which appart from the extra imports is very similar. Notice the `From[JsValue]{...}` block, that's one of the nice features of the new validation API. Not only it avoids type repetition, but it also scopes the implicits.
@@ -91,13 +91,13 @@ scala> val js3 = Json.obj()
 js3: play.api.libs.json.JsObject = {}
 
 scala> nullableStringRule.validate(js1)
-res2: jto.validation.VA[Option[String]] = Success(Some(bar))
+res2: jto.validation.VA[Option[String]] = Valid(Some(bar))
 
 scala> nullableStringRule.validate(js2)
-res3: jto.validation.VA[Option[String]] = Success(None)
+res3: jto.validation.VA[Option[String]] = Valid(None)
 
 scala> nullableStringRule.validate(js3)
-res4: jto.validation.VA[Option[String]] = Success(None)
+res4: jto.validation.VA[Option[String]] = Valid(None)
 ```
 
 ### keepAnd
@@ -114,7 +114,7 @@ scala> {
 res5: play.api.libs.json.Reads[String] = play.api.libs.json.Reads$$anon$8@5d9aecf8
 ```
 
-You can achieve the same think in the Validation API using [Rules composition](ScalaValidationRule.md)
+You can achieve the same think in the Validated API using [Rules composition](ScalaValidatedRule.md)
 
 ```scala
 scala> From[JsValue] { __ =>
@@ -148,7 +148,7 @@ scala> {
      | 
      |   Json.fromJson[User](js)
      | }
-res7: play.api.libs.json.JsResult[User] forSome { type User <: Product with Serializable{val id: Long; val name: String; val friend: Option[User]; def copy(id: Long,name: String,friend: Option[User]): User; def copy$default$1: Long @scala.annotation.unchecked.uncheckedVariance; def copy$default$2: String @scala.annotation.unchecked.uncheckedVariance; def copy$default$3: Option[User] @scala.annotation.unchecked.uncheckedVariance} } = JsSuccess(User(123,bob,Some(User(124,john,None))),)
+res7: play.api.libs.json.JsResult[User] forSome { type User <: Product with Serializable{val id: Long; val name: String; val friend: Option[User]; def copy(id: Long,name: String,friend: Option[User]): User; def copy$default$1: Long @scala.annotation.unchecked.uncheckedVariance; def copy$default$2: String @scala.annotation.unchecked.uncheckedVariance; def copy$default$3: Option[User] @scala.annotation.unchecked.uncheckedVariance} } = JsValid(User(123,bob,Some(User(124,john,None))),)
 ```
 
 becomes:
@@ -172,7 +172,7 @@ scala> val js = Json.obj(
 js: play.api.libs.json.JsObject = {"id":123,"name":"bob","friend":{"id":124,"name":"john","friend":null}}
 
 scala> From[JsValue, User](js)
-res8: jto.validation.VA[User] = Success(User(123,bob,Some(User(124,john,None))))
+res8: jto.validation.VA[User] = Valid(User(123,bob,Some(User(124,john,None))))
 ```
 
 ### Numeric types
@@ -185,8 +185,8 @@ For example:
 scala> val js = Json.obj("n" -> 42.5f)
 js: play.api.libs.json.JsObject = {"n":42.5}
 
-scala> js.validate((__ \ "n").read[Int]) // JsSuccess(42, /n)
-res9: play.api.libs.json.JsResult[Int] = JsError(List((/n,List(ValidationError(List(error.expected.int),WrappedArray())))))
+scala> js.validate((__ \ "n").read[Int]) // JsValid(42, /n)
+res9: play.api.libs.json.JsResult[Int] = JsError(List((/n,List(ValidatedError(List(error.expected.int),WrappedArray())))))
 ```
 
 whereas with the validation API, an `Int` must really be an `Int`:
@@ -199,7 +199,7 @@ scala> val js = Json.obj("n" -> 42.5f)
 js: play.api.libs.json.JsObject = {"n":42.5}
 
 scala> (Path \ "n").read[JsValue, Int].validate(js)
-res10: jto.validation.VA[Int] = Failure(List((/n,List(ValidationError(List(error.number),WrappedArray(Int))))))
+res10: jto.validation.VA[Int] = Invalid(List((/n,List(ValidatedError(List(error.number),WrappedArray(Int))))))
 ```
 
 ### `json.apply` and `path.as[T]`
@@ -242,9 +242,9 @@ scala> {
      | 		))
      | 
      | 	val pick = (__ \ "field3").json.pickBranch
-     | 	pick.reads(js) // Success({"field3":{"field31":"beta","field32":345}})
+     | 	pick.reads(js) // Valid({"field3":{"field31":"beta","field32":345}})
      | }
-res13: play.api.libs.json.JsResult[play.api.libs.json.JsObject] = JsSuccess({"field3":{"field31":"beta","field32":345}},/field3)
+res13: play.api.libs.json.JsResult[play.api.libs.json.JsObject] = JsValid({"field3":{"field31":"beta","field32":345}},/field3)
 ```
 
 In the validation API, you simply use `read` to create a rule picking a branch:
@@ -271,8 +271,8 @@ scala> val pick = From[JsValue] { __ =>
      | }
 pick: jto.validation.Rule[play.api.libs.json.JsValue,play.api.libs.json.JsValue] = jto.validation.Rule$$anon$3@52b1221
 
-scala> pick.validate(js) // Success({"field31":"beta","field32":345})
-res14: jto.validation.VA[play.api.libs.json.JsValue] = Success({"field31":"beta","field32":345})
+scala> pick.validate(js) // Valid({"field31":"beta","field32":345})
+res14: jto.validation.VA[play.api.libs.json.JsValue] = Valid({"field31":"beta","field32":345})
 ```
 
 ## `Writes` migration
@@ -335,6 +335,6 @@ The validation API does not have an equivalent for `Format`. We find that genera
 
 ## Json Inception (macro)
 
-Macros are also available for the validation API. See [Validation Inception](ScalaValidationMacros.md).
+Macros are also available for the validation API. See [Validated Inception](ScalaValidatedMacros.md).
 
-> **Next:** - [Migration from 2.1.x Form API](ScalaValidationMigrationForm.md)
+> **Next:** - [Migration from 2.1.x Form API](ScalaValidatedMigrationForm.md)
