@@ -30,7 +30,7 @@ scala> object Ex1 {
      | 	implicit def pickInJson(p: Path): Rule[JsValue, JsValue] =
      | 		Rule[JsValue, JsValue] { json =>
      | 		  pathToJsPath(p)(json) match {
-     | 		    case Nil => Invalid(Seq(Path -> Seq(ValidatedError("error.required"))))
+     | 		    case Nil => Invalid(Seq(Path -> Seq(ValidationError("error.required"))))
      | 		    case js :: _ => Valid(js)
      | 		  }
      | 		}
@@ -75,7 +75,7 @@ Instead of doing so, we're going to make `pickInJson` a bit smarter by adding an
 implicit def pickInJson[O](p: Path)(implicit r: Rule[JsValue, O]): Rule[JsValue, O] =
     Rule[JsValue, JsValue] { json =>
       pathToJsPath(p)(json) match {
-        case Nil => Invalid(Seq(Path -> Seq(ValidatedError("error.required"))))
+        case Nil => Invalid(Seq(Path -> Seq(ValidationError("error.required"))))
         case js :: _ => Valid(js)
       }
     }.compose(r)
@@ -84,11 +84,11 @@ implicit def pickInJson[O](p: Path)(implicit r: Rule[JsValue, O]): Rule[JsValue,
 The now all we have to do is to write a `Rule[JsValue, O]`, and we automatically get the ` Path => Rule[JsValue, O]` we're interested in. The rest is just a matter of defining all the prmitives rules, for example:
 
 ```scala
-scala> def jsonAs[T](f: PartialFunction[JsValue, Validated[ValidatedError, T]])(args: Any*) =
+scala> def jsonAs[T](f: PartialFunction[JsValue, Validated[ValidationError, T]])(args: Any*) =
      | 	Rule.fromMapping[JsValue, T](
-     | 	  f.orElse{ case j => Invalid(Seq(ValidatedError("validation.invalid", args: _*)))
+     | 	  f.orElse{ case j => Invalid(Seq(ValidationError("validation.invalid", args: _*)))
      | 	})
-jsonAs: [T](f: PartialFunction[play.api.libs.json.JsValue,jto.validation.Validated[jto.validation.ValidatedError,T]])(args: Any*)jto.validation.Rule[play.api.libs.json.JsValue,T]
+jsonAs: [T](f: PartialFunction[play.api.libs.json.JsValue,jto.validation.Validated[jto.validation.ValidationError,T]])(args: Any*)jto.validation.Rule[play.api.libs.json.JsValue,T]
 
 scala> def stringRule = jsonAs[String] {
      | 	case JsString(v) => Valid(v)
@@ -154,7 +154,7 @@ scala> maybeEmail.validate(Json.obj("email" -> "foo@bar.com"))
 res1: jto.validation.VA[Option[String]] = Valid(Some(foo@bar.com))
 
 scala> maybeEmail.validate(Json.obj("email" -> "baam!"))
-res2: jto.validation.VA[Option[String]] = Invalid(List((/email,List(ValidatedError(List(error.email),WrappedArray())))))
+res2: jto.validation.VA[Option[String]] = Invalid(List((/email,List(ValidationError(List(error.email),WrappedArray())))))
 
 scala> maybeEmail.validate(Json.obj("email" -> JsNull))
 res3: jto.validation.VA[Option[String]] = Valid(None)
@@ -264,4 +264,4 @@ userWrite: jto.validation.Write[User,play.api.libs.json.JsObject] = jto.validati
 
 We highly recommend you to test your rules as much as possible. There's a few tricky cases you need to handle properly. You should port the tests in `RulesSpec.scala` and use them on your rules.
 
-> **Next:** - [Cookbook](ScalaValidatedCookbook.md)
+> **Next:** - [Cookbook](ScalaValidationCookbook.md)

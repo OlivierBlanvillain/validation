@@ -129,7 +129,7 @@ Let's try something that we know will fail: We'll try to lookup for a JsValue at
 
 ```scala
 scala> (Path \ "somenonexistinglocation").read[JsValue, JsValue].validate(json)
-res1: jto.validation.VA[play.api.libs.json.JsValue] = Invalid(List((/somenonexistinglocation,List(ValidatedError(List(error.required),WrappedArray())))))
+res1: jto.validation.VA[play.api.libs.json.JsValue] = Invalid(List((/somenonexistinglocation,List(ValidationError(List(error.required),WrappedArray())))))
 ```
 
-This time `validate` returns `Invalid`. There's nothing at `somenonexistinglocation` and this failure tells us just that. We required a `JsValue` to be found at that Path, but our requirement was not fullfiled. Note that the `Invalid` does not just contain a `Path` and an error message. It contains a `List[(Path, List[ValidatedError])]`. We'll see later that a  single validation could find several errors at a given `Path`, AND find errors at different `Path`
+This time `validate` returns `Invalid`. There's nothing at `somenonexistinglocation` and this failure tells us just that. We required a `JsValue` to be found at that Path, but our requirement was not fullfiled. Note that the `Invalid` does not just contain a `Path` and an error message. It contains a `List[(Path, List[ValidationError])]`. We'll see later that a  single validation could find several errors at a given `Path`, AND find errors at different `Path`

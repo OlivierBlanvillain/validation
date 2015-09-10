@@ -7,13 +7,13 @@ object Rules extends DefaultRules[Node] with ParsingRules {
   implicit def nodeR[O](implicit r: RuleLike[String, O]): Rule[Node, O] = Rule.fromMapping[Node, String] { node =>
     val children = (node \ "_")
     if (children.isEmpty) Valid(node.text)
-    else Invalid(Seq(ValidatedError("error.invalid", "a non-leaf node can not be validated to String")))
+    else Invalid(Seq(ValidationError("error.invalid", "a non-leaf node can not be validated to String")))
   }.compose(r)
 
   def attributeR[O](key: String)(implicit r: RuleLike[String, O]): Rule[Node, O] = Rule.fromMapping[Node, String] { node =>
     node.attribute(key).flatMap(_.headOption).map(_.text) match {
       case Some(value) => Valid(value)
-      case None => Invalid(Seq(ValidatedError("error.required")))
+      case None => Invalid(Seq(ValidationError("error.required")))
     }
   }.compose(r)
 
@@ -37,7 +37,7 @@ object Rules extends DefaultRules[Node] with ParsingRules {
 
     Rule[II, Node] { node =>
       search(p, node) match {
-        case None => Invalid(Seq(Path -> Seq(ValidatedError("error.required"))))
+        case None => Invalid(Seq(Path -> Seq(ValidationError("error.required"))))
         case Some(resNode) => Valid(resNode)
       }
     }.compose(r)
@@ -64,7 +64,7 @@ object Rules extends DefaultRules[Node] with ParsingRules {
       val maybeChild = (node \ "_").find(_.attribute(attrKey).filter(_.text == attrValue).isDefined)
       maybeChild match {
         case Some(child) => Valid(child)
-        case None => Invalid(Seq(ValidatedError("error.required", s"child with attribute $attrKey = $attrValue not found")))
+        case None => Invalid(Seq(ValidationError("error.required", s"child with attribute $attrKey = $attrValue not found")))
       }
     }.compose(r)
 }

@@ -36,7 +36,7 @@ object Rules extends DefaultRules[Delimited] with ParsingRules {
     Rule[Delimited, String] { delimited =>
       p.path match {
         case IdxPathNode(i) :: t if i < delimited.length => Valid(delimited(i))
-        case _ => Invalid(Seq(Path -> Seq(ValidatedError("error.required"))))
+        case _ => Invalid(Seq(Path -> Seq(ValidationError("error.required"))))
       }
     }.compose(r)
 

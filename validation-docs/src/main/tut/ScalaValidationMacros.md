@@ -1,4 +1,4 @@
-# Validated Inception
+# Validation Inception
 
 > This feature is experimental such as Scala Macros which are flagged experimental in Scala 2.10.0.
 > If you would rather not use Scala experimental features, just stick to hand-written `Rule` / `Write` which are strictly equivalent.
@@ -90,4 +90,4 @@ personWrite.writes(Person("Julien", 28, true))
  - **Macros only work when `apply` and `unapply` have corresponding input/output types**. This is naturally true for case classes. However if you want to validate a trait, you must implement the same `apply`/`unapply` you would have in a case class.
  - **Validated Macros accept `Option`/`Seq`/`List`/`Set` & `Map[String, _]`**. For other generic types, you'll have to test and possibly write your `Rule`/`Write` if it's not working out of the box.
 
-> **Next:** - [Supporting new types](ScalaValidatedExtensions.md)
+> **Next:** - [Supporting new types](ScalaValidationExtensions.md)

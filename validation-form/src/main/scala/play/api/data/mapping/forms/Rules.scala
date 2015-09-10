@@ -120,7 +120,7 @@ object Rules extends DefaultRules[PM.PM] with ParsingRules {
 
   implicit def parseString[O](implicit r: RuleLike[String, O]): Rule[PM, O] = {
     val find = Rule[Option[String], String] {
-      _.map(Valid(_)).getOrElse(Invalid(Seq(Path -> Seq(ValidatedError("error.required")))))
+      _.map(Valid(_)).getOrElse(Invalid(Seq(Path -> Seq(ValidationError("error.required")))))
     }
     Rule.zero[PM]
       .map(_.get(Path))

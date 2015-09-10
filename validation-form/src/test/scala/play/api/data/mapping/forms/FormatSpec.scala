@@ -21,7 +21,7 @@ object FormatSpec extends Specification {
       f.writes(1L) mustEqual(m)
       f.validate(m) mustEqual(Valid(1L))
 
-      (f).validate(Map.empty) mustEqual(Invalid(Seq(Path \ "id" -> Seq(ValidatedError("error.required")))))
+      (f).validate(Map.empty) mustEqual(Invalid(Seq(Path \ "id" -> Seq(ValidationError("error.required")))))
     }
 
 
@@ -38,7 +38,7 @@ object FormatSpec extends Specification {
       f.writes("CAFEBABE") mustEqual(m)
       f.validate(m) mustEqual(Valid("CAFEBABE"))
 
-      (f).validate(Map.empty) mustEqual(Invalid(Seq(Path \ "id" -> Seq(ValidatedError("error.required")))))
+      (f).validate(Map.empty) mustEqual(Invalid(Seq(Path \ "id" -> Seq(ValidationError("error.required")))))
     }
 
     "serialize and deserialize Seq[String]" in {
@@ -78,53 +78,53 @@ object FormatSpec extends Specification {
 
       "Int" in {
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Int] }.validate(Map("n" -> Seq("4"))) mustEqual(Valid(4))
-        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Int] }.validate(Map("n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.number", "Int")))))
-        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Int] }.validate(Map("n" -> Seq("4.8"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.number", "Int")))))
+        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Int] }.validate(Map("n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Int")))))
+        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Int] }.validate(Map("n" -> Seq("4.8"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Int")))))
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n" \ "o").format[Int] }.validate(Map("n.o" -> Seq("4"))) mustEqual(Valid(4))
-        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n" \ "o").format[Int] }.validate(Map("n.o" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" \ "o" -> Seq(ValidatedError("error.number", "Int")))))
+        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n" \ "o").format[Int] }.validate(Map("n.o" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" \ "o" -> Seq(ValidationError("error.number", "Int")))))
 
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n" \ "o" \ "p").format[Int] }.validate(Map("n.o.p" -> Seq("4"))) mustEqual(Valid(4))
-        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n" \ "o" \ "p").format[Int] }.validate(Map("n.o.p" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" \ "o" \ "p" -> Seq(ValidatedError("error.number", "Int")))))
+        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n" \ "o" \ "p").format[Int] }.validate(Map("n.o.p" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" \ "o" \ "p" -> Seq(ValidationError("error.number", "Int")))))
 
         val errPath = Path \ "foo"
-        val error = Invalid(Seq(errPath -> Seq(ValidatedError("error.required"))))
+        val error = Invalid(Seq(errPath -> Seq(ValidationError("error.required"))))
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "foo").format[Int] }.validate(Map("n" -> Seq("4"))) mustEqual(error)
       }
 
       "Short" in {
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Short] }.validate(Map("n" -> Seq("4"))) mustEqual(Valid(4))
-        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Short] }.validate(Map("n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.number", "Short")))))
-        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Short] }.validate(Map("n" -> Seq("4.8"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.number", "Short")))))
+        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Short] }.validate(Map("n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Short")))))
+        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Short] }.validate(Map("n" -> Seq("4.8"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Short")))))
       }
 
       "Long" in {
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Long] }.validate(Map("n" -> Seq("4"))) mustEqual(Valid(4))
-        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Long] }.validate(Map("n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.number", "Long")))))
-        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Long] }.validate(Map("n" -> Seq("4.8"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.number", "Long")))))
+        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Long] }.validate(Map("n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Long")))))
+        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Long] }.validate(Map("n" -> Seq("4.8"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Long")))))
       }
 
       "Float" in {
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Float] }.validate(Map("n" -> Seq("4"))) mustEqual(Valid(4))
-        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Float] }.validate(Map("n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.number", "Float")))))
+        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Float] }.validate(Map("n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Float")))))
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Float] }.validate(Map("n" -> Seq("4.8"))) mustEqual(Valid(4.8F))
       }
 
       "Double" in {
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Double] }.validate(Map("n" -> Seq("4"))) mustEqual(Valid(4))
-        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Double] }.validate(Map("n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.number", "Double")))))
+        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Double] }.validate(Map("n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Double")))))
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Double] }.validate(Map("n" -> Seq("4.8"))) mustEqual(Valid(4.8))
       }
 
       "java BigDecimal" in {
         import java.math.{ BigDecimal => jBigDecimal }
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[jBigDecimal] }.validate(Map("n" -> Seq("4"))) mustEqual(Valid(new jBigDecimal("4")))
-        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[jBigDecimal] }.validate(Map("n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.number", "BigDecimal")))))
+        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[jBigDecimal] }.validate(Map("n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "BigDecimal")))))
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[jBigDecimal] }.validate(Map("n" -> Seq("4.8"))) mustEqual(Valid(new jBigDecimal("4.8")))
       }
 
       "scala BigDecimal" in {
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[BigDecimal] }.validate(Map("n" -> Seq("4"))) mustEqual(Valid(BigDecimal(4)))
-        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[BigDecimal] }.validate(Map("n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.number", "BigDecimal")))))
+        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[BigDecimal] }.validate(Map("n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "BigDecimal")))))
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[BigDecimal] }.validate(Map("n" -> Seq("4.8"))) mustEqual(Valid(BigDecimal(4.8)))
       }
 
@@ -137,7 +137,7 @@ object FormatSpec extends Specification {
 
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ =>
           (__ \ "n").format(Rules.date, Writes.date)
-        }.validate(Map("n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.expected.date", "yyyy-MM-dd")))))
+        }.validate(Map("n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.expected.date", "yyyy-MM-dd")))))
       }
 
       "iso date" in {
@@ -150,7 +150,7 @@ object FormatSpec extends Specification {
 
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ =>
           (__ \ "n").format(Rules.isoDate, Writes.isoDate)
-        }.validate(Map("n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.expected.date.isoformat")))))
+        }.validate(Map("n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.expected.date.isoformat")))))
       }
 
       "joda" in {
@@ -166,7 +166,7 @@ object FormatSpec extends Specification {
 
           Formatting[UrlFormEncoded, UrlFormEncoded] { __ =>
             (__ \ "n").format(Rules.jodaDate, Writes.jodaDate)
-          }.validate(Map("n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.expected.jodadate.format", "yyyy-MM-dd")))))
+          }.validate(Map("n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.expected.jodadate.format", "yyyy-MM-dd")))))
         }
 
         "time" in {
@@ -176,7 +176,7 @@ object FormatSpec extends Specification {
 
           Formatting[UrlFormEncoded, UrlFormEncoded] { __ =>
             (__ \ "n").format(Rules.jodaDate, Writes.jodaTime)
-          }.validate(Map("n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.expected.jodadate.format", "yyyy-MM-dd")))))
+          }.validate(Map("n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.expected.jodadate.format", "yyyy-MM-dd")))))
         }
 
         "local date" in {
@@ -189,7 +189,7 @@ object FormatSpec extends Specification {
 
           Formatting[UrlFormEncoded, UrlFormEncoded] { __ =>
             (__ \ "n").format(Rules.jodaLocalDate, Writes.jodaLocalDate)
-          }.validate(Map("n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.expected.jodadate.format", "")))))
+          }.validate(Map("n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.expected.jodadate.format", "")))))
         }
       }
 
@@ -207,38 +207,38 @@ object FormatSpec extends Specification {
       "Boolean" in {
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Boolean] }.validate(Map("n" -> Seq("true"))) mustEqual(Valid(true))
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Boolean] }.validate(Map("n" -> Seq("TRUE"))) mustEqual(Valid(true))
-        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Boolean] }.validate(Map("n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.invalid", "Boolean")))))
+        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Boolean] }.validate(Map("n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.invalid", "Boolean")))))
       }
 
       "String" in {
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[String] }.validate(Map("n" -> Seq("foo"))) mustEqual(Valid("foo"))
-        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "o").format[String] }.validate(Map("o.n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "o" -> Seq(ValidatedError("error.required")))))
+        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "o").format[String] }.validate(Map("o.n" -> Seq("foo"))) mustEqual(Invalid(Seq(Path \ "o" -> Seq(ValidationError("error.required")))))
       }
 
       "Option" in {
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Option[Boolean]] }.validate(Map("n" -> Seq("true"))) mustEqual(Valid(Some(true)))
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Option[Boolean]] }.validate(Map("n" -> Seq(""))) mustEqual(Valid(None))
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Option[Boolean]] }.validate(Map("foo" -> Seq("bar"))) mustEqual(Valid(None))
-        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Option[Boolean]] }.validate(Map("n" -> Seq("bar"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.invalid", "Boolean")))))
+        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Option[Boolean]] }.validate(Map("n" -> Seq("bar"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.invalid", "Boolean")))))
       }
 
       "Map[String, Seq[V]]" in {
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Map[String, Seq[String]]] }.validate(Map("n.foo" -> Seq("bar"))) mustEqual(Valid(Map("foo" -> Seq("bar"))))
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Map[String, Seq[Int]]] }.validate(Map("n.foo" -> Seq("4"), "n.bar" -> Seq("5"))) mustEqual(Valid(Map("foo" -> Seq(4), "bar" -> Seq(5))))
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "x").format[Map[String, Int]] }.validate(Map("n.foo" -> Seq("4"), "n.bar" -> Seq("frack"))) mustEqual(Valid(Map.empty))
-        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Map[String, Seq[Int]]] }.validate(Map("n.foo" -> Seq("4"), "n.bar" -> Seq("frack"))) mustEqual(Invalid(Seq(Path \ "n" \ "bar" \ 0 -> Seq(ValidatedError("error.number", "Int")))))
+        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Map[String, Seq[Int]]] }.validate(Map("n.foo" -> Seq("4"), "n.bar" -> Seq("frack"))) mustEqual(Invalid(Seq(Path \ "n" \ "bar" \ 0 -> Seq(ValidationError("error.number", "Int")))))
       }
 
       "Traversable" in {
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Traversable[String]] }.validate(Map("n" -> Seq("foo"))).toOption.get.toSeq must contain(exactly(Seq("foo"): _*))
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Traversable[Int]] }.validate(Map("n[]" -> Seq("1", "2", "3"))).toOption.get.toSeq must contain(exactly(Seq(1, 2, 3): _*))
-        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Traversable[Int]] }.validate(Map("n[]" -> Seq("1", "paf"))) mustEqual(Invalid(Seq(Path \ "n" \ 1 -> Seq(ValidatedError("error.number", "Int")))))
+        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Traversable[Int]] }.validate(Map("n[]" -> Seq("1", "paf"))) mustEqual(Invalid(Seq(Path \ "n" \ 1 -> Seq(ValidationError("error.number", "Int")))))
       }
 
       "Array" in {
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Array[String]] }.validate(Map("n" -> Seq("foo"))).toOption.get.toSeq must contain(exactly(Seq("foo"): _*))
         Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Array[Int]] }.validate(Map("n[]" -> Seq("1", "2", "3"))).toOption.get.toSeq must contain(exactly(Seq(1, 2, 3): _*))
-        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Array[Int]] }.validate(Map("n[]" -> Seq("1", "paf"))) mustEqual(Invalid(Seq(Path \ "n" \ 1 -> Seq(ValidatedError("error.number", "Int")))))
+        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Array[Int]] }.validate(Map("n[]" -> Seq("1", "paf"))) mustEqual(Invalid(Seq(Path \ "n" \ 1 -> Seq(ValidationError("error.number", "Int")))))
       }
 
       "Seq" in {
@@ -249,7 +249,7 @@ object FormatSpec extends Specification {
           "n[1]" -> Seq("2"),
           "n[3]" -> Seq("3")
         )).toOption.get must contain(exactly(Seq(1, 2, 3): _*))
-        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Seq[Int]] }.validate(Map("n[]" -> Seq("1", "paf"))) mustEqual(Invalid(Seq(Path \ "n" \ 1 -> Seq(ValidatedError("error.number", "Int")))))
+        Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "n").format[Seq[Int]] }.validate(Map("n[]" -> Seq("1", "paf"))) mustEqual(Invalid(Seq(Path \ "n" \ 1 -> Seq(ValidationError("error.number", "Int")))))
       }
     }
 
@@ -275,7 +275,7 @@ object FormatSpec extends Specification {
       f.writes(result) mustEqual(valid)
       f.validate(valid) mustEqual(Valid(result))
 
-      f.validate(invalid) mustEqual(Invalid(Seq((Path \ "firstname", Seq(ValidatedError("error.required"))))))
+      f.validate(invalid) mustEqual(Invalid(Seq((Path \ "firstname", Seq(ValidationError("error.required"))))))
     }
 
     "format seq" in {
@@ -294,7 +294,7 @@ object FormatSpec extends Specification {
 
       Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "firstname").format[Seq[String]] }.validate(valid) mustEqual(Valid(Seq("Julien")))
       Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "foobar").format[Seq[String]] }.validate(valid) mustEqual(Valid(Seq()))
-      Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "foobar").format(isNotEmpty[Seq[Int]]) }.validate(valid) mustEqual(Invalid(Seq(Path \ "foobar" -> Seq(ValidatedError("error.notEmpty")))))
+      Formatting[UrlFormEncoded, UrlFormEncoded] { __ => (__ \ "foobar").format(isNotEmpty[Seq[Int]]) }.validate(valid) mustEqual(Invalid(Seq(Path \ "foobar" -> Seq(ValidationError("error.notEmpty")))))
     }
 
     "format recursive" in {

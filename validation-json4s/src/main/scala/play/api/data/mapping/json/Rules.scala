@@ -4,10 +4,10 @@ package json4s
 import org.json4s._
 
 object Rules extends DefaultRules[JValue] {
-  private def jsonAs[T](f: PartialFunction[JValue, Validated[Seq[ValidatedError], T]])(msg: String, args: Any*) =
+  private def jsonAs[T](f: PartialFunction[JValue, Validated[Seq[ValidationError], T]])(msg: String, args: Any*) =
     Rule.fromMapping[JValue, T](
       f.orElse {
-        case j => Invalid(Seq(ValidatedError(msg, args: _*)))
+        case j => Invalid(Seq(ValidationError(msg, args: _*)))
       })
 
   implicit def stringR = jsonAs[String] {
@@ -131,7 +131,7 @@ object Rules extends DefaultRules[JValue] {
 
     Rule[II, JValue] { json =>
       search(p, json) match {
-        case None => Invalid(Seq(Path -> Seq(ValidatedError("error.required"))))
+        case None => Invalid(Seq(Path -> Seq(ValidationError("error.required"))))
         case Some(js) => Valid(js)
       }
     }.compose(r)

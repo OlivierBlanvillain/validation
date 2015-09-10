@@ -53,7 +53,7 @@ scala> Rules.floatR.validate("-13.7")
 res2: jto.validation.VA[Float] = Valid(-13.7)
 
 scala> Rules.floatR.validate("abc")
-res3: jto.validation.VA[Float] = Invalid(List((/,List(ValidatedError(List(error.number),WrappedArray(Float))))))
+res3: jto.validation.VA[Float] = Invalid(List((/,List(ValidationError(List(error.number),WrappedArray(Float))))))
 ```
 
 > `Rule` is typesafe. You can't apply a `Rule` on an unsupported type, the compiler won't let you:
@@ -77,7 +77,7 @@ scala> Rules.floatR.validate(Seq(32))
 - A `Valid`, holding the value being validated
   When we use `Rule.float` on "1", since "1" is a valid representation of a `Float`, it returns `Valid(1.0)`
 - A `Invalid`, containing all the errors.
-  When we use `Rule.float` on "abc", since "abc" is *not* a valid representation of a `Float`, it returns `Invalid(List((/,List(ValidatedError(validation.type-mismatch,WrappedArray(Float))))))`. That `Invalid` tells us all there is to know: it give us a nice message explaining what has failed, and even gives us a parameter `"Float"`, indicating which type the `Rule` expected to find.
+  When we use `Rule.float` on "abc", since "abc" is *not* a valid representation of a `Float`, it returns `Invalid(List((/,List(ValidationError(validation.type-mismatch,WrappedArray(Float))))))`. That `Invalid` tells us all there is to know: it give us a nice message explaining what has failed, and even gives us a parameter `"Float"`, indicating which type the `Rule` expected to find.
 
 > Note that `Validated` is a parameterized type. Just like `Rule`, it keeps track of the input and output types.
 The method `validate` of a `Rule[I, O]` always return a `VA[I, O]`
@@ -92,7 +92,7 @@ In case of an empty `List[Int]`, the rule should return a `Invalid`.
 
 ```scala
 scala> val headInt: Rule[List[Int], Int] = Rule.fromMapping {
-     |   case Nil => Invalid(Seq(ValidatedError("error.emptyList")))
+     |   case Nil => Invalid(Seq(ValidationError("error.emptyList")))
      |   case head :: _ => Valid(head)
      | }
 headInt: jto.validation.Rule[List[Int],Int] = jto.validation.Rule$$anon$2@10b513e8
@@ -103,14 +103,14 @@ scala> headInt.validate(List(1, 2, 3, 4, 5))
 res6: jto.validation.VA[Int] = Valid(1)
 
 scala> headInt.validate(Nil)
-res7: jto.validation.VA[Int] = Invalid(List((/,List(ValidatedError(List(error.emptyList),WrappedArray())))))
+res7: jto.validation.VA[Int] = Invalid(List((/,List(ValidationError(List(error.emptyList),WrappedArray())))))
 ```
 
 We can make this rule a bit more generic:
 
 ```scala
 scala> def head[T]: Rule[List[T], T] = Rule.fromMapping {
-     |   case Nil => Invalid(Seq(ValidatedError("error.emptyList")))
+     |   case Nil => Invalid(Seq(ValidationError("error.emptyList")))
      |   case head :: _ => Valid(head)
      | }
 head: [T]=> jto.validation.Rule[List[T],T]
@@ -121,7 +121,7 @@ scala> head.validate(List('a', 'b', 'c', 'd'))
 res8: jto.validation.VA[Char] = Valid(a)
 
 scala> head.validate(List[Char]())
-res9: jto.validation.VA[Char] = Invalid(List((/,List(ValidatedError(List(error.emptyList),WrappedArray())))))
+res9: jto.validation.VA[Char] = Invalid(List((/,List(ValidationError(List(error.emptyList),WrappedArray())))))
 ```
 
 ## Composing Rules
@@ -160,14 +160,14 @@ If the list is empty, we get the error from `head`
 
 ```scala
 scala> firstFloat.validate(List())
-res12: jto.validation.VA[Float] = Invalid(List((/,List(ValidatedError(List(error.emptyList),WrappedArray())))))
+res12: jto.validation.VA[Float] = Invalid(List((/,List(ValidationError(List(error.emptyList),WrappedArray())))))
 ```
 
 If the first element is not parseable, we get the error from `Rules.float`.
 
 ```scala
 scala> firstFloat.validate(List("foo", "2"))
-res13: jto.validation.VA[Float] = Invalid(List((/,List(ValidatedError(List(error.number),WrappedArray(Float))))))
+res13: jto.validation.VA[Float] = Invalid(List((/,List(ValidationError(List(error.number),WrappedArray(Float))))))
 ```
 
 Of course everything is still typesafe:
@@ -203,7 +203,7 @@ scala> val firstFloat2: Rule[List[String],Float] = head.compose(Path \ 0)(Rules.
 firstFloat2: jto.validation.Rule[List[String],Float] = jto.validation.Rule$$anon$2@2aa9f6fd
 
 scala> firstFloat2.validate(List("foo", "2"))
-res15: jto.validation.VA[Float] = Invalid(List(([0],List(ValidatedError(List(error.number),WrappedArray(Float))))))
+res15: jto.validation.VA[Float] = Invalid(List(([0],List(ValidationError(List(error.number),WrappedArray(Float))))))
 ```
 
 ### "Parallel" composition
@@ -237,15 +237,15 @@ scala> positiveAndEven.validate(12)
 res16: jto.validation.VA[Int] = Valid(12)
 
 scala> positiveAndEven.validate(-12)
-res17: jto.validation.VA[Int] = Invalid(ArrayBuffer((/,List(ValidatedError(List(error.min),WrappedArray(0))))))
+res17: jto.validation.VA[Int] = Invalid(ArrayBuffer((/,List(ValidationError(List(error.min),WrappedArray(0))))))
 
 scala> positiveAndEven.validate(13)
-res18: jto.validation.VA[Int] = Invalid(ArrayBuffer((/,List(ValidatedError(List(error.even),WrappedArray())))))
+res18: jto.validation.VA[Int] = Invalid(ArrayBuffer((/,List(ValidationError(List(error.even),WrappedArray())))))
 
 scala> positiveAndEven.validate(-13)
-res19: jto.validation.VA[Int] = Invalid(ArrayBuffer((/,List(ValidatedError(List(error.min),WrappedArray(0)), ValidatedError(List(error.even),WrappedArray())))))
+res19: jto.validation.VA[Int] = Invalid(ArrayBuffer((/,List(ValidationError(List(error.min),WrappedArray(0)), ValidationError(List(error.even),WrappedArray())))))
 ```
 
-Note that both rules are applied. If both fail, we get two `ValidatedError`.
+Note that both rules are applied. If both fail, we get two `ValidationError`.
 
-> **Next:** - [Complex validation with Rule combinators](ScalaValidatedRuleCombinators.md)
+> **Next:** - [Complex validation with Rule combinators](ScalaValidationRuleCombinators.md)

@@ -232,10 +232,10 @@ class WritesSpec extends Specification {
     }
 
     // "write Invalid" in {
-    //   val f = Invalid[(Path, Seq[ValidatedError]), String](Seq(Path \ "n" -> Seq(ValidatedError("validation.type-mismatch", "Int"))))
+    //   val f = Invalid[(Path, Seq[ValidationError]), String](Seq(Path \ "n" -> Seq(ValidationError("validation.type-mismatch", "Int"))))
 
-    //   implicitly[Write[(Path, Seq[ValidatedError]), JObject]]
-    //   implicitly[Write[Invalid[(Path, Seq[ValidatedError]), String], JObject]]
+    //   implicitly[Write[(Path, Seq[ValidationError]), JObject]]
+    //   implicitly[Write[Invalid[(Path, Seq[ValidationError]), String], JObject]]
 
     //   val error =
     //     JObject("errors" ->
@@ -244,7 +244,7 @@ class WritesSpec extends Specification {
     //             "msg" -> JString("validation.type-mismatch"),
     //             "args" -> JArray(List(JString("Int"))))))))
 
-    //   (Path \ "errors").write[Invalid[(Path, Seq[ValidatedError]), String], JObject]
+    //   (Path \ "errors").write[Invalid[(Path, Seq[ValidationError]), String], JObject]
     //     .writes(f) mustEqual(error)
     // }
 

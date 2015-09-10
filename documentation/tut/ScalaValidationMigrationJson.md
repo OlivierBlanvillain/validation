@@ -114,7 +114,7 @@ scala> {
 res5: play.api.libs.json.Reads[String] = play.api.libs.json.Reads$$anon$8@5d9aecf8
 ```
 
-You can achieve the same think in the Validated API using [Rules composition](ScalaValidatedRule.md)
+You can achieve the same think in the Validated API using [Rules composition](ScalaValidationRule.md)
 
 ```scala
 scala> From[JsValue] { __ =>
@@ -186,7 +186,7 @@ scala> val js = Json.obj("n" -> 42.5f)
 js: play.api.libs.json.JsObject = {"n":42.5}
 
 scala> js.validate((__ \ "n").read[Int]) // JsValid(42, /n)
-res9: play.api.libs.json.JsResult[Int] = JsError(List((/n,List(ValidatedError(List(error.expected.int),WrappedArray())))))
+res9: play.api.libs.json.JsResult[Int] = JsError(List((/n,List(ValidationError(List(error.expected.int),WrappedArray())))))
 ```
 
 whereas with the validation API, an `Int` must really be an `Int`:
@@ -199,7 +199,7 @@ scala> val js = Json.obj("n" -> 42.5f)
 js: play.api.libs.json.JsObject = {"n":42.5}
 
 scala> (Path \ "n").read[JsValue, Int].validate(js)
-res10: jto.validation.VA[Int] = Invalid(List((/n,List(ValidatedError(List(error.number),WrappedArray(Int))))))
+res10: jto.validation.VA[Int] = Invalid(List((/n,List(ValidationError(List(error.number),WrappedArray(Int))))))
 ```
 
 ### `json.apply` and `path.as[T]`
@@ -335,6 +335,6 @@ The validation API does not have an equivalent for `Format`. We find that genera
 
 ## Json Inception (macro)
 
-Macros are also available for the validation API. See [Validated Inception](ScalaValidatedMacros.md).
+Macros are also available for the validation API. See [Validation Inception](ScalaValidationMacros.md).
 
-> **Next:** - [Migration from 2.1.x Form API](ScalaValidatedMigrationForm.md)
+> **Next:** - [Migration from 2.1.x Form API](ScalaValidationMigrationForm.md)

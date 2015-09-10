@@ -18,7 +18,7 @@ object Writes extends DefaultWrites with DefaultMonoids with GenericWrites[JValu
     case KeyPathNode(key) => JObject(key -> j)
   }
 
-  implicit val validationError = Write[ValidatedError, JValue] { err =>
+  implicit val validationError = Write[ValidationError, JValue] { err =>
     JObject(
       "msg" -> JString(err.message),
       "args" -> err.args.foldLeft(JArray(Nil)) { (arr, arg) =>
@@ -37,14 +37,14 @@ object Writes extends DefaultWrites with DefaultMonoids with GenericWrites[JValu
       })
   }
 
-  implicit def errors(implicit wErrs: WriteLike[Seq[ValidatedError], JValue]) =
-    Write[(Path, Seq[ValidatedError]), JObject] {
+  implicit def errors(implicit wErrs: WriteLike[Seq[ValidationError], JValue]) =
+    Write[(Path, Seq[ValidationError]), JObject] {
       case (p, errs) =>
         JObject(p.toString -> wErrs.writes(errs))
     }
 
-  implicit def failure(implicit w: WriteLike[(Path, Seq[ValidatedError]), JObject]) =
-    Write[Invalid[Seq[(Path, Seq[ValidatedError])]], JObject] {
+  implicit def failure(implicit w: WriteLike[(Path, Seq[ValidationError]), JObject]) =
+    Write[Invalid[Seq[(Path, Seq[ValidationError])]], JObject] {
       case Invalid(errs) =>
         errs.map(w.writes).reduce(_ merge _)
     }

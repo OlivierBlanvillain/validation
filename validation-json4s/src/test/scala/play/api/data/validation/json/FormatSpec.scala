@@ -26,7 +26,7 @@ object FormatSpec extends Specification {
       f.writes(1L) mustEqual(m)
       f.validate(m) mustEqual(Valid(1L))
 
-      (Path \ "id").from[JValue](f).validate(JObject()) mustEqual(Invalid(Seq(Path \ "id" -> Seq(ValidatedError("error.required")))))
+      (Path \ "id").from[JValue](f).validate(JObject()) mustEqual(Invalid(Seq(Path \ "id" -> Seq(ValidationError("error.required")))))
     }
 
     "serialize and deserialize String" in {
@@ -42,7 +42,7 @@ object FormatSpec extends Specification {
       f.writes("CAFEBABE") mustEqual(m)
       f.validate(m) mustEqual(Valid("CAFEBABE"))
 
-      (Path \ "id").from[JValue](f).validate(JObject()) mustEqual(Invalid(Seq(Path \ "id" -> Seq(ValidatedError("error.required")))))
+      (Path \ "id").from[JValue](f).validate(JObject()) mustEqual(Invalid(Seq(Path \ "id" -> Seq(ValidationError("error.required")))))
     }
 
     "serialize and deserialize Seq[String]" in {
@@ -75,53 +75,53 @@ object FormatSpec extends Specification {
 
       "Int" in {
         Formatting[JValue, JObject] { __ => (__ \ "n").format[Int] }.validate(JObject("n" -> JInt(4))) mustEqual(Valid(4))
-        Formatting[JValue, JObject] { __ => (__ \ "n").format[Int] }.validate(JObject("n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.number", "Int")))))
-        Formatting[JValue, JObject] { __ => (__ \ "n").format[Int] }.validate(JObject("n" -> JDecimal(4.8))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.number", "Int")))))
+        Formatting[JValue, JObject] { __ => (__ \ "n").format[Int] }.validate(JObject("n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Int")))))
+        Formatting[JValue, JObject] { __ => (__ \ "n").format[Int] }.validate(JObject("n" -> JDecimal(4.8))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Int")))))
         Formatting[JValue, JObject] { __ => (__ \ "n" \ "o").format[Int] }.validate(JObject("n" -> JObject("o" -> JInt(4)))) mustEqual(Valid(4))
-        Formatting[JValue, JObject] { __ => (__ \ "n" \ "o").format[Int] }.validate(JObject("n" -> JObject("o" -> JString("foo")))) mustEqual(Invalid(Seq(Path \ "n" \ "o" -> Seq(ValidatedError("error.number", "Int")))))
+        Formatting[JValue, JObject] { __ => (__ \ "n" \ "o").format[Int] }.validate(JObject("n" -> JObject("o" -> JString("foo")))) mustEqual(Invalid(Seq(Path \ "n" \ "o" -> Seq(ValidationError("error.number", "Int")))))
 
         Formatting[JValue, JObject] { __ => (__ \ "n" \ "o" \ "p").format[Int] }.validate(JObject("n" -> JObject("o" -> JObject("p" -> JInt(4))))) mustEqual(Valid(4))
-        Formatting[JValue, JObject] { __ => (__ \ "n" \ "o" \ "p").format[Int] }.validate(JObject("n" -> JObject("o" -> JObject("p" -> JString("foo"))))) mustEqual(Invalid(Seq(Path \ "n" \ "o" \ "p" -> Seq(ValidatedError("error.number", "Int")))))
+        Formatting[JValue, JObject] { __ => (__ \ "n" \ "o" \ "p").format[Int] }.validate(JObject("n" -> JObject("o" -> JObject("p" -> JString("foo"))))) mustEqual(Invalid(Seq(Path \ "n" \ "o" \ "p" -> Seq(ValidationError("error.number", "Int")))))
 
         val errPath = Path \ "foo"
-        val error = Invalid(Seq(errPath -> Seq(ValidatedError("error.required"))))
+        val error = Invalid(Seq(errPath -> Seq(ValidationError("error.required"))))
         Formatting[JValue, JObject] { __ => (__ \ "foo").format[Int] }.validate(JObject("n" -> JInt(4))) mustEqual(error)
       }
 
       "Short" in {
         Formatting[JValue, JObject] { __ => (__ \ "n").format[Short] }.validate(JObject("n" -> JInt(4))) mustEqual(Valid(4))
-        Formatting[JValue, JObject] { __ => (__ \ "n").format[Short] }.validate(JObject("n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.number", "Short")))))
-        Formatting[JValue, JObject] { __ => (__ \ "n").format[Short] }.validate(JObject("n" -> JDecimal(4.8))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.number", "Short")))))
+        Formatting[JValue, JObject] { __ => (__ \ "n").format[Short] }.validate(JObject("n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Short")))))
+        Formatting[JValue, JObject] { __ => (__ \ "n").format[Short] }.validate(JObject("n" -> JDecimal(4.8))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Short")))))
       }
 
       "Long" in {
         Formatting[JValue, JObject] { __ => (__ \ "n").format[Long] }.validate(JObject("n" -> JInt(4))) mustEqual(Valid(4))
-        Formatting[JValue, JObject] { __ => (__ \ "n").format[Long] }.validate(JObject("n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.number", "Long")))))
-        Formatting[JValue, JObject] { __ => (__ \ "n").format[Long] }.validate(JObject("n" -> JDecimal(4.8))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.number", "Long")))))
+        Formatting[JValue, JObject] { __ => (__ \ "n").format[Long] }.validate(JObject("n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Long")))))
+        Formatting[JValue, JObject] { __ => (__ \ "n").format[Long] }.validate(JObject("n" -> JDecimal(4.8))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Long")))))
       }
 
       "Float" in {
         Formatting[JValue, JObject] { __ => (__ \ "n").format[Float] }.validate(JObject("n" -> JInt(4))) mustEqual(Valid(4))
-        Formatting[JValue, JObject] { __ => (__ \ "n").format[Float] }.validate(JObject("n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.number", "Float")))))
+        Formatting[JValue, JObject] { __ => (__ \ "n").format[Float] }.validate(JObject("n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Float")))))
         Formatting[JValue, JObject] { __ => (__ \ "n").format[Float] }.validate(JObject("n" -> JDecimal(4.8))) mustEqual(Valid(4.8F))
       }
 
       "Double" in {
         Formatting[JValue, JObject] { __ => (__ \ "n").format[Double] }.validate(JObject("n" -> JInt(4))) mustEqual(Valid(4))
-        Formatting[JValue, JObject] { __ => (__ \ "n").format[Double] }.validate(JObject("n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.number", "Double")))))
+        Formatting[JValue, JObject] { __ => (__ \ "n").format[Double] }.validate(JObject("n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Double")))))
         Formatting[JValue, JObject] { __ => (__ \ "n").format[Double] }.validate(JObject("n" -> JDecimal(4.8))) mustEqual(Valid(4.8))
       }
 
       "java BigDecimal" in {
         import java.math.{ BigDecimal => jBigDecimal }
         Formatting[JValue, JObject] { __ => (__ \ "n").format[jBigDecimal] }.validate(JObject("n" -> JInt(4))) mustEqual(Valid(new jBigDecimal("4")))
-        Formatting[JValue, JObject] { __ => (__ \ "n").format[jBigDecimal] }.validate(JObject("n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.number", "BigDecimal")))))
+        Formatting[JValue, JObject] { __ => (__ \ "n").format[jBigDecimal] }.validate(JObject("n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "BigDecimal")))))
         Formatting[JValue, JObject] { __ => (__ \ "n").format[jBigDecimal] }.validate(JObject("n" -> JDecimal(4.8))) mustEqual(Valid(new jBigDecimal("4.8")))
       }
 
       "scala BigDecimal" in {
         Formatting[JValue, JObject] { __ => (__ \ "n").format[BigDecimal] }.validate(JObject("n" -> JInt(4))) mustEqual(Valid(BigDecimal(4)))
-        Formatting[JValue, JObject] { __ => (__ \ "n").format[BigDecimal] }.validate(JObject("n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.number", "BigDecimal")))))
+        Formatting[JValue, JObject] { __ => (__ \ "n").format[BigDecimal] }.validate(JObject("n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "BigDecimal")))))
         Formatting[JValue, JObject] { __ => (__ \ "n").format[BigDecimal] }.validate(JObject("n" -> JDecimal(4.8))) mustEqual(Valid(BigDecimal(4.8)))
       }
 
@@ -134,7 +134,7 @@ object FormatSpec extends Specification {
 
         Formatting[JValue, JObject] { __ =>
           (__ \ "n").format(Rules.date, Writes.date)
-        }.validate(JObject("n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.expected.date", "yyyy-MM-dd")))))
+        }.validate(JObject("n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.expected.date", "yyyy-MM-dd")))))
       }
 
       "iso date" in {
@@ -147,7 +147,7 @@ object FormatSpec extends Specification {
 
         Formatting[JValue, JObject] { __ =>
           (__ \ "n").format(Rules.isoDate, Writes.isoDate)
-        }.validate(JObject("n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.expected.date.isoformat")))))
+        }.validate(JObject("n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.expected.date.isoformat")))))
       }
 
       "joda" in {
@@ -163,7 +163,7 @@ object FormatSpec extends Specification {
 
           Formatting[JValue, JObject] { __ =>
             (__ \ "n").format(Rules.jodaDate, Writes.jodaDate)
-          }.validate(JObject("n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.expected.jodadate.format", "yyyy-MM-dd")))))
+          }.validate(JObject("n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.expected.jodadate.format", "yyyy-MM-dd")))))
         }
 
         "time" in {
@@ -173,7 +173,7 @@ object FormatSpec extends Specification {
 
           Formatting[JValue, JObject] { __ =>
             (__ \ "n").format(Rules.jodaDate, Writes.jodaTime)
-          }.validate(JObject("n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.expected.jodadate.format", "yyyy-MM-dd")))))
+          }.validate(JObject("n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.expected.jodadate.format", "yyyy-MM-dd")))))
         }
 
         "local date" in {
@@ -186,7 +186,7 @@ object FormatSpec extends Specification {
 
           Formatting[JValue, JObject] { __ =>
             (__ \ "n").format(Rules.jodaLocalDate, Writes.jodaLocalDate)
-          }.validate(JObject("n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.expected.jodadate.format", "")))))
+          }.validate(JObject("n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.expected.jodadate.format", "")))))
         }
       }
 
@@ -203,34 +203,34 @@ object FormatSpec extends Specification {
 
       "Boolean" in {
         Formatting[JValue, JObject] { __ => (__ \ "n").format[Boolean] }.validate(JObject("n" -> JBool(true))) mustEqual(Valid(true))
-        Formatting[JValue, JObject] { __ => (__ \ "n").format[Boolean] }.validate(JObject("n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.invalid", "Boolean")))))
+        Formatting[JValue, JObject] { __ => (__ \ "n").format[Boolean] }.validate(JObject("n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.invalid", "Boolean")))))
       }
 
       "String" in {
         Formatting[JValue, JObject] { __ => (__ \ "n").format[String] }.validate(JObject("n" -> JString("foo"))) mustEqual(Valid("foo"))
-        Formatting[JValue, JObject] { __ => (__ \ "o").format[String] }.validate(JObject("o.n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "o" -> Seq(ValidatedError("error.required")))))
+        Formatting[JValue, JObject] { __ => (__ \ "o").format[String] }.validate(JObject("o.n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "o" -> Seq(ValidationError("error.required")))))
       }
 
       "Option" in {
         Formatting[JValue, JObject] { __ => (__ \ "n").format[Option[Boolean]] }.validate(JObject("n" -> JBool(true))) mustEqual(Valid(Some(true)))
         Formatting[JValue, JObject] { __ => (__ \ "n").format[Option[Boolean]] }.validate(JObject()) mustEqual(Valid(None))
         Formatting[JValue, JObject] { __ => (__ \ "n").format[Option[Boolean]] }.validate(JObject("foo" -> JString("bar"))) mustEqual(Valid(None))
-        Formatting[JValue, JObject] { __ => (__ \ "n").format[Option[Boolean]] }.validate(JObject("n" -> JString("bar"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.invalid", "Boolean")))))
+        Formatting[JValue, JObject] { __ => (__ \ "n").format[Option[Boolean]] }.validate(JObject("n" -> JString("bar"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.invalid", "Boolean")))))
       }
 
       "Map[String, Seq[V]]" in {
         Formatting[JValue, JObject] { __ => (__ \ "n").format[Map[String, Seq[String]]] }.validate(JObject("n" -> JObject("foo" -> JArray(List(JString("bar")))))) mustEqual(Valid(Map("foo" -> Seq("bar"))))
         Formatting[JValue, JObject] { __ => (__ \ "n").format[Map[String, Seq[Int]]] }.validate(JObject("n" -> JObject("foo" -> JArray(List(JInt(4))), "bar" -> JArray(List(JInt(5)))))) mustEqual(Valid(Map("foo" -> Seq(4), "bar" -> Seq(5))))
-        Formatting[JValue, JObject] { __ => (__ \ "x").format[Map[String, Int]] }.validate(JObject("n" -> JObject("foo" -> JInt(4), "bar" -> JString("frack")))) mustEqual(Invalid(Seq(Path \ "x" -> Seq(ValidatedError("error.required")))))
-        Formatting[JValue, JObject] { __ => (__ \ "n").format[Map[String, Seq[Int]]] }.validate(JObject("n" -> JObject("foo" -> JArray(List(JInt(4))), "bar" -> JArray(List(JString("frack")))))) mustEqual(Invalid(Seq(Path \ "n" \ "bar" \ 0 -> Seq(ValidatedError("error.number", "Int")))))
+        Formatting[JValue, JObject] { __ => (__ \ "x").format[Map[String, Int]] }.validate(JObject("n" -> JObject("foo" -> JInt(4), "bar" -> JString("frack")))) mustEqual(Invalid(Seq(Path \ "x" -> Seq(ValidationError("error.required")))))
+        Formatting[JValue, JObject] { __ => (__ \ "n").format[Map[String, Seq[Int]]] }.validate(JObject("n" -> JObject("foo" -> JArray(List(JInt(4))), "bar" -> JArray(List(JString("frack")))))) mustEqual(Invalid(Seq(Path \ "n" \ "bar" \ 0 -> Seq(ValidationError("error.number", "Int")))))
       }
 
       "Traversable" in {
         Formatting[JValue, JObject] { __ => (__ \ "n").format[Traversable[String]] }.validate(JObject("n" -> JArray(List(JString("foo"))))).toOption.get.toSeq must contain(exactly(Seq("foo"): _*))
         Formatting[JValue, JObject] { __ => (__ \ "n").format[Traversable[Int]] }.validate(JObject("n" -> JArray(List(JInt(1), JInt(2), JInt(3))))).toOption.get.toSeq must contain(exactly(Seq(1, 2, 3): _*))
         Formatting[JValue, JObject] { __ => (__ \ "n").format[Traversable[Int]] }.validate(JObject("n" -> JArray(List(JString("1"), JString("paf"))))) mustEqual(Invalid(Seq(
-          Path \ "n" \ 0 -> Seq(ValidatedError("error.number", "Int")),
-          Path \ "n" \ 1 -> Seq(ValidatedError("error.number", "Int"))
+          Path \ "n" \ 0 -> Seq(ValidationError("error.number", "Int")),
+          Path \ "n" \ 1 -> Seq(ValidationError("error.number", "Int"))
         )))
       }
 
@@ -238,8 +238,8 @@ object FormatSpec extends Specification {
         Formatting[JValue, JObject] { __ => (__ \ "n").format[Array[String]] }.validate(JObject("n" -> JArray(List(JString("foo"))))).toOption.get.toSeq must contain(exactly(Seq("foo"): _*))
         Formatting[JValue, JObject] { __ => (__ \ "n").format[Array[Int]] }.validate(JObject("n" -> JArray(List(JInt(1), JInt(2), JInt(3))))).toOption.get.toSeq must contain(exactly(Seq(1, 2, 3): _*))
         Formatting[JValue, JObject] { __ => (__ \ "n").format[Array[Int]] }.validate(JObject("n" -> JArray(List(JString("1"), JString("paf"))))) mustEqual(Invalid(Seq(
-          Path \ "n" \ 0 -> Seq(ValidatedError("error.number", "Int")),
-          Path \ "n" \ 1 -> Seq(ValidatedError("error.number", "Int"))
+          Path \ "n" \ 0 -> Seq(ValidationError("error.number", "Int")),
+          Path \ "n" \ 1 -> Seq(ValidationError("error.number", "Int"))
         )))
       }
 
@@ -247,8 +247,8 @@ object FormatSpec extends Specification {
         Formatting[JValue, JObject] { __ => (__ \ "n").format[Seq[String]] }.validate(JObject("n" -> JArray(List(JString("foo"))))).toOption.get must contain(exactly(Seq("foo"): _*))
         Formatting[JValue, JObject] { __ => (__ \ "n").format[Seq[Int]] }.validate(JObject("n" -> JArray(List(JInt(1), JInt(2), JInt(3))))).toOption.get must contain(exactly(Seq(1, 2, 3): _*))
         Formatting[JValue, JObject] { __ => (__ \ "n").format[Seq[Int]] }.validate(JObject("n" -> JArray(List(JString("1"), JString("paf"))))) mustEqual(Invalid(Seq(
-          Path \ "n" \ 0 -> Seq(ValidatedError("error.number", "Int")),
-          Path \ "n" \ 1 -> Seq(ValidatedError("error.number", "Int"))
+          Path \ "n" \ 0 -> Seq(ValidationError("error.number", "Int")),
+          Path \ "n" \ 1 -> Seq(ValidationError("error.number", "Int"))
         )))
       }
     }
@@ -273,7 +273,7 @@ object FormatSpec extends Specification {
       f.writes(result) mustEqual(valid)
       f.validate(valid) mustEqual(Valid(result))
 
-      f.validate(invalid) mustEqual(Invalid(Seq((Path \ "firstname", Seq(ValidatedError("error.required"))))))
+      f.validate(invalid) mustEqual(Invalid(Seq((Path \ "firstname", Seq(ValidationError("error.required"))))))
     }
 
     "format seq" in {
@@ -294,7 +294,7 @@ object FormatSpec extends Specification {
 
       Formatting[JValue, JObject] { __ => (__ \ "firstname").format[Seq[String]] }.validate(valid) mustEqual(Valid(Seq("Julien")))
       Formatting[JValue, JObject] { __ => (__ \ "foobar").format[Seq[String]] }.validate(valid) mustEqual(Valid(Seq()))
-      Formatting[JValue, JObject] { __ => (__ \ "foobar").format(isNotEmpty[Seq[Int]]) }.validate(valid) mustEqual(Invalid(Seq(Path \ "foobar" -> Seq(ValidatedError("error.notEmpty")))))
+      Formatting[JValue, JObject] { __ => (__ \ "foobar").format(isNotEmpty[Seq[Int]]) }.validate(valid) mustEqual(Invalid(Seq(Path \ "foobar" -> Seq(ValidationError("error.notEmpty")))))
     }
 
     "format recursive" in {

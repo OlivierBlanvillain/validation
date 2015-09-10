@@ -57,7 +57,7 @@ Rules.floatR.validate(Seq(32))
 - A `Valid`, holding the value being validated
   When we use `Rule.float` on "1", since "1" is a valid representation of a `Float`, it returns `Valid(1.0)`
 - A `Invalid`, containing all the errors.
-  When we use `Rule.float` on "abc", since "abc" is *not* a valid representation of a `Float`, it returns `Invalid(List((/,List(ValidatedError(validation.type-mismatch,WrappedArray(Float))))))`. That `Invalid` tells us all there is to know: it give us a nice message explaining what has failed, and even gives us a parameter `"Float"`, indicating which type the `Rule` expected to find.
+  When we use `Rule.float` on "abc", since "abc" is *not* a valid representation of a `Float`, it returns `Invalid(List((/,List(ValidationError(validation.type-mismatch,WrappedArray(Float))))))`. That `Invalid` tells us all there is to know: it give us a nice message explaining what has failed, and even gives us a parameter `"Float"`, indicating which type the `Rule` expected to find.
 
 > Note that `Validated` is a parameterized type. Just like `Rule`, it keeps track of the input and output types.
 The method `validate` of a `Rule[I, O]` always return a `VA[I, O]`
@@ -72,7 +72,7 @@ In case of an empty `List[Int]`, the rule should return a `Invalid`.
 
 ```tut
 val headInt: Rule[List[Int], Int] = Rule.fromMapping {
-  case Nil => Invalid(Seq(ValidatedError("error.emptyList")))
+  case Nil => Invalid(Seq(ValidationError("error.emptyList")))
   case head :: _ => Valid(head)
 }
 ```
@@ -86,7 +86,7 @@ We can make this rule a bit more generic:
 
 ```tut
 def head[T]: Rule[List[T], T] = Rule.fromMapping {
-  case Nil => Invalid(Seq(ValidatedError("error.emptyList")))
+  case Nil => Invalid(Seq(ValidationError("error.emptyList")))
   case head :: _ => Valid(head)
 }
 ```
@@ -182,6 +182,6 @@ positiveAndEven.validate(13)
 positiveAndEven.validate(-13)
 ```
 
-Note that both rules are applied. If both fail, we get two `ValidatedError`.
+Note that both rules are applied. If both fail, we get two `ValidationError`.
 
-> **Next:** - [Complex validation with Rule combinators](ScalaValidatedRuleCombinators.md)
+> **Next:** - [Complex validation with Rule combinators](ScalaValidationRuleCombinators.md)

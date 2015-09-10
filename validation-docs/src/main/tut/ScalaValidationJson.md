@@ -118,4 +118,4 @@ Let's try something that we know will fail: We'll try to lookup for a JsValue at
 (Path \ "somenonexistinglocation").read[JsValue, JsValue].validate(json)
 ```
 
-This time `validate` returns `Invalid`. There's nothing at `somenonexistinglocation` and this failure tells us just that. We required a `JsValue` to be found at that Path, but our requirement was not fullfiled. Note that the `Invalid` does not just contain a `Path` and an error message. It contains a `List[(Path, List[ValidatedError])]`. We'll see later that a  single validation could find several errors at a given `Path`, AND find errors at different `Path`
+This time `validate` returns `Invalid`. There's nothing at `somenonexistinglocation` and this failure tells us just that. We required a `JsValue` to be found at that Path, but our requirement was not fullfiled. Note that the `Invalid` does not just contain a `Path` and an error message. It contains a `List[(Path, List[ValidationError])]`. We'll see later that a  single validation could find several errors at a given `Path`, AND find errors at different `Path`

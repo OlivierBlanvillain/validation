@@ -24,7 +24,7 @@ trait DateRules {
 
     parseDate(corrector(s)) match {
       case Some(d) => Valid(d)
-      case None => Invalid(Seq(ValidatedError("error.expected.date", format)))
+      case None => Invalid(Seq(ValidationError("error.expected.date", format)))
     }
   }
 
@@ -46,7 +46,7 @@ trait DateRules {
     val df = org.joda.time.format.DateTimeFormat.forPattern(pattern)
     Try(df.parseDateTime(corrector(s)))
       .map(Valid.apply)
-      .getOrElse(Invalid(Seq(ValidatedError("error.expected.jodadate.format", pattern))))
+      .getOrElse(Invalid(Seq(ValidationError("error.expected.jodadate.format", pattern))))
   }
 
   /**
@@ -71,7 +71,7 @@ trait DateRules {
     val df = if (pattern == "") ISODateTimeFormat.localDateParser else DateTimeFormat.forPattern(pattern)
     Try(LocalDate.parse(corrector(s), df))
       .map(Valid.apply)
-      .getOrElse(Invalid(Seq(ValidatedError("error.expected.jodadate.format", pattern))))
+      .getOrElse(Invalid(Seq(ValidationError("error.expected.jodadate.format", pattern))))
   }
   /**
    * the default implicit Rule for `org.joda.time.LocalDate`
@@ -87,7 +87,7 @@ trait DateRules {
     val parser = ISODateTimeFormat.dateOptionalTimeParser()
     Try(parser.parseDateTime(s).toDate())
       .map(Valid.apply)
-      .getOrElse(Invalid(Seq(ValidatedError("error.expected.date.isoformat"))))
+      .getOrElse(Invalid(Seq(ValidationError("error.expected.date.isoformat"))))
   }
 
   /**
@@ -117,12 +117,12 @@ trait GenericRules {
    *   def notEmpty = validateWith[String]("validation.nonemptytext"){ !_.isEmpty }
    * }}}
    * @param msg The error message to return if predicate `pred` is not satisfied
-   * @param args Arguments for the `ValidatedError`
+   * @param args Arguments for the `ValidationError`
    * @param pred A predicate to satify
    * @return A new Rule validating data of type `I` against a predicate `p`
    */
   def validateWith[I](msg: String, args: Any*)(pred: I => Boolean) = Rule.fromMapping[I, I] {
-    v => if (!pred(v)) Invalid(Seq(ValidatedError(msg, args: _*))) else Valid(v)
+    v => if (!pred(v)) Invalid(Seq(ValidationError(msg, args: _*))) else Valid(v)
   }
 
   /**
@@ -197,7 +197,7 @@ trait GenericRules {
    */
   implicit def headAs[I, O](implicit c: RuleLike[I, O]) = Rule.fromMapping[Seq[I], I] {
     _.headOption.map(Valid[I](_))
-      .getOrElse(Invalid[Seq[ValidatedError]](Seq(ValidatedError("error.required"))))
+      .getOrElse(Invalid[Seq[ValidationError]](Seq(ValidationError("error.required"))))
   }.compose(c)
 
   def not[I, O](r: RuleLike[I, O]) = Rule[I, I] { d =>
@@ -270,7 +270,7 @@ trait GenericRules {
   def email = Rule.fromMapping[String, String](
     pattern("""\b[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\b""".r)
       .validate(_: String)
-      .bimap(_ => Seq(ValidatedError("error.email")), identity))
+      .bimap(_ => Seq(ValidationError("error.email")), identity))
 
   /**
    * A Rule that always succeed
@@ -289,12 +289,12 @@ trait ParsingRules {
 
   self: GenericRules =>
 
-  private def stringAs[T](f: PartialFunction[BigDecimal, Validated[Seq[ValidatedError], T]])(args: Any*) =
+  private def stringAs[T](f: PartialFunction[BigDecimal, Validated[Seq[ValidationError], T]])(args: Any*) =
     Rule.fromMapping[String, T] {
       val toB: PartialFunction[String, BigDecimal] = { case s if s.matches("""[-+]?[0-9]*\.?[0-9]+""") => BigDecimal(s) }
       toB.lift(_)
         .flatMap(f.lift)
-        .getOrElse(Invalid(Seq(ValidatedError("error.number", args: _*))))
+        .getOrElse(Invalid(Seq(ValidationError("error.number", args: _*))))
     }
 
   implicit def intR = stringAs {
@@ -308,7 +308,7 @@ trait ParsingRules {
   implicit def booleanR = Rule.fromMapping[String, Boolean] {
     pattern("""(?iu)true|false""".r).validate(_: String)
       .map(java.lang.Boolean.parseBoolean)
-      .bimap(_ => Seq(ValidatedError("error.invalid", "Boolean")), identity)
+      .bimap(_ => Seq(ValidationError("error.invalid", "Boolean")), identity)
   }
 
   implicit def longR = stringAs {

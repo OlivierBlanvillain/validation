@@ -63,7 +63,7 @@ trait Rule[I, O] extends RuleLike[I, O] {
 
   // would be nice to have Kleisli in play
   def compose[P](sub: => RuleLike[O, P]): Rule[I, P] = compose(Path)(sub)
-  def compose[P](m: Mapping[ValidatedError, O, P]): Rule[I, P] = compose(Rule.fromMapping(m))
+  def compose[P](m: Mapping[ValidationError, O, P]): Rule[I, P] = compose(Rule.fromMapping(m))
 
   /**
    * Create a new Rule the validate `this` Rule and `r2` simultaneously
@@ -125,7 +125,7 @@ object Rule {
   def pure[I, O](o: O): Rule[I, O] =
     Rule(_ => Valid(o))
 
-  def apply[I, O](m: Mapping[(Path, Seq[ValidatedError]), I, O]): Rule[I, O] =
+  def apply[I, O](m: Mapping[(Path, Seq[ValidationError]), I, O]): Rule[I, O] =
     new Rule[I, O] {
       def validate(data: I): VA[O] = m(data)
     }
@@ -135,7 +135,7 @@ object Rule {
       def validate(data: I): VA[O] = r.validate(data)
     }
 
-  def fromMapping[I, O](f: Mapping[ValidatedError, I, O]): Rule[I, O] =
+  def fromMapping[I, O](f: Mapping[ValidationError, I, O]): Rule[I, O] =
     Rule[I, O](f(_: I).bimap(errs => Seq(Path -> errs), identity))
 
   implicit def applicativeRule[I]: Applicative[Rule[I, ?]] =

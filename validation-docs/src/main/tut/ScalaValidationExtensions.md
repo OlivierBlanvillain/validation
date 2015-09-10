@@ -26,7 +26,7 @@ object Ex1 {
 	implicit def pickInJson(p: Path): Rule[JsValue, JsValue] =
 		Rule[JsValue, JsValue] { json =>
 		  pathToJsPath(p)(json) match {
-		    case Nil => Invalid(Seq(Path -> Seq(ValidatedError("error.required"))))
+		    case Nil => Invalid(Seq(Path -> Seq(ValidationError("error.required"))))
 		    case js :: _ => Valid(js)
 		  }
 		}
@@ -69,7 +69,7 @@ Instead of doing so, we're going to make `pickInJson` a bit smarter by adding an
 implicit def pickInJson[O](p: Path)(implicit r: Rule[JsValue, O]): Rule[JsValue, O] =
     Rule[JsValue, JsValue] { json =>
       pathToJsPath(p)(json) match {
-        case Nil => Invalid(Seq(Path -> Seq(ValidatedError("error.required"))))
+        case Nil => Invalid(Seq(Path -> Seq(ValidationError("error.required"))))
         case js :: _ => Valid(js)
       }
     }.compose(r)
@@ -78,9 +78,9 @@ implicit def pickInJson[O](p: Path)(implicit r: Rule[JsValue, O]): Rule[JsValue,
 The now all we have to do is to write a `Rule[JsValue, O]`, and we automatically get the ` Path => Rule[JsValue, O]` we're interested in. The rest is just a matter of defining all the prmitives rules, for example:
 
 ```tut
-def jsonAs[T](f: PartialFunction[JsValue, Validated[ValidatedError, T]])(args: Any*) =
+def jsonAs[T](f: PartialFunction[JsValue, Validated[ValidationError, T]])(args: Any*) =
 	Rule.fromMapping[JsValue, T](
-	  f.orElse{ case j => Invalid(Seq(ValidatedError("validation.invalid", args: _*)))
+	  f.orElse{ case j => Invalid(Seq(ValidationError("validation.invalid", args: _*)))
 	})
 
 def stringRule = jsonAs[String] {
@@ -238,4 +238,4 @@ val userWrite = To[JsObject] { __ =>
 
 We highly recommend you to test your rules as much as possible. There's a few tricky cases you need to handle properly. You should port the tests in `RulesSpec.scala` and use them on your rules.
 
-> **Next:** - [Cookbook](ScalaValidatedCookbook.md)
+> **Next:** - [Cookbook](ScalaValidationCookbook.md)

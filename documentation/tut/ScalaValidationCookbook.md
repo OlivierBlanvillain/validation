@@ -1,6 +1,6 @@
 # Cookbook
 
-> All the examples below are validating Json objects. The API is not dedicated only to Json, it can be used on any type. Please refer to [Validating Json](ScalaValidatedJson.md), [Validating Forms](ScalaValidatedMigrationForm.md), and [Supporting new types](ScalaValidatedExtensions.md) for more information.
+> All the examples below are validating Json objects. The API is not dedicated only to Json, it can be used on any type. Please refer to [Validating Json](ScalaValidationJson.md), [Validating Forms](ScalaValidationMigrationForm.md), and [Supporting new types](ScalaValidationExtensions.md) for more information.
 
 ## `Rule`
 
@@ -34,7 +34,7 @@ scala> From[JsValue, Creature](js)
 res0: jto.validation.VA[Creature] = Valid(Creature(gremlins,false,1.0))
 
 scala> From[JsValue, Creature](Json.obj())
-res1: jto.validation.VA[Creature] = Invalid(List((/name,List(ValidatedError(List(error.required),WrappedArray()))), (/isDead,List(ValidatedError(List(error.required),WrappedArray()))), (/weight,List(ValidatedError(List(error.required),WrappedArray())))))
+res1: jto.validation.VA[Creature] = Invalid(List((/name,List(ValidationError(List(error.required),WrappedArray()))), (/isDead,List(ValidationError(List(error.required),WrappedArray()))), (/weight,List(ValidationError(List(error.required),WrappedArray())))))
 ```
 
 ### Dependent values
@@ -73,16 +73,16 @@ scala> passRule.validate(Json.obj("password" -> "foo", "verify" -> "foo"))
 res2: jto.validation.VA[String] = Valid(foo)
 
 scala> passRule.validate(Json.obj("password" -> "", "verify" -> "foo"))
-res3: jto.validation.VA[String] = Invalid(List((/password,List(ValidatedError(List(error.required),WrappedArray())))))
+res3: jto.validation.VA[String] = Invalid(List((/password,List(ValidationError(List(error.required),WrappedArray())))))
 
 scala> passRule.validate(Json.obj("password" -> "foo", "verify" -> ""))
-res4: jto.validation.VA[String] = Invalid(List((/verify,List(ValidatedError(List(error.required),WrappedArray())))))
+res4: jto.validation.VA[String] = Invalid(List((/verify,List(ValidationError(List(error.required),WrappedArray())))))
 
 scala> passRule.validate(Json.obj("password" -> "", "verify" -> ""))
-res5: jto.validation.VA[String] = Invalid(List((/password,List(ValidatedError(List(error.required),WrappedArray()))), (/verify,List(ValidatedError(List(error.required),WrappedArray())))))
+res5: jto.validation.VA[String] = Invalid(List((/password,List(ValidationError(List(error.required),WrappedArray()))), (/verify,List(ValidationError(List(error.required),WrappedArray())))))
 
 scala> passRule.validate(Json.obj("password" -> "foo", "verify" -> "bar"))
-res6: jto.validation.VA[String] = Invalid(List((/verify,List(ValidatedError(List(error.equals),WrappedArray(foo))))))
+res6: jto.validation.VA[String] = Invalid(List((/verify,List(ValidationError(List(error.equals),WrappedArray(foo))))))
 ```
 
 ### Recursive types
@@ -163,7 +163,7 @@ scala> val r = From[JsValue] { __ =>
      |   
      |   val tupleR = Rule.fromMapping[JsValue, (String, String)] {
      |     case JsObject(Seq((key, JsString(value)))) => Valid(key.toString -> value)
-     |     case _ => Invalid(Seq(ValidatedError("BAAAM")))
+     |     case _ => Invalid(Seq(ValidationError("BAAAM")))
      |   }
      | 
      |   (__ \ "values").read(seqR(tupleR))
@@ -171,7 +171,7 @@ scala> val r = From[JsValue] { __ =>
 r: jto.validation.Rule[play.api.libs.json.JsValue,Seq[(String, String)]] = jto.validation.Rule$$anon$3@1e2dbb59
 
 scala> r.validate(js)
-res9: jto.validation.VA[Seq[(String, String)]] = Invalid(List((/values[0],List(ValidatedError(List(BAAAM),WrappedArray()))), (/values[1],List(ValidatedError(List(BAAAM),WrappedArray())))))
+res9: jto.validation.VA[Seq[(String, String)]] = Invalid(List((/values[0],List(ValidationError(List(BAAAM),WrappedArray()))), (/values[1],List(ValidationError(List(BAAAM),WrappedArray())))))
 ```
 
 ### Validate subclasses (and parse the concrete class)
@@ -213,8 +213,8 @@ scala> val rc: Rule[JsValue, A] = From[JsValue] { __ =>
      | }
 rc: jto.validation.Rule[play.api.libs.json.JsValue,A] = jto.validation.Rule$$anon$3@7a021484
 
-scala> val typeInvalid = Invalid(Seq(Path -> Seq(ValidatedError("validation.unknownType"))))
-typeInvalid: jto.validation.Invalid[(jto.validation.Path.type, Seq[jto.validation.ValidatedError]),Nothing] = Invalid(List((/,List(ValidatedError(List(validation.unknownType),WrappedArray())))))
+scala> val typeInvalid = Invalid(Seq(Path -> Seq(ValidationError("validation.unknownType"))))
+typeInvalid: jto.validation.Invalid[(jto.validation.Path.type, Seq[jto.validation.ValidationError]),Nothing] = Invalid(List((/,List(ValidationError(List(validation.unknownType),WrappedArray())))))
 
 scala> val rule = rb orElse rc orElse Rule(_ => typeInvalid)
 rule: jto.validation.Rule[play.api.libs.json.JsValue,A] = jto.validation.Rule$$anon$2@647227f7
@@ -226,14 +226,14 @@ scala> rule.validate(c)
 res11: jto.validation.VA[A] = Valid(C(6))
 
 scala> rule.validate(e)
-res12: jto.validation.VA[A] = Invalid(List((/,List(ValidatedError(List(validation.unknownType),WrappedArray())))))
+res12: jto.validation.VA[A] = Invalid(List((/,List(ValidationError(List(validation.unknownType),WrappedArray())))))
 ```
 
 #### Using class discovery based on field discrimination
 
 ```scala
-scala> val typeInvalid = Invalid(Seq(Path -> Seq(ValidatedError("validation.unknownType"))))
-typeInvalid: jto.validation.Invalid[(jto.validation.Path.type, Seq[jto.validation.ValidatedError]),Nothing] = Invalid(List((/,List(ValidatedError(List(validation.unknownType),WrappedArray())))))
+scala> val typeInvalid = Invalid(Seq(Path -> Seq(ValidationError("validation.unknownType"))))
+typeInvalid: jto.validation.Invalid[(jto.validation.Path.type, Seq[jto.validation.ValidationError]),Nothing] = Invalid(List((/,List(ValidationError(List(validation.unknownType),WrappedArray())))))
 
 scala> val rule = From[JsValue] { __ =>
      |   import jto.validation.json.Rules._
@@ -252,7 +252,7 @@ scala> rule.validate(c)
 res14: jto.validation.VA[A] = Valid(C(6))
 
 scala> rule.validate(e)
-res15: jto.validation.VA[A] = Invalid(List((/,List(ValidatedError(List(validation.unknownType),WrappedArray())))))
+res15: jto.validation.VA[A] = Invalid(List((/,List(ValidationError(List(validation.unknownType),WrappedArray())))))
 ```
 
 ## `Write`

@@ -2,5 +2,5 @@ package jto.validation
 
 package object delimited {
   type Delimited = Array[String]
-  type DelimitedVA[O] = Validated[(IdxPathNode, Seq[ValidatedError]), O]
+  type DelimitedVA[O] = Validated[(IdxPathNode, Seq[ValidationError]), O]
 }

@@ -4,10 +4,10 @@ package json
 import play.api.libs.json.{JsValue, JsObject, Json, JsString, JsNumber, JsBoolean, JsArray, JsNull}
 
 object Rules extends DefaultRules[JsValue] {
-  private def jsonAs[T](f: PartialFunction[JsValue, Validated[Seq[ValidatedError], T]])(msg: String, args: Any*) =
+  private def jsonAs[T](f: PartialFunction[JsValue, Validated[Seq[ValidationError], T]])(msg: String, args: Any*) =
     Rule.fromMapping[JsValue, T](
       f.orElse {
-        case j => Invalid(Seq(ValidatedError(msg, args: _*)))
+        case j => Invalid(Seq(ValidationError(msg, args: _*)))
       })
 
   implicit def stringR = jsonAs[String] {
@@ -116,7 +116,7 @@ object Rules extends DefaultRules[JsValue] {
 
     Rule[II, JsValue] { json =>
       search(p, json) match {
-        case None => Invalid(Seq(Path -> Seq(ValidatedError("error.required"))))
+        case None => Invalid(Seq(Path -> Seq(ValidationError("error.required"))))
         case Some(js) => Valid(js)
       }
     }.compose(r)

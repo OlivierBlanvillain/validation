@@ -21,13 +21,13 @@ object ExperimentalSpec extends Specification {
         .validate(person) mustEqual Valid(person)
 
       (Get[Person] \ 'age).read(max(0))
-        .validate(person) mustEqual Invalid(List((Path \ "age", List(ValidatedError("error.max", 0)))))
+        .validate(person) mustEqual Invalid(List((Path \ "age", List(ValidationError("error.max", 0)))))
 
       (Get[Person] \ 'address \ 'city).read(notEmpty)
         .validate(person) mustEqual Valid(person)
 
       (Get[Person] \ 'address \ 'city).read(maxLength(1))
-        .validate(person) mustEqual Invalid(List((Path \ "address" \ "city", List(ValidatedError("error.maxLength", 1)))))
+        .validate(person) mustEqual Invalid(List((Path \ "address" \ "city", List(ValidationError("error.maxLength", 1)))))
 
       Get[Person] { __ =>
         (__ \ 'age).read(min(0)) *>
@@ -39,7 +39,7 @@ object ExperimentalSpec extends Specification {
       Get[Person] { __ =>
         (__ \ 'age).read(min(0)) *>
         (__ \ 'address \ 'city).read(notEmpty)
-      }.validate(Person("Joe Grey", -12, address.copy(city = ""))) mustEqual Invalid(List((Path \ "age",List(ValidatedError("error.min", 0))), (Path \ "address" \ "city", List(ValidatedError("error.required")))))
+      }.validate(Person("Joe Grey", -12, address.copy(city = ""))) mustEqual Invalid(List((Path \ "age",List(ValidationError("error.min", 0))), (Path \ "address" \ "city", List(ValidationError("error.required")))))
     }
   }
 }

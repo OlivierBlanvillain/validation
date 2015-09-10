@@ -1,6 +1,6 @@
 # Cookbook
 
-> All the examples below are validating Json objects. The API is not dedicated only to Json, it can be used on any type. Please refer to [Validating Json](ScalaValidatedJson.md), [Validating Forms](ScalaValidatedMigrationForm.md), and [Supporting new types](ScalaValidatedExtensions.md) for more information.
+> All the examples below are validating Json objects. The API is not dedicated only to Json, it can be used on any type. Please refer to [Validating Json](ScalaValidationJson.md), [Validating Forms](ScalaValidationMigrationForm.md), and [Supporting new types](ScalaValidationExtensions.md) for more information.
 
 ## `Rule`
 
@@ -126,7 +126,7 @@ val r = From[JsValue] { __ =>
   
   val tupleR = Rule.fromMapping[JsValue, (String, String)] {
     case JsObject(Seq((key, JsString(value)))) => Valid(key.toString -> value)
-    case _ => Invalid(Seq(ValidatedError("BAAAM")))
+    case _ => Invalid(Seq(ValidationError("BAAAM")))
   }
 
   (__ \ "values").read(seqR(tupleR))
@@ -162,7 +162,7 @@ val rc: Rule[JsValue, A] = From[JsValue] { __ =>
   (__ \ "name").read(json.Rules.equalTo("C")) *> (__ \ "bar").read[Int].map(C.apply _)
 }
 
-val typeInvalid = Invalid(Seq(Path -> Seq(ValidatedError("validation.unknownType"))))
+val typeInvalid = Invalid(Seq(Path -> Seq(ValidationError("validation.unknownType"))))
 val rule = rb orElse rc orElse Rule(_ => typeInvalid)
 
 rule.validate(b)
@@ -173,7 +173,7 @@ rule.validate(e)
 #### Using class discovery based on field discrimination
 
 ```tut
-val typeInvalid = Invalid(Seq(Path -> Seq(ValidatedError("validation.unknownType"))))
+val typeInvalid = Invalid(Seq(Path -> Seq(ValidationError("validation.unknownType"))))
 
 val rule = From[JsValue] { __ =>
   import jto.validation.json.Rules._

@@ -172,4 +172,4 @@ def save = Action(parse.urlFormEncoded) { implicit request =>
 }
 ```
 
-> **Next:** - [Cookbook](ScalaValidatedCookbook.md)
+> **Next:** - [Cookbook](ScalaValidationCookbook.md)

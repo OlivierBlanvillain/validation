@@ -9,7 +9,7 @@ object DefaultRulesSpec extends Specification {
 
   "DefaultRules" should {
 
-    def failure(m: String, args: Any*) = Invalid(Seq(Path -> Seq(ValidatedError(m, args:_*))))
+    def failure(m: String, args: Any*) = Invalid(Seq(Path -> Seq(ValidationError(m, args:_*))))
 
     "validate non emptyness" in {
       notEmpty.validate("foo") mustEqual(Valid("foo"))
