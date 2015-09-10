@@ -1,4 +1,4 @@
-import jto.validation._;
+import jto.validation._
 
 import org.specs2.mutable._
 
@@ -6,8 +6,8 @@ object ValidatedSpec extends Specification {
 
   "Validated" should {
 
-    val success = Valid[String, Int](5)
-    val failure = Invalid[String, Int]("err" :: Nil)
+    val success: Validated[Seq[String], Int] = Valid[Int](5)
+    val failure: Validated[Seq[String], Int] = Invalid[Seq[String]]("err" :: Nil)
 
     "be a Functor" in {
       // identity
@@ -19,7 +19,7 @@ object ValidatedSpec extends Specification {
       success.map(p compose q) must equalTo(success.map(q).map(p))
       failure.map(p compose q) must equalTo(failure.map(q).map(p))
 
-      success.map(_ + 2) must equalTo(Valid[String, Int](7))
+      success.map(_ + 2) must equalTo(Valid[Int](7))
       failure.map(_ + 2) must equalTo(failure)
     }
 
@@ -36,11 +36,11 @@ object ValidatedSpec extends Specification {
     }
 
     "have an Applicative" in {
-      val app = implicitly[cats.Applicative[({type f[A] = Validated[String, A]})#f]]
+      val app = implicitly[cats.Applicative[Validated[Seq[String], ?]]]
 
-      val u = Valid[String, Int => Int](_ + 2)
-      val v = Valid[String, Int => Int](_ * 3)
-      val w = Valid[String, Int](5)
+      val u: Validated[Seq[String], Int => Int] = Valid[Int => Int](_ + 2)
+      val v: Validated[Seq[String], Int => Int] = Valid[Int => Int](_ * 3)
+      val w: Validated[Seq[String], Int] = Valid[Int](5)
 
       app.ap(app.pure(5))(app.pure((_: Int) + 2)) must equalTo(app.pure(7))
 
@@ -65,37 +65,10 @@ object ValidatedSpec extends Specification {
 
     "implement filter" in {
       success.filter((_: Int) == 5) must equalTo(success)
-      Valid(7).filter("err")((_: Int) == 5) must equalTo(failure)
       failure.filter((_: Int) == 5) must equalTo(failure)
     }
 
-    "support for-comprehension" in {
-      (for(x <- success) yield x + 2) must equalTo(Valid(7))
-      (for(x <- failure) yield x + 2) must equalTo(failure)
-      (for(x <- success if x == 5) yield x + 2) must equalTo(Valid(7))
-      (for(x <- success if x == 7) yield x + 2) must equalTo(Invalid(Nil))
-      (for(x <- failure if x == 5) yield x + 2) must equalTo(failure)
-    }
-
     "have recovery methods" in {
-      success.recover {
-        case _ => 42
-      } must equalTo(success)
-
-      failure.recover {
-        case Invalid("err" :: Nil) => 42
-      } must equalTo(Valid(42))
-
-      failure.recover {
-        case Invalid(Nil) => 42
-      } must equalTo(failure)
-
-      success.recoverTotal {
-        case _ => 42
-      } must equalTo(5)
-
-      failure.recoverTotal { _ => 42 } must equalTo(42)
-
       success.getOrElse(42) must equalTo(5)
       failure.getOrElse(42) must equalTo(42)
 
@@ -104,22 +77,11 @@ object ValidatedSpec extends Specification {
     }
 
     "be easily convertible to scala standars API types" in {
-      success.asOpt must equalTo(Some(5))
-      failure.asOpt must equalTo(None)
+      success.toOption must equalTo(Some(5))
+      failure.toOption must equalTo(None)
 
-      success.asEither must equalTo(Right(5))
-      failure.asEither must equalTo(Left("err" :: Nil))
+      success.toEither must equalTo(Right(5))
+      failure.toEither must equalTo(Left("err" :: Nil))
     }
-
-    "sequence" in {
-      val f1: Validated[String, String] = Invalid(Seq("err1"))
-      val f2: Validated[String, String] = Invalid(Seq("err2"))
-      val s1: Validated[String, String] = Valid("1")
-      val s2: Validated[String, String] = Valid("2")
-
-      Validated.sequence(Seq(s1, s2)) must equalTo(Valid(Seq("1", "2")))
-      Validated.sequence(Seq(f1, f2)) must equalTo(Invalid(Seq("err1", "err2")))
-    }
-
   }
 }

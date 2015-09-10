@@ -167,10 +167,10 @@ object RulesSpec extends Specification {
       }
 
       "Seq" in {
-        Path.read[Node, Seq[String]].validate(<a><b>foo</b></a>).get must contain(exactly(Seq("foo"): _*))
-        Path.read[Node, Seq[Int]].validate(<a><b>1</b><b>2</b></a>).get must contain(exactly(Seq(1, 2): _*))
-        Path.read[Node, Seq[String]].validate(<a></a>).get  must contain(exactly(Seq.empty[String]: _*))
-        Path.read[Node, Seq[String]].validate(<a>1</a>).get  must contain(exactly(Seq.empty[String]: _*))
+        Path.read[Node, Seq[String]].validate(<a><b>foo</b></a>).toOption.get must contain(exactly(Seq("foo"): _*))
+        Path.read[Node, Seq[Int]].validate(<a><b>1</b><b>2</b></a>).toOption.get must contain(exactly(Seq(1, 2): _*))
+        Path.read[Node, Seq[String]].validate(<a></a>).toOption.get  must contain(exactly(Seq.empty[String]: _*))
+        Path.read[Node, Seq[String]].validate(<a>1</a>).toOption.get  must contain(exactly(Seq.empty[String]: _*))
         Path.read[Node, Seq[Int]].validate(<a><b>1</b><b>foo</b></a>) mustEqual(Invalid(Seq(Path \ 1 -> Seq(ValidatedError("error.number", "Int")))))
       }
 
@@ -244,12 +244,12 @@ object RulesSpec extends Specification {
 
       "lift validations to seq validations" in {
         Path.from[Node](seqR(notEmpty)).validate(<a><b>foo</b><b>bar</b></a>)
-          .get must contain(exactly(Seq("foo", "bar"): _*))
+          .toOption.get must contain(exactly(Seq("foo", "bar"): _*))
 
         From[Node]{ __ =>
           (__ \ "b").read(seqR(notEmpty))
         }.validate(<a><b><c>foo</c><c>bar</c></b></a>)
-          .get must contain(exactly(Seq("foo", "bar"): _*))
+          .toOption.get must contain(exactly(Seq("foo", "bar"): _*))
 
         Path.from[Node](seqR(notEmpty))
           .validate(<a><b>foo</b><b></b></a>) mustEqual(Invalid(Seq(Path \ 1 -> Seq(ValidatedError("error.required")))))

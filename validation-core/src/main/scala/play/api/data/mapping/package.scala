@@ -1,6 +1,6 @@
 package jto
 
-import cats.{Apply, Semigroup, Unapply}
+import cats.{Apply, Monoid, Unapply}
 import cats.data.Validated
 import cats.syntax.{ApplyOps, ApplySyntax1}
 
@@ -35,8 +35,9 @@ package object validation {
     As.applySyntaxU(fa)
   }
   
-  implicit def seqAlgebra[A]: Semigroup[Seq[A]] =
-    new Semigroup[Seq[A]] {
+  implicit def seqAlgebra[A]: Monoid[Seq[A]] =
+    new Monoid[Seq[A]] {
+      def empty: Seq[A] = Seq.empty[A]
       def combine(x: Seq[A], y: Seq[A]): Seq[A] = x ++ y
 
       // override def combineN(x: List[A], n: Int): List[A] = {

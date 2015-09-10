@@ -199,20 +199,20 @@ object RulesSpec extends Specification {
       }
 
       "Traversable" in {
-        (Path \ "n").read[JValue, Traversable[String]].validate(JObject("n" -> JArray(List(JString("foo"))))).get.toSeq must contain(exactly(Seq("foo"): _*))
-        (Path \ "n").read[JValue, Traversable[Int]].validate(JObject("n" -> JArray(List(JInt(1), JInt(2), JInt(3))))).get.toSeq must contain(exactly(Seq(1, 2, 3): _*))
+        (Path \ "n").read[JValue, Traversable[String]].validate(JObject("n" -> JArray(List(JString("foo"))))).toOption.get.toSeq must contain(exactly(Seq("foo"): _*))
+        (Path \ "n").read[JValue, Traversable[Int]].validate(JObject("n" -> JArray(List(JInt(1), JInt(2), JInt(3))))).toOption.get.toSeq must contain(exactly(Seq(1, 2, 3): _*))
         (Path \ "n").read[JValue, Traversable[String]].validate(JObject("n" -> JString("paf"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.invalid", "Array")))))
       }
 
       "Array" in {
-        (Path \ "n").read[JValue, Array[String]].validate(JObject("n" -> JArray(List(JString("foo"))))).get.toSeq must contain(exactly(Seq("foo"): _*))
-        (Path \ "n").read[JValue, Array[Int]].validate(JObject("n" -> JArray(List(JInt(1), JInt(2), JInt(3))))).get.toSeq must contain(exactly(Seq(1, 2, 3): _*))
+        (Path \ "n").read[JValue, Array[String]].validate(JObject("n" -> JArray(List(JString("foo"))))).toOption.get.toSeq must contain(exactly(Seq("foo"): _*))
+        (Path \ "n").read[JValue, Array[Int]].validate(JObject("n" -> JArray(List(JInt(1), JInt(2), JInt(3))))).toOption.get.toSeq must contain(exactly(Seq(1, 2, 3): _*))
         (Path \ "n").read[JValue, Array[String]].validate(JObject("n" -> JString("paf"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.invalid", "Array")))))
       }
 
       "Seq" in {
-        (Path \ "n").read[JValue, Seq[String]].validate(JObject("n" -> JArray(List(JString("foo"))))).get must contain(exactly(Seq("foo"): _*))
-        (Path \ "n").read[JValue, Seq[Int]].validate(JObject("n" -> JArray(List(JInt(1), JInt(2), JInt(3))))).get must contain(exactly(Seq(1, 2, 3): _*))
+        (Path \ "n").read[JValue, Seq[String]].validate(JObject("n" -> JArray(List(JString("foo"))))).toOption.get must contain(exactly(Seq("foo"): _*))
+        (Path \ "n").read[JValue, Seq[Int]].validate(JObject("n" -> JArray(List(JInt(1), JInt(2), JInt(3))))).toOption.get must contain(exactly(Seq(1, 2, 3): _*))
         (Path \ "n").read[JValue, Seq[String]].validate(JObject("n" -> JString("paf"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.invalid", "Array")))))
         (Path \ "n").read[JValue, Seq[String]].validate(JObject("n" -> JArray(List(JString("foo"), JInt(2))))) mustEqual(Invalid(Seq(Path \ "n" \ 1 -> Seq(ValidatedError("error.invalid", "String")))))
       }
@@ -285,13 +285,13 @@ object RulesSpec extends Specification {
 
     "lift validations to seq validations" in {
       (Path \ "foo").from[JValue](seqR(notEmpty)).validate(JObject("foo" -> JArray(List(JString("bar")))))
-        .get must contain(exactly(Seq("bar"): _*))
+        .toOption.get must contain(exactly(Seq("bar"): _*))
 
       From[JValue]{ __ =>
         (__ \ "foo").read(
           (__ \ "foo").read(seqR(notEmpty)))
       }.validate(JObject("foo" -> JObject("foo" -> JArray(List(JString("bar"))))))
-        .get must contain(exactly(Seq("bar"): _*))
+        .toOption.get must contain(exactly(Seq("bar"): _*))
 
       (Path \ "n").from[JValue](seqR(notEmpty))
         .validate(JObject("n" -> JArray(List(JString("foo"), JString(""))))) mustEqual(Invalid(Seq(Path \ "n" \ 1 -> Seq(ValidatedError("error.required")))))

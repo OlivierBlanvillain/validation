@@ -206,25 +206,25 @@ object RulesSpec extends Specification {
       }
 
       "Traversable" in {
-        From[UrlFormEncoded] { __ => (__ \ "n").read[Traversable[String]] }.validate(Map("n" -> Seq("foo"))).get.toSeq must contain(exactly(Seq("foo"): _*))
-        From[UrlFormEncoded] { __ => (__ \ "n").read[Traversable[Int]] }.validate(Map("n[]" -> Seq("1", "2", "3"))).get.toSeq must contain(exactly(Seq(1, 2, 3): _*))
+        From[UrlFormEncoded] { __ => (__ \ "n").read[Traversable[String]] }.validate(Map("n" -> Seq("foo"))).toOption.get.toSeq must contain(exactly(Seq("foo"): _*))
+        From[UrlFormEncoded] { __ => (__ \ "n").read[Traversable[Int]] }.validate(Map("n[]" -> Seq("1", "2", "3"))).toOption.get.toSeq must contain(exactly(Seq(1, 2, 3): _*))
         From[UrlFormEncoded] { __ => (__ \ "n").read[Traversable[Int]] }.validate(Map("n[]" -> Seq("1", "paf"))) mustEqual(Invalid(Seq(Path \ "n" \ 1 -> Seq(ValidatedError("error.number", "Int")))))
       }
 
       "Array" in {
-        From[UrlFormEncoded] { __ => (__ \ "n").read[Array[String]] }.validate(Map("n" -> Seq("foo"))).get.toSeq must contain(exactly(Seq("foo"): _*))
-        From[UrlFormEncoded] { __ => (__ \ "n").read[Array[Int]] }.validate(Map("n[]" -> Seq("1", "2", "3"))).get.toSeq must contain(exactly(Seq(1, 2, 3): _*))
+        From[UrlFormEncoded] { __ => (__ \ "n").read[Array[String]] }.validate(Map("n" -> Seq("foo"))).toOption.get.toSeq must contain(exactly(Seq("foo"): _*))
+        From[UrlFormEncoded] { __ => (__ \ "n").read[Array[Int]] }.validate(Map("n[]" -> Seq("1", "2", "3"))).toOption.get.toSeq must contain(exactly(Seq(1, 2, 3): _*))
         From[UrlFormEncoded] { __ => (__ \ "n").read[Array[Int]] }.validate(Map("n[]" -> Seq("1", "paf"))) mustEqual(Invalid(Seq(Path \ "n" \ 1 -> Seq(ValidatedError("error.number", "Int")))))
       }
 
       "Seq" in {
-        From[UrlFormEncoded] { __ => (__ \ "n").read[Seq[String]] }.validate(Map("n" -> Seq("foo"))).get must contain(exactly(Seq("foo"): _*))
-        From[UrlFormEncoded] { __ => (__ \ "n").read[Seq[Int]] }.validate(Map("n[]" -> Seq("1", "2", "3"))).get must contain(exactly(Seq(1, 2, 3): _*))
+        From[UrlFormEncoded] { __ => (__ \ "n").read[Seq[String]] }.validate(Map("n" -> Seq("foo"))).toOption.get must contain(exactly(Seq("foo"): _*))
+        From[UrlFormEncoded] { __ => (__ \ "n").read[Seq[Int]] }.validate(Map("n[]" -> Seq("1", "2", "3"))).toOption.get must contain(exactly(Seq(1, 2, 3): _*))
         From[UrlFormEncoded] { __ => (__ \ "n").read[Seq[Int]] }.validate(Map(
           "n[0]" -> Seq("1"),
           "n[1]" -> Seq("2"),
           "n[3]" -> Seq("3")
-        )).get must contain(exactly(Seq(1, 2, 3): _*))
+        )).toOption.get must contain(exactly(Seq(1, 2, 3): _*))
         From[UrlFormEncoded] { __ => (__ \ "n").read[Seq[Int]] }.validate(Map("n[]" -> Seq("1", "paf"))) mustEqual(Invalid(Seq(Path \ "n" \ 1 -> Seq(ValidatedError("error.number", "Int")))))
       }
     }

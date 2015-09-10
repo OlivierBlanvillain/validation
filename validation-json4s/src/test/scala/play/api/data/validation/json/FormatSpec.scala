@@ -226,8 +226,8 @@ object FormatSpec extends Specification {
       }
 
       "Traversable" in {
-        Formatting[JValue, JObject] { __ => (__ \ "n").format[Traversable[String]] }.validate(JObject("n" -> JArray(List(JString("foo"))))).get.toSeq must contain(exactly(Seq("foo"): _*))
-        Formatting[JValue, JObject] { __ => (__ \ "n").format[Traversable[Int]] }.validate(JObject("n" -> JArray(List(JInt(1), JInt(2), JInt(3))))).get.toSeq must contain(exactly(Seq(1, 2, 3): _*))
+        Formatting[JValue, JObject] { __ => (__ \ "n").format[Traversable[String]] }.validate(JObject("n" -> JArray(List(JString("foo"))))).toOption.get.toSeq must contain(exactly(Seq("foo"): _*))
+        Formatting[JValue, JObject] { __ => (__ \ "n").format[Traversable[Int]] }.validate(JObject("n" -> JArray(List(JInt(1), JInt(2), JInt(3))))).toOption.get.toSeq must contain(exactly(Seq(1, 2, 3): _*))
         Formatting[JValue, JObject] { __ => (__ \ "n").format[Traversable[Int]] }.validate(JObject("n" -> JArray(List(JString("1"), JString("paf"))))) mustEqual(Invalid(Seq(
           Path \ "n" \ 0 -> Seq(ValidatedError("error.number", "Int")),
           Path \ "n" \ 1 -> Seq(ValidatedError("error.number", "Int"))
@@ -235,8 +235,8 @@ object FormatSpec extends Specification {
       }
 
       "Array" in {
-        Formatting[JValue, JObject] { __ => (__ \ "n").format[Array[String]] }.validate(JObject("n" -> JArray(List(JString("foo"))))).get.toSeq must contain(exactly(Seq("foo"): _*))
-        Formatting[JValue, JObject] { __ => (__ \ "n").format[Array[Int]] }.validate(JObject("n" -> JArray(List(JInt(1), JInt(2), JInt(3))))).get.toSeq must contain(exactly(Seq(1, 2, 3): _*))
+        Formatting[JValue, JObject] { __ => (__ \ "n").format[Array[String]] }.validate(JObject("n" -> JArray(List(JString("foo"))))).toOption.get.toSeq must contain(exactly(Seq("foo"): _*))
+        Formatting[JValue, JObject] { __ => (__ \ "n").format[Array[Int]] }.validate(JObject("n" -> JArray(List(JInt(1), JInt(2), JInt(3))))).toOption.get.toSeq must contain(exactly(Seq(1, 2, 3): _*))
         Formatting[JValue, JObject] { __ => (__ \ "n").format[Array[Int]] }.validate(JObject("n" -> JArray(List(JString("1"), JString("paf"))))) mustEqual(Invalid(Seq(
           Path \ "n" \ 0 -> Seq(ValidatedError("error.number", "Int")),
           Path \ "n" \ 1 -> Seq(ValidatedError("error.number", "Int"))
@@ -244,8 +244,8 @@ object FormatSpec extends Specification {
       }
 
       "Seq" in {
-        Formatting[JValue, JObject] { __ => (__ \ "n").format[Seq[String]] }.validate(JObject("n" -> JArray(List(JString("foo"))))).get must contain(exactly(Seq("foo"): _*))
-        Formatting[JValue, JObject] { __ => (__ \ "n").format[Seq[Int]] }.validate(JObject("n" -> JArray(List(JInt(1), JInt(2), JInt(3))))).get must contain(exactly(Seq(1, 2, 3): _*))
+        Formatting[JValue, JObject] { __ => (__ \ "n").format[Seq[String]] }.validate(JObject("n" -> JArray(List(JString("foo"))))).toOption.get must contain(exactly(Seq("foo"): _*))
+        Formatting[JValue, JObject] { __ => (__ \ "n").format[Seq[Int]] }.validate(JObject("n" -> JArray(List(JInt(1), JInt(2), JInt(3))))).toOption.get must contain(exactly(Seq(1, 2, 3): _*))
         Formatting[JValue, JObject] { __ => (__ \ "n").format[Seq[Int]] }.validate(JObject("n" -> JArray(List(JString("1"), JString("paf"))))) mustEqual(Invalid(Seq(
           Path \ "n" \ 0 -> Seq(ValidatedError("error.number", "Int")),
           Path \ "n" \ 1 -> Seq(ValidatedError("error.number", "Int"))

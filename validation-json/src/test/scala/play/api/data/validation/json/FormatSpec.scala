@@ -222,8 +222,8 @@ object FormatSpec extends Specification {
       }
 
       "Traversable" in {
-        Formatting[JsValue, JsObject] { __ => (__ \ "n").format[Traversable[String]] }.validate(Json.obj("n" -> Seq("foo"))).get.toSeq must contain(exactly(Seq("foo"): _*))
-        Formatting[JsValue, JsObject] { __ => (__ \ "n").format[Traversable[Int]] }.validate(Json.obj("n" -> Seq(1, 2, 3))).get.toSeq must contain(exactly(Seq(1, 2, 3): _*))
+        Formatting[JsValue, JsObject] { __ => (__ \ "n").format[Traversable[String]] }.validate(Json.obj("n" -> Seq("foo"))).toOption.get.toSeq must contain(exactly(Seq("foo"): _*))
+        Formatting[JsValue, JsObject] { __ => (__ \ "n").format[Traversable[Int]] }.validate(Json.obj("n" -> Seq(1, 2, 3))).toOption.get.toSeq must contain(exactly(Seq(1, 2, 3): _*))
         Formatting[JsValue, JsObject] { __ => (__ \ "n").format[Traversable[Int]] }.validate(Json.obj("n" -> Seq("1", "paf"))) mustEqual(Invalid(Seq(
           Path \ "n" \ 0 -> Seq(ValidatedError("error.number", "Int")),
           Path \ "n" \ 1 -> Seq(ValidatedError("error.number", "Int"))
@@ -231,8 +231,8 @@ object FormatSpec extends Specification {
       }
 
       "Array" in {
-        Formatting[JsValue, JsObject] { __ => (__ \ "n").format[Array[String]] }.validate(Json.obj("n" -> Seq("foo"))).get.toSeq must contain(exactly(Seq("foo"): _*))
-        Formatting[JsValue, JsObject] { __ => (__ \ "n").format[Array[Int]] }.validate(Json.obj("n" -> Seq(1, 2, 3))).get.toSeq must contain(exactly(Seq(1, 2, 3): _*))
+        Formatting[JsValue, JsObject] { __ => (__ \ "n").format[Array[String]] }.validate(Json.obj("n" -> Seq("foo"))).toOption.get.toSeq must contain(exactly(Seq("foo"): _*))
+        Formatting[JsValue, JsObject] { __ => (__ \ "n").format[Array[Int]] }.validate(Json.obj("n" -> Seq(1, 2, 3))).toOption.get.toSeq must contain(exactly(Seq(1, 2, 3): _*))
         Formatting[JsValue, JsObject] { __ => (__ \ "n").format[Array[Int]] }.validate(Json.obj("n" -> Seq("1", "paf"))) mustEqual(Invalid(Seq(
           Path \ "n" \ 0 -> Seq(ValidatedError("error.number", "Int")),
           Path \ "n" \ 1 -> Seq(ValidatedError("error.number", "Int"))
@@ -240,8 +240,8 @@ object FormatSpec extends Specification {
       }
 
       "Seq" in {
-        Formatting[JsValue, JsObject] { __ => (__ \ "n").format[Seq[String]] }.validate(Json.obj("n" -> Seq("foo"))).get must contain(exactly(Seq("foo"): _*))
-        Formatting[JsValue, JsObject] { __ => (__ \ "n").format[Seq[Int]] }.validate(Json.obj("n" -> Seq(1, 2, 3))).get must contain(exactly(Seq(1, 2, 3): _*))
+        Formatting[JsValue, JsObject] { __ => (__ \ "n").format[Seq[String]] }.validate(Json.obj("n" -> Seq("foo"))).toOption.get must contain(exactly(Seq("foo"): _*))
+        Formatting[JsValue, JsObject] { __ => (__ \ "n").format[Seq[Int]] }.validate(Json.obj("n" -> Seq(1, 2, 3))).toOption.get must contain(exactly(Seq(1, 2, 3): _*))
         Formatting[JsValue, JsObject] { __ => (__ \ "n").format[Seq[Int]] }.validate(Json.obj("n" -> Seq("1", "paf"))) mustEqual(Invalid(Seq(
           Path \ "n" \ 0 -> Seq(ValidatedError("error.number", "Int")),
           Path \ "n" \ 1 -> Seq(ValidatedError("error.number", "Int"))

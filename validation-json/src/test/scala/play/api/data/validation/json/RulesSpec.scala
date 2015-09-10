@@ -198,20 +198,20 @@ object RulesSpec extends Specification {
       }
 
       "Traversable" in {
-        (Path \ "n").read[JsValue, Traversable[String]].validate(Json.obj("n" -> Seq("foo"))).get.toSeq must contain(exactly(Seq("foo"): _*))
-        (Path \ "n").read[JsValue, Traversable[Int]].validate(Json.obj("n" -> Seq(1, 2, 3))).get.toSeq must contain(exactly(Seq(1, 2, 3): _*))
+        (Path \ "n").read[JsValue, Traversable[String]].validate(Json.obj("n" -> Seq("foo"))).toOption.get.toSeq must contain(exactly(Seq("foo"): _*))
+        (Path \ "n").read[JsValue, Traversable[Int]].validate(Json.obj("n" -> Seq(1, 2, 3))).toOption.get.toSeq must contain(exactly(Seq(1, 2, 3): _*))
         (Path \ "n").read[JsValue, Traversable[String]].validate(Json.obj("n" -> "paf")) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.invalid", "Array")))))
       }
 
       "Array" in {
-        (Path \ "n").read[JsValue, Array[String]].validate(Json.obj("n" -> Seq("foo"))).get.toSeq must contain(exactly(Seq("foo"): _*))
-        (Path \ "n").read[JsValue, Array[Int]].validate(Json.obj("n" -> Seq(1, 2, 3))).get.toSeq must contain(exactly(Seq(1, 2, 3): _*))
+        (Path \ "n").read[JsValue, Array[String]].validate(Json.obj("n" -> Seq("foo"))).toOption.get.toSeq must contain(exactly(Seq("foo"): _*))
+        (Path \ "n").read[JsValue, Array[Int]].validate(Json.obj("n" -> Seq(1, 2, 3))).toOption.get.toSeq must contain(exactly(Seq(1, 2, 3): _*))
         (Path \ "n").read[JsValue, Array[String]].validate(Json.obj("n" -> "paf")) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.invalid", "Array")))))
       }
 
       "Seq" in {
-        (Path \ "n").read[JsValue, Seq[String]].validate(Json.obj("n" -> Seq("foo"))).get must contain(exactly(Seq("foo"): _*))
-        (Path \ "n").read[JsValue, Seq[Int]].validate(Json.obj("n" -> Seq(1, 2, 3))).get must contain(exactly(Seq(1, 2, 3): _*))
+        (Path \ "n").read[JsValue, Seq[String]].validate(Json.obj("n" -> Seq("foo"))).toOption.get must contain(exactly(Seq("foo"): _*))
+        (Path \ "n").read[JsValue, Seq[Int]].validate(Json.obj("n" -> Seq(1, 2, 3))).toOption.get must contain(exactly(Seq(1, 2, 3): _*))
         (Path \ "n").read[JsValue, Seq[String]].validate(Json.obj("n" -> "paf")) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidatedError("error.invalid", "Array")))))
         (Path \ "n").read[JsValue, Seq[String]].validate(JsObject(Seq("n" -> JsArray(Seq(JsString("foo"), JsNumber(2)))))) mustEqual(Invalid(Seq(Path \ "n" \ 1 -> Seq(ValidatedError("error.invalid", "String")))))
       }
@@ -284,13 +284,13 @@ object RulesSpec extends Specification {
 
     "lift validations to seq validations" in {
       (Path \ "foo").from[JsValue](seqR(notEmpty)).validate(Json.obj("foo" -> Seq("bar")))
-        .get must contain(exactly(Seq("bar"): _*))
+        .toOption.get must contain(exactly(Seq("bar"): _*))
 
       From[JsValue]{ __ =>
         (__ \ "foo").read(
           (__ \ "foo").read(seqR(notEmpty)))
       }.validate(Json.obj("foo" -> Json.obj("foo" -> Seq("bar"))))
-        .get must contain(exactly(Seq("bar"): _*))
+        .toOption.get must contain(exactly(Seq("bar"): _*))
 
       (Path \ "n").from[JsValue](seqR(notEmpty))
         .validate(Json.obj("n" -> Seq("foo", ""))) mustEqual(Invalid(Seq(Path \ "n" \ 1 -> Seq(ValidatedError("error.required")))))
