@@ -43,8 +43,8 @@ object Writes extends DefaultWrites with DefaultMonoids with GenericWrites[JsVal
         Json.obj(p.toString -> wErrs.writes(errs))
     }
 
-  implicit def failure[O](implicit w: WriteLike[(Path, Seq[ValidatedError]), JsObject]) =
-    Write[Invalid[(Path, Seq[ValidatedError]), O], JsObject] {
+  implicit def failure(implicit w: WriteLike[(Path, Seq[ValidatedError]), JsObject]) =
+    Write[Invalid[Seq[(Path, Seq[ValidatedError])]], JsObject] {
       case Invalid(errs) =>
         errs.map(w.writes).reduce(_ ++ _)
     }

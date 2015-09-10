@@ -71,12 +71,12 @@ object Rules extends DefaultRules[Delimited] with ParsingRules {
       Rule[Delimited, Option[O]] { delimited =>
         val isNone = not(noneValues.foldLeft(Rule.zero[String])(_ compose not(_))).map(_ => None)
         val v = (pick(path).validate(delimited).map(Some.apply) orElse Valid(None))
-        v.viaEither {
-          _.right.flatMap {
+        Validated.fromEither(
+          v.toEither.right.flatMap {
             case None => Right(None)
-            case Some(i) => isNone.orElse(Rule.toRule(coerce).map[Option[O]](Some.apply)).validate(i).asEither
+            case Some(i) => isNone.orElse(Rule.toRule(coerce).map[Option[O]](Some.apply)).validate(i).toEither
           }
-        }
+        )
       }
 
   /**

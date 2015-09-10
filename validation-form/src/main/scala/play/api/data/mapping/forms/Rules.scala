@@ -90,9 +90,9 @@ object PM {
    * @return a `Path`
    */
   def asPath(k: String): Path = PathParser.parse(k) match {
-    case PathParser.Invalid(m, _) => throw new RuntimeException(s"Invalid field name $k: $m")
+    case PathParser.Failure(m, _) => throw new RuntimeException(s"Invalid field name $k: $m")
     case PathParser.Error(m, _) => throw new RuntimeException(s"Invalid field name $k: $m")
-    case PathParser.Valid(r, _) => r
+    case PathParser.Success(r, _) => r
   }
 }
 

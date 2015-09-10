@@ -4,7 +4,7 @@ package json4s
 import org.json4s._
 
 object Rules extends DefaultRules[JValue] {
-  private def jsonAs[T](f: PartialFunction[JValue, Validated[ValidatedError, T]])(msg: String, args: Any*) =
+  private def jsonAs[T](f: PartialFunction[JValue, Validated[Seq[ValidatedError], T]])(msg: String, args: Any*) =
     Rule.fromMapping[JValue, T](
       f.orElse {
         case j => Invalid(Seq(ValidatedError(msg, args: _*)))
