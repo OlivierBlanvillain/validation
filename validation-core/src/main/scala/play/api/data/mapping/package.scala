@@ -1,6 +1,6 @@
 package jto
 
-import cats.{Apply, Unapply}
+import cats.{Apply, Semigroup, Unapply}
 import cats.data.Validated
 import cats.syntax.{ApplyOps, ApplySyntax1}
 
@@ -17,9 +17,9 @@ import cats.syntax.{ApplyOps, ApplySyntax1}
  */
 package object validation {
   @annotation.implicitNotFound("No implicit Mapping found from ${I} to ${O}. Try to define an implicit Mapping[${E}, ${I}, ${O}].")
-  type Mapping[E, I, O] = I => Validated[E, O]
+  type Mapping[E, I, O] = I => Validated[Seq[E], O]
   type Constraint[T] = Mapping[ValidatedError, T, T]
-  type VA[O] = Validated[(Path, Seq[ValidatedError]), O]
+  type VA[O] = Validated[Seq[(Path, Seq[ValidatedError])], O]
   
   type Validated[+E, +A] = cats.data.Validated[E, A]
   val Validated = cats.data.Validated
@@ -34,4 +34,25 @@ package object validation {
     object As extends ApplySyntax1
     As.applySyntaxU(fa)
   }
+  
+  implicit def seqAlgebra[A]: Semigroup[Seq[A]] =
+    new Semigroup[Seq[A]] {
+      def combine(x: Seq[A], y: Seq[A]): Seq[A] = x ++ y
+
+      // override def combineN(x: List[A], n: Int): List[A] = {
+      //   val buf = mutable.ListBuffer.empty[A]
+      //   @tailrec def loop(i: Int): List[A] =
+      //     if (i <= 0) buf.toList else {
+      //       buf ++= x
+      //       loop(i - 1)
+      //     }
+      //   loop(n)
+      // }
+
+      // override def combineAll(xs: TraversableOnce[List[A]]): List[A] = {
+      //   val buf = mutable.ListBuffer.empty[A]
+      //   xs.foreach(buf ++= _)
+      //   buf.toList
+      // }
+    }
 }

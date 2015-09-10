@@ -173,7 +173,7 @@ trait GenericRules {
           case (v, i) =>
             Rule.toRule(r).repath((Path \ i) ++ _).validate(v)
         }
-        Validated.sequence(withI)
+???//        Validated.sequence(withI)
     }
 
   /**
@@ -194,8 +194,8 @@ trait GenericRules {
    * }}}
    */
   implicit def headAs[I, O](implicit c: RuleLike[I, O]) = Rule.fromMapping[Seq[I], I] {
-    _.headOption.map(Valid[ValidatedError, I](_))
-      .getOrElse(Invalid[ValidatedError, I](Seq(ValidatedError("error.required"))))
+    _.headOption.map(Valid[I](_))
+      .getOrElse(Invalid[Seq[ValidatedError]](Seq(ValidatedError("error.required"))))
   }.compose(c)
 
   def not[I, O](r: RuleLike[I, O]) = Rule[I, I] { d =>
@@ -268,7 +268,7 @@ trait GenericRules {
   def email = Rule.fromMapping[String, String](
     pattern("""\b[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\b""".r)
       .validate(_: String)
-      .fail.map(_ => Seq(ValidatedError("error.email"))))
+      .bimap(_ => Seq(ValidatedError("error.email")), identity))
 
   /**
    * A Rule that always succeed
@@ -287,7 +287,7 @@ trait ParsingRules {
 
   self: GenericRules =>
 
-  private def stringAs[T](f: PartialFunction[BigDecimal, Validated[ValidatedError, T]])(args: Any*) =
+  private def stringAs[T](f: PartialFunction[BigDecimal, Validated[Seq[ValidatedError], T]])(args: Any*) =
     Rule.fromMapping[String, T] {
       val toB: PartialFunction[String, BigDecimal] = { case s if s.matches("""[-+]?[0-9]*\.?[0-9]+""") => BigDecimal(s) }
       toB.lift(_)
@@ -306,7 +306,7 @@ trait ParsingRules {
   implicit def booleanR = Rule.fromMapping[String, Boolean] {
     pattern("""(?iu)true|false""".r).validate(_: String)
       .map(java.lang.Boolean.parseBoolean)
-      .fail.map(_ => Seq(ValidatedError("error.invalid", "Boolean")))
+      .bimap(_ => Seq(ValidatedError("error.invalid", "Boolean")), identity)
   }
 
   implicit def longR = stringAs {
@@ -351,12 +351,12 @@ trait DefaultRules[I] extends GenericRules with DateRules {
       (d: I) =>
         val isNone = not(noneValues.foldLeft(Rule.zero[I])(_ compose not(_))).map(_ => None)
         val v = (pick(path).validate(d).map(Some.apply) orElse Valid(None))
-        v.viaEither {
-          _.right.flatMap {
+        Validated.fromEither(
+          v.toEither.right.flatMap {
             case None => Right(None)
-            case Some(i) => isNone.orElse(Rule.toRule(coerce).compose(r).map[Option[O]](Some.apply)).validate(i).asEither
+            case Some(i) => isNone.orElse(Rule.toRule(coerce).compose(r).map[Option[O]](Some.apply)).validate(i).toEither
           }
-        }
+        )
     }
 
   def mapR[K, O](r: RuleLike[K, O], p: RuleLike[I, Seq[(String, K)]]): Rule[I, Map[String, O]] = {
@@ -367,7 +367,9 @@ trait DefaultRules[I] extends GenericRules with DateRules {
             .validate(f._2)
             .map(f._1 -> _)
         }
-        Validated.sequence(validations).map(_.toMap)
+        import cats.syntax.all._
+        
+        ???//        validations.sequence.map(_.toMap)
       })
   }
 

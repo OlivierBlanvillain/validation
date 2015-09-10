@@ -1,6 +1,8 @@
 package jto.validation
 
 import cats.Applicative
+import cats.syntax.all._
+import cats.std.all._
 
 trait RuleLike[I, O] {
   /**
@@ -76,25 +78,20 @@ trait Rule[I, O] extends RuleLike[I, O] {
    */
   def |+|[OO <: O](r2: RuleLike[I, OO]): Rule[I, O] =
     Rule[I, O] { v =>
-      (this.validate(v) *> r2.validate(v)).fail.map {
+      (this.validate(v) *> r2.validate(v)).bimap(
         _.groupBy(_._1).map {
           case (path, errs) =>
             path -> errs.flatMap(_._2)
-        }.toSeq
-      }
+        }.toSeq,
+        identity
+      )
     }
 
   /**
    * This methods allows you to modify the Path of errors (if the result is a Invalid) when aplying the Rule
    */
   def repath(f: Path => Path): Rule[I, O] =
-    Rule { d =>
-      this.validate(d).fail.map {
-        _.map {
-          case (p, errs) => f(p) -> errs
-        }
-      }
-    }
+    Rule(d => this.validate(d).bimap(_.map { case (p, errs) => f(p) -> errs }, identity))
 
   def map[B](f: O => B): Rule[I, B] =
     Rule(d => this.validate(d).map(f))
@@ -103,7 +100,7 @@ trait Rule[I, O] extends RuleLike[I, O] {
     Rule { d =>
       val a = validate(d)
       val f = mf.validate(d)
-      (f *> a).viaEither { _.right.flatMap(x => f.asEither.right.map(_(x))) }
+      Validated.fromEither((f *> a).toEither.right.flatMap(x => f.toEither.right.map(_(x))))
     }
 }
 
@@ -139,7 +136,7 @@ object Rule {
     }
 
   def fromMapping[I, O](f: Mapping[ValidatedError, I, O]): Rule[I, O] =
-    Rule[I, O](f(_: I).fail.map(errs => Seq(Path -> errs)))
+    Rule[I, O](f(_: I).bimap(errs => Seq(Path -> errs), identity))
 
   implicit def applicativeRule[I]: Applicative[Rule[I, ?]] =
     new Applicative[Rule[I, ?]] {

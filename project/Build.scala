@@ -13,8 +13,8 @@ object Resolvers {
 object BuildSettings {
   val org = "io.github.jto"
   val buildVersion = "1.1"
-  val playVersion = "2.4.1"
-  val paradiseVersion = "2.0.1"
+  val playVersion = "2.4.3"
+  val paradiseVersion = "2.1.0-M5"
 
   val scalaVersions = Seq(scalaVersion := "2.11.7")
 
@@ -84,6 +84,7 @@ object Dependencies {
   val specsDep = libraryDependencies ++= Seq(
     "org.specs2" %% "specs2" % "2.4.9" % "test",
     "org.specs2" %% "specs2-junit" % "2.4.9" % "test") // This is needed to avoid a classpath issue on scalaz
+  // .settings(libraryDependencies += "org.scalatest" %%% "scalatest" % "3.0.0-M7" % "test")
 
   val shapelessDep = libraryDependencies += "com.chuusai" %% "shapeless" % "2.0.0"
 
@@ -91,20 +92,17 @@ object Dependencies {
   
   val kindProjector = addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.6.3")
 
-  val xmlDep = libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "1.0.2"
+  val xmlDep = libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "1.0.5"
   
   val playDep = libraryDependencies += "com.typesafe.play" %% "play-json" % playVersion
   
   val coreDeps = libraryDependencies ++= Seq(
-    "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1",
     "joda-time" % "joda-time" % "2.2",
+    "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.2", 
+    // "org.scala-js" %%% "scala-parser-combinators" % "1.0.2"
     "org.joda" % "joda-convert" % "1.3.1",
-    "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-    "org.spire-math" %% "cats" % "0.1.2"
-    // "com.typesafe.play" %% "play-functional" % playVersion
+    "org.spire-math" %% "cats" % "0.2.0"
   )
-
-  val docDeps = libraryDependencies += "com.typesafe.play" %% "play" % playVersion
 }
 
 object ValidatedBuild extends Build {
@@ -114,7 +112,6 @@ object ValidatedBuild extends Build {
 
   lazy val docs = Project("validation-docs", file("validation-docs"))
     .settings(commonSettings: _*)
-    .settings(docDeps: _*)
     .settings(crossTarget := file(".") / "documentation")
     .dependsOn(core, json, json4s, form, xml, experimental)
 
