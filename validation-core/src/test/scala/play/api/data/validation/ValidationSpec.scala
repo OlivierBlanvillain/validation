@@ -83,5 +83,18 @@ object ValidatedSpec extends Specification {
       success.toEither must equalTo(Right(5))
       failure.toEither must equalTo(Left("err" :: Nil))
     }
+
+    "sequence" in {
+      val f1: Validated[List[String], String] = Invalid(List("err1"))
+      val f2: Validated[List[String], String] = Invalid(List("err2"))
+      val s1: Validated[List[String], String] = Valid("1")
+      val s2: Validated[List[String], String] = Valid("2")
+      
+      import cats.std.list._
+      import cats.syntax.traverse._
+      List(s1, s2).sequenceU must equalTo(Valid(List("1", "2")))
+      List(f1, f2).sequenceU must equalTo(Invalid(List("err1", "err2")))
+    }
+
   }
 }

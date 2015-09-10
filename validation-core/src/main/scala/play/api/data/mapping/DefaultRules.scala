@@ -173,7 +173,9 @@ trait GenericRules {
           case (v, i) =>
             Rule.toRule(r).repath((Path \ i) ++ _).validate(v)
         }
-???//        Validated.sequence(withI)
+        import cats.std.list._
+        import cats.syntax.traverse._
+        withI.toList.sequenceU
     }
 
   /**
@@ -367,9 +369,9 @@ trait DefaultRules[I] extends GenericRules with DateRules {
             .validate(f._2)
             .map(f._1 -> _)
         }
-        import cats.syntax.all._
-        
-        ???//        validations.sequence.map(_.toMap)
+        import cats.std.list._
+        import cats.syntax.traverse._
+        validations.toList.sequenceU.map(_.toMap)
       })
   }
 
