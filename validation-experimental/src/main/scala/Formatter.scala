@@ -1,43 +1,62 @@
 package jto.validation
 
 import shapeless._
-import ops.record.{ Selector => RSelector, Updater }
-import record.{ FieldType }
 
-trait Get[I, O] {
-  outer =>
-  val path: Path
-  val lens: Lens[I, O]
+object show {
+  // Show using low-level infrastructure ...
 
-  def read(sub: => RuleLike[O, O]): Rule[I, I] = Rule { i =>
-    Rule.toRule(sub).repath(path ++ _)
-      .map(_ => i)
-      .validate(lens.get(i))
-  }
-  // def read[I, O](implicit r: Path => RuleLike[I, O]): Rule[I, O] =
+  import labelled._
 
-  def \[Out0 <: HList : lens.Gen, V](k: Witness)(implicit s: RSelector.Aux[Out0, k.T, V], u: Updater.Aux[Out0, FieldType[k.T, V], Out0]) =
-    new Get[I, V]{
-      val nodeName = k match {
-        // TODO: Original line generates "a pattern match on a refinement type is unchecked"
-        // I removed the problematic pattern and added `asInstanceOf`, IRDK the implications...
-        // case w: Witness.Aux[Symbol] => w.value.name
-        case w: Witness => w.value.asInstanceOf[Symbol].name
-        case _ => k.value.toString
-      }
-      val path = outer.path \ nodeName
-      val lens = outer.lens >> k
-    }
+  /**
 
-  def apply(f: Get[I, I] => Rule[I, O]): Rule[I, O] = Rule.toRule(f(Get[I]))
+trait RuleLike[I, O] {
+  def validate(data: I): Validated[Seq[(Path, Seq[ValidationError])], O]
 }
 
-object Get {
-  def lens[I, O](l: Lens[I, O]): Get[I, O] = new Get[I, O] {
-    type Out = O
-    val path = Path
-    val lens = l
+   */
+
+  type Rulz[T] = RuleLike[String, T]
+
+    object RuleLike {
+
+    implicit val stringR: Rulz[String] = ???
+    implicit val doubleR: Rulz[Double] = ???
+    implicit val intR: Rulz[Int] = ???
+
+    implicit def ruleGeneric[F, G]
+      (implicit
+        gen: LabelledGeneric.Aux[F, G],
+        sg: Lazy[Rulz[G]]
+      ): Rulz[F] =
+        new RuleLike[String, F] {
+          def validate(s: String): VA[F] = sg.value.validate(s).map(gen.from)
+        }
+
+    implicit def ruleHNil: Rulz[HNil] =
+      new Rulz[HNil] {
+        def validate(s: String): Validated[Seq[(Path, Seq[ValidationError])], HNil] = ???
+      }
+
+    implicit def ruleHCons[K <: Symbol, V, T <: HList]
+      (implicit
+        key: Witness.Aux[K],
+        sv: Lazy[Rulz[V]],
+        st: Lazy[Rulz[T]]
+      ): Rulz[FieldType[K, V] :: T] =
+        new Rule[String, FieldType[K, V] :: T] {
+          def validate(s: String): VA[FieldType[K, V] :: T] = {
+            ???
+          }
+        }
+
   }
 
-  def apply[I]: Get[I, I] = lens(shapeless.lens.apply[I])
+  sealed trait Animal
+  case class Cat(name: String, fish: Int) extends Animal
+  case class Dog(name: String, bones: Int) extends Animal
+}
+
+object main extends App {
+  import show._
+  implicitly[Rulz[Cat]]
 }
