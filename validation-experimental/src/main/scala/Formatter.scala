@@ -49,7 +49,9 @@ trait RuleLike[I, O] {
     ): Rulz[FieldType[K, V] :: T] =
       new Rule[String, FieldType[K, V] :: T] {
         def validate(s: String): Validated[Seq[(Path, Seq[VE])], FieldType[K, V] :: T] = {
-          val svV = sv.value.validate(s)
+          val pathed = (Path \ key.value.name).read[String, V](_ => sv.value)
+          println(key.value.name)
+          val svV = pathed.validate(s)
           val stV = st.value.validate(s)
           val stKV = stV.map((t: T) => (v: V) => field[K](v) :: t)
           svV.ap(stKV)
