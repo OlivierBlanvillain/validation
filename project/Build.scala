@@ -123,6 +123,7 @@ object ValidationBuild extends Build {
     .settings(commonSettings: _*)
     .settings(playDep: _*)
     .settings(specsDep: _*)
+    .settings(shapelessDep: _*)
     .dependsOn(core)
 
   lazy val json4s = Project("validation-json4s", file("validation-json4s"))
