@@ -65,7 +65,7 @@ class Path(val path: List[PathNode]) {
 
   /**
    * Creates a Writes the serialize data to the desired output type using a provided format.
-   * * {{{
+   * {{{
    *   val w = (Path \ "date").write(date("yyyy-MM-dd""))
    *   w.writes(new Date()) == Json.obj("date" -> "2013-10-3")
    * }}}
