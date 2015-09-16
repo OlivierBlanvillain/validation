@@ -7,35 +7,6 @@ import shapeless.{Path => _, _}
 import play.api.libs.json.{JsValue, JsObject, Json}
 import labelled._
 
-object DeriveWrite {
-  type Writz[T] = WriteLike[T, JsValue]
-  
-  implicit def writeGeneric[F, G]
-    (implicit
-      gen: LabelledGeneric.Aux[F, G],
-      sg: Lazy[Writz[G]]
-      // m: cats.Monoid[JsObject]
-    ): Writz[F] =
-      new WriteLike[F, JsValue] {
-        def writes(input: F): JsValue = ???
-      }
-
-  implicit def writeHNil: Writz[HNil] =
-    new WriteLike[HNil, JsValue] {
-      def writes(input: HNil): JsValue = ???
-    }
-
-  implicit def writeHCons[K <: Symbol, V, T <: HList]
-    (implicit
-      key: Witness.Aux[K],
-      sv: Lazy[Writz[V]],
-      st: Lazy[Writz[T]]
-    ): Writz[FieldType[K, V] :: T] =
-      new WriteLike[FieldType[K, V] :: T, JsValue] {
-        def writes(input: FieldType[K, V] :: T): JsValue = ???
-      }
-}
-
 /*
 
 trait WriteLike[I, +O] {
@@ -63,8 +34,6 @@ object DeriveRule {
       def validate(s: I): VA[HNil] = Valid(HNil)
     }
 
-  // I=JsValue, J=JsObject
-  // I <: J
   implicit def ruleHCons[J, I <: J, K <: Symbol, V, T <: HList]
     (implicit
       key: Witness.Aux[K],
@@ -74,13 +43,6 @@ object DeriveRule {
     ): RuleLike[I, FieldType[K, V] :: T] =
       new RuleLike[I, FieldType[K, V] :: T] {
         def validate(input: I): VA[FieldType[K, V] :: T] = {
-          
-// def read[I, O](implicit r: Path => RuleLike[I, O]): Rule[I, O] =
-// def read[I, J, O](sub: => RuleLike[J, O])(implicit r: Path => RuleLike[I, J]): Rule[I, O] =
-          
-// def read[O](implicit r: Path => RuleLike[I,O]): Rule[I,O]
-// def read[J, O](sub: => RuleLike[J,O])(implicit r: Path => RuleLike[I,J]): Rule[I,O]
-
           val pathed = From[I] { __ =>
             (__ \ key.value.name).read[J, V](sv.value)(rl)
           }
@@ -88,6 +50,43 @@ object DeriveRule {
           val tail = st.value.validate(input).map((t: T) => (v: V) => field[K](v) :: t)
           head ap tail
         }
+      }
+      
+  implicit def compilerCantFindJsValueAsJ[K <: Symbol, V, T <: HList]
+    (implicit
+      key: Witness.Aux[K],
+      sv: Lazy[RuleLike[JsValue, V]],
+      st: Lazy[RuleLike[JsObject, T]],
+      rl: Path => RuleLike[JsObject, JsValue]
+    ): RuleLike[JsObject, FieldType[K, V] :: T] = ruleHCons[JsValue, JsObject, K, V, T](key, sv, st, rl)
+}
+
+object DeriveWrite {
+  type Writz[T] = WriteLike[T, JsValue]
+  
+  implicit def writeGeneric[F, G]
+    (implicit
+      gen: LabelledGeneric.Aux[F, G],
+      sg: Lazy[Writz[G]]
+      // m: cats.Monoid[JsObject]
+    ): Writz[F] =
+      new WriteLike[F, JsValue] {
+        def writes(input: F): JsValue = ???
+      }
+
+  implicit def writeHNil: Writz[HNil] =
+    new WriteLike[HNil, JsValue] {
+      def writes(input: HNil): JsValue = ???
+    }
+
+  implicit def writeHCons[K <: Symbol, V, T <: HList]
+    (implicit
+      key: Witness.Aux[K],
+      sv: Lazy[Writz[V]],
+      st: Lazy[Writz[T]]
+    ): Writz[FieldType[K, V] :: T] =
+      new WriteLike[FieldType[K, V] :: T, JsValue] {
+        def writes(input: FieldType[K, V] :: T): JsValue = ???
       }
 }
 
@@ -127,7 +126,7 @@ object main extends App {
     implicitly[Path => RuleLike[JsValue, JsObject]]
     
     implicitly[RuleLike[JsValue, Dog]].validate(dog)
-    // implicitly[RuleLike[JsObject, Dog]].validate(dog)
+    implicitly[RuleLike[JsObject, Dog]].validate(dog)
     // implicitly[WriteLike[Dog, JsValue]]
   }
 }
