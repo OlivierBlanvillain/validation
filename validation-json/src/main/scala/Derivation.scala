@@ -33,6 +33,63 @@ object DeriveRule {
           head ap tail
         }
       }
+      
+  // implicit def showCCons[K <: Symbol, V, T <: Coproduct]
+  //   (implicit
+  //     key: Witness.Aux[K],
+  //     sv: Lazy[Show[V]],
+  //     st: Lazy[Show[T]]
+  //   ): Show[FieldType[K, V] :+: T] =
+  //     new Show[FieldType[K, V] :+: T] {
+  //       def show(c: FieldType[K, V] :+: T): String =
+  //         c match {
+  //           case Inl(l) => s"${key.value.name}(${sv.value.show(l)})"
+  //           case Inr(r) => st.value.show(r)
+  //         }
+  //     }
+  
+  val typePath = Path \ "$type"
+  
+  implicit def ruleCLast[I, O, K <: Symbol]
+    (implicit
+      key: Witness.Aux[K],
+      r: Lazy[RuleLike[I, O]]
+    ): RuleLike[I, FieldType[K, O] :+: CNil] =
+      new RuleLike[I, FieldType[K, O] :+: CNil] {
+        def validate(i: I): VA[FieldType[K, O] :+: CNil] =
+          r.value.validate(i).map(v => Inl(field[K](v)))
+      }
+      
+    // Arbitrary from Inl(h.value)
+    
+  // Base case for coproducts
+  // implicit def ruleCNil[I]: RuleLike[I, CNil] =
+  //   new RuleLike[I, CNil] {
+  //     def validate(i: I): VA[CNil] = Invalid(Seq((Path, Seq(ValidationError("mhe")))))
+  //   }
+    
+  // Induction step for coproducts
+  implicit def ruleCCons[I, K <: Symbol, V, T <: Coproduct]
+    (implicit
+      key: Witness.Aux[K],
+      sv: Lazy[RuleLike[I, V]],
+      st: Lazy[RuleLike[I, T]],
+      rl: Path => RuleLike[I, String]
+    ): RuleLike[I, FieldType[K, V] :+: T] =
+      new RuleLike[I, FieldType[K, V] :+: T] {
+        def validate(i: I): VA[FieldType[K, V] :+: T] = {
+          println(key.value.name)
+          typePath.read[I, String].validate(i) match {
+            case Valid(key.value.name) =>
+              sv.value.validate(i).map(v => Inl(field[K](v)))
+            case Valid(_) =>
+              st.value.validate(i).map(Inr.apply)
+            case _ =>
+              Invalid(Seq((typePath, Seq(ValidationError("Missing $type")))))
+          }
+        }
+      }
+
   
   // Convert concrete type to product/coproduct representation
   implicit def ruleGeneric[I, F, G]
@@ -154,18 +211,20 @@ object main extends App {
     )
   }
   
-  if(!(
-    genRuleJsValue2Dog.validate(dogJson) == derRuleJsValue2Dog.validate(dogJson) &&
-    genRuleJsObject2Dog.validate(dogJson) == derRuleJsObject2Dog.validate(dogJson) &&
-    genWriteDog2JsObject.writes(dog) == derWriteDog2JsObject.writes(dog)
-  )) ???
+  // if(!(
+  //   genRuleJsValue2Dog.validate(dogJson) == derRuleJsValue2Dog.validate(dogJson) &&
+  //   genRuleJsObject2Dog.validate(dogJson) == derRuleJsObject2Dog.validate(dogJson) &&
+  //   genWriteDog2JsObject.writes(dog) == derWriteDog2JsObject.writes(dog)
+  // )) ???
   
-  // {
-  //   import DeriveRule._
-  //   import DeriveWrite._
-  //   import DeriveJson._
+  {
+    import DeriveRule._
+    import DeriveWrite._
+    // import DeriveJson._
     
-  //   val r = implicitly[RuleLike[JsValue, Animal]]
-  //   println(r.validate(dogJson))
-  // }
+    val r = implicitly[RuleLike[JsValue, Animal]]
+    val json = dogJson ++ typePath.write[String, JsObject].writes("Dog")
+    println(json)
+    println(r.validate(json))
+  }
 }
