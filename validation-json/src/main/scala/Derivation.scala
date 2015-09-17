@@ -54,13 +54,14 @@ object DeriveRule {
         }
       }
       
-  implicit def compilerCantFindJsValueAsJ[K <: Symbol, V, T <: HList]
+  implicit def readCompilerCantFindJsValueAsJ[K <: Symbol, V, T <: HList]
     (implicit
       key: Witness.Aux[K],
       sv: Lazy[RuleLike[JsValue, V]],
       st: Lazy[RuleLike[JsObject, T]],
       pr: Path => RuleLike[JsObject, JsValue]
-    ): RuleLike[JsObject, FieldType[K, V] :: T] = ruleHCons[JsValue, JsObject, K, V, T](key, sv, st, pr)
+    ): RuleLike[JsObject, FieldType[K, V] :: T] =
+      ruleHCons[JsValue, JsObject, K, V, T](key, sv, st, pr)
 }
 
 object DeriveWrite {
@@ -84,27 +85,29 @@ object DeriveWrite {
       key: Witness.Aux[K],
       sv: Lazy[WriteLike[V, J]],
       st: Lazy[WriteLike[T, O]],
-      pw: Path => WriteLike[J, O]
+      pw: Path => WriteLike[J, O],
+      m: Monoid[O]
     ): WriteLike[FieldType[K, V] :: T, O] =
       new WriteLike[FieldType[K, V] :: T, O] {
         def writes(i: FieldType[K, V] :: T): O = {
           val pathed = To[O] { __ =>
             (__ \ key.value.name).write[V, J](sv.value)(pw)
           }
-          ???
-          // val head = pathed.validate(i)
-          // val tail = st.value.validate(i).map((t: T) => (v: V) => field[K](v) :: t)
-          // head ap tail
+          i match {
+            case v :: t => m.combine(st.value.writes(t), pathed.writes(v))
+          }
         }
       }
-      
-  // def write[I, O](implicit w: Path => WriteLike[I, O]): Write[I, O] =
-  //   Writer[O](this).write(w)
-
-  // def write[I, J, O](format: => WriteLike[I, J])(implicit w: Path => WriteLike[J, O]): Write[I, O] =
-  //   Writer[O](this).write(format)
-
-
+  
+  implicit def writeCompilerCantFindJsValueAsJ[K <: Symbol, V, T <: HList]
+    (implicit
+      key: Witness.Aux[K],
+      sv: Lazy[WriteLike[V, JsValue]],
+      st: Lazy[WriteLike[T, JsObject]],
+      pw: Path => WriteLike[JsValue, JsObject],
+      m: Monoid[JsObject]
+    ): WriteLike[FieldType[K, V] :: T, JsObject] =
+      writeHCons[JsValue, JsObject, K, V, T](key, sv, st, pw, m)
 }
 
 sealed trait Animal
@@ -130,6 +133,7 @@ object main extends App {
     }
   """).as[JsObject]
   
+  
   {
     Rule.gen[JsValue, Dog].validate(dogJson)
     Rule.gen[JsObject, Dog].validate(dogJson)
@@ -144,6 +148,10 @@ object main extends App {
     // implicitly[RuleLike[JsObject, Cat]].validate(dogJson)
     
     val dog = implicitly[RuleLike[JsObject, Dog]].validate(dogJson).toOption.get
-    implicitly[WriteLike[Dog, JsObject]].writes(dog)
+    
+    implicitly[Path => WriteLike[JsValue, JsObject]]
+    
+    implicit val l = writeHNil[JsObject]
+    println(implicitly[WriteLike[Dog, JsObject]].writes(dog))
   }
 }
