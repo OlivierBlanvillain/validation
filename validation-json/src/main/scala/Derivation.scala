@@ -6,6 +6,7 @@ import Writes._
 import shapeless.{Path => _, _}
 import play.api.libs.json.{JsValue, JsObject, Json}
 import labelled._
+import cats.Monoid
 
 /*
 
@@ -18,6 +19,7 @@ trait RuleLike[I, O] {
 }
 
 */
+
 object DeriveRule {
   implicit def ruleGeneric[I, F, G]
     (implicit
@@ -25,13 +27,13 @@ object DeriveRule {
       sg: Lazy[RuleLike[I, G]]
     ): RuleLike[I, F] =
       new RuleLike[I, F] {
-        def validate(s: I): VA[F] =
-          sg.value.validate(s).map(gen.from)
+        def validate(i: I): VA[F] =
+          sg.value.validate(i).map(gen.from)
       }
 
   implicit def ruleHNil[I]: RuleLike[I, HNil] =
     new RuleLike[I, HNil] {
-      def validate(s: I): VA[HNil] = Valid(HNil)
+      def validate(i: I): VA[HNil] = Valid(HNil)
     }
 
   implicit def ruleHCons[J, I <: J, K <: Symbol, V, T <: HList]
@@ -42,12 +44,12 @@ object DeriveRule {
       rl: Path => RuleLike[I, J]
     ): RuleLike[I, FieldType[K, V] :: T] =
       new RuleLike[I, FieldType[K, V] :: T] {
-        def validate(input: I): VA[FieldType[K, V] :: T] = {
+        def validate(i: I): VA[FieldType[K, V] :: T] = {
           val pathed = From[I] { __ =>
             (__ \ key.value.name).read[J, V](sv.value)(rl)
           }
-          val head = pathed.validate(input)
-          val tail = st.value.validate(input).map((t: T) => (v: V) => field[K](v) :: t)
+          val head = pathed.validate(i)
+          val tail = st.value.validate(i).map((t: T) => (v: V) => field[K](v) :: t)
           head ap tail
         }
       }
@@ -57,37 +59,52 @@ object DeriveRule {
       key: Witness.Aux[K],
       sv: Lazy[RuleLike[JsValue, V]],
       st: Lazy[RuleLike[JsObject, T]],
-      rl: Path => RuleLike[JsObject, JsValue]
-    ): RuleLike[JsObject, FieldType[K, V] :: T] = ruleHCons[JsValue, JsObject, K, V, T](key, sv, st, rl)
+      pr: Path => RuleLike[JsObject, JsValue]
+    ): RuleLike[JsObject, FieldType[K, V] :: T] = ruleHCons[JsValue, JsObject, K, V, T](key, sv, st, pr)
 }
 
 object DeriveWrite {
-  type Writz[T] = WriteLike[T, JsValue]
-  
-  implicit def writeGeneric[F, G]
+  implicit def writeGeneric[O, F, G]
     (implicit
       gen: LabelledGeneric.Aux[F, G],
-      sg: Lazy[Writz[G]]
-      // m: cats.Monoid[JsObject]
-    ): Writz[F] =
-      new WriteLike[F, JsValue] {
-        def writes(input: F): JsValue = ???
+      sg: Lazy[WriteLike[G, O]]
+    ): WriteLike[F, O] =
+      new WriteLike[F, O] {
+        def writes(i: F): O = sg.value.writes(gen.to(i))
       }
 
-  implicit def writeHNil: Writz[HNil] =
-    new WriteLike[HNil, JsValue] {
-      def writes(input: HNil): JsValue = ???
+  implicit def writeHNil[O](implicit m: Monoid[O]): WriteLike[HNil, O] =
+    new WriteLike[HNil, O] {
+      def writes(i: HNil): O = m.empty
     }
-
-  implicit def writeHCons[K <: Symbol, V, T <: HList]
+  
+  // O=JsObject, J=JsValue
+  implicit def writeHCons[J, O <: J, K <: Symbol, V, T <: HList]
     (implicit
       key: Witness.Aux[K],
-      sv: Lazy[Writz[V]],
-      st: Lazy[Writz[T]]
-    ): Writz[FieldType[K, V] :: T] =
-      new WriteLike[FieldType[K, V] :: T, JsValue] {
-        def writes(input: FieldType[K, V] :: T): JsValue = ???
+      sv: Lazy[WriteLike[V, J]],
+      st: Lazy[WriteLike[T, O]],
+      pw: Path => WriteLike[J, O]
+    ): WriteLike[FieldType[K, V] :: T, O] =
+      new WriteLike[FieldType[K, V] :: T, O] {
+        def writes(i: FieldType[K, V] :: T): O = {
+          val pathed = To[O] { __ =>
+            (__ \ key.value.name).write[V, J](sv.value)(pw)
+          }
+          ???
+          // val head = pathed.validate(i)
+          // val tail = st.value.validate(i).map((t: T) => (v: V) => field[K](v) :: t)
+          // head ap tail
+        }
       }
+      
+  // def write[I, O](implicit w: Path => WriteLike[I, O]): Write[I, O] =
+  //   Writer[O](this).write(w)
+
+  // def write[I, J, O](format: => WriteLike[I, J])(implicit w: Path => WriteLike[J, O]): Write[I, O] =
+  //   Writer[O](this).write(format)
+
+
 }
 
 sealed trait Animal
@@ -95,7 +112,7 @@ case class Cat(name: String, fish: Int, friend: Dog) extends Animal
 case class Dog(name: String, bones: Int) extends Animal
 
 object main extends App {
-  val cat = Json.parse("""
+  val catJson = Json.parse("""
     {
       "name": "miam",
       "fish": 3,
@@ -106,7 +123,7 @@ object main extends App {
     }
   """)
   
-  val dog = Json.parse("""
+  val dogJson = Json.parse("""
     {
       "name": "doge",
       "bones": 0
@@ -114,19 +131,19 @@ object main extends App {
   """).as[JsObject]
   
   {
-    Rule.gen[JsValue, Dog].validate(dog)
-    Rule.gen[JsObject, Dog].validate(dog)
+    Rule.gen[JsValue, Dog].validate(dogJson)
+    Rule.gen[JsObject, Dog].validate(dogJson)
     Write.gen[Dog, JsObject]
   }
   
   {
     import DeriveRule._
-    // import DeriveWrite._
-    implicitly[Path => RuleLike[JsObject, JsValue]]
-    implicitly[Path => RuleLike[JsValue, JsObject]]
+    import DeriveWrite._
+    implicitly[RuleLike[JsValue, Dog]].validate(dogJson)
+    implicitly[RuleLike[JsValue, Cat]].validate(dogJson)
+    // implicitly[RuleLike[JsObject, Cat]].validate(dogJson)
     
-    implicitly[RuleLike[JsValue, Dog]].validate(dog)
-    implicitly[RuleLike[JsObject, Dog]].validate(dog)
-    // implicitly[WriteLike[Dog, JsValue]]
+    val dog = implicitly[RuleLike[JsObject, Dog]].validate(dogJson).toOption.get
+    implicitly[WriteLike[Dog, JsObject]].writes(dog)
   }
 }
