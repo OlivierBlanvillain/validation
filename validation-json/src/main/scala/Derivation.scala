@@ -8,15 +8,18 @@ import play.api.libs.json.{JsValue, JsObject, Json}
 import labelled._
 import cats.Monoid
 
-object DeriveRule {
-  // Base case for products
-  implicit def ruleHNil[I]: RuleLike[I, HNil] =
+object TypePath {
+  val typePath = Path \ "$type"
+}
+import TypePath._
+
+trait RuleProduct {
+  implicit def ruleProductBaseCase[I]: RuleLike[I, HNil] =
     new RuleLike[I, HNil] {
       def validate(i: I): VA[HNil] = Valid(HNil)
     }
 
-  // Induction step for products
-  def ruleHCons[J, I <: J, K <: Symbol, V, T <: HList]
+  def ruleProductInductionStep[J, I <: J, K <: Symbol, V, T <: HList]
     (rl: Path => RuleLike[I, J])
     (implicit
       key: Witness.Aux[K],
@@ -33,28 +36,16 @@ object DeriveRule {
           head ap tail
         }
       }
-      
-  val typePath = Path \ "$type"
-  
-  // implicit def ruleCLast[I, O, K <: Symbol]
-  //   (implicit
-  //     key: Witness.Aux[K],
-  //     r: Lazy[RuleLike[I, O]]
-  //   ): RuleLike[I, FieldType[K, O] :+: CNil] =
-  //     new RuleLike[I, FieldType[K, O] :+: CNil] {
-  //       def validate(i: I): VA[FieldType[K, O] :+: CNil] =
-  //         r.value.validate(i).map(v => Inl(field[K](v)))
-  //     }
-  
-  // Base case for coproducts
-  implicit def ruleCNil[I]: RuleLike[I, CNil] =
+}
+
+trait RuleCoproduct {
+  implicit def ruleCoproductBaseCase[I]: RuleLike[I, CNil] =
     new RuleLike[I, CNil] {
       def validate(i: I): VA[CNil] =
         Invalid(Seq((Path, Seq(ValidationError("meh")))))
     }
   
-  // Induction step for coproducts
-  implicit def ruleCCons[I, K <: Symbol, V, T <: Coproduct]
+  implicit def ruleCoproductInductionStep[I, K <: Symbol, V, T <: Coproduct]
     (implicit
       key: Witness.Aux[K],
       sv: Lazy[RuleLike[I, V]],
@@ -73,8 +64,9 @@ object DeriveRule {
           }
         }
       }
-  
-  // Convert concrete type to product/coproduct representation
+}
+
+trait RuleGeneric {
   implicit def ruleGeneric[I, F, G]
     (implicit
       gen: LabelledGeneric.Aux[F, G],
@@ -86,21 +78,20 @@ object DeriveRule {
       }
 }
 
-object DeriveWrite {
-  // Base case for products
-  implicit def writeHNil[O](implicit m: Monoid[O]): WriteLike[HNil, O] =
+object DeriveRule extends RuleProduct with RuleCoproduct with RuleGeneric
+
+trait WriteProduct {
+  def writeProductBaseCase[O](m: Monoid[O]): WriteLike[HNil, O] =
     new WriteLike[HNil, O] {
       def writes(i: HNil): O = m.empty
     }
   
-  // Induction step for products
-  implicit def writeHCons[J, O <: J, K <: Symbol, V, T <: HList]
+  def writeProductInductionStep[J, O <: J, K <: Symbol, V, T <: HList]
+    (pw: Path => WriteLike[J, O], m: Monoid[O])
     (implicit
       key: Witness.Aux[K],
       sv: Lazy[WriteLike[V, J]],
-      st: Lazy[WriteLike[T, O]],
-      pw: Path => WriteLike[J, O],
-      m: Monoid[O]
+      st: Lazy[WriteLike[T, O]]
     ): WriteLike[FieldType[K, V] :: T, O] =
       new WriteLike[FieldType[K, V] :: T, O] {
         def writes(i: FieldType[K, V] :: T): O = {
@@ -112,8 +103,36 @@ object DeriveWrite {
           m.combine(head, tail)
         }
       }
+}
+
+trait WriteCoproduct {
+  implicit def writeCoproductBaseCase[O]: WriteLike[CNil, O] =
+    new WriteLike[CNil, O] {
+      def writes(i: CNil): O = ???
+    }
   
-  // Convert concrete type to product/coproduct representation
+  def writeCoproductInductionStep[O, K <: Symbol, V, T <: Coproduct]
+    (m: Monoid[O])
+    (implicit
+      key: Witness.Aux[K],
+      sv: Lazy[WriteLike[V, O]],
+      st: Lazy[WriteLike[T, O]],
+      wl: Path => WriteLike[String, O]
+    ): WriteLike[FieldType[K, V] :+: T, O] =
+      new WriteLike[FieldType[K, V] :+: T, O] {
+        def writes(i: FieldType[K, V] :+: T): O = {
+          i match {
+            case Inl(v) => 
+              val typeInfo = typePath.write(wl).writes(key.value.name)
+              m.combine(sv.value.writes(v), typeInfo)
+            case Inr(t) =>
+              st.value.writes(t)
+          }
+        }
+      }
+}
+
+trait WriteGeneric {
   implicit def writeGeneric[O, F, G]
     (implicit
       gen: LabelledGeneric.Aux[F, G],
@@ -124,9 +143,13 @@ object DeriveWrite {
       }
 }
 
+object DeriveWrite extends WriteProduct with WriteCoproduct with WriteGeneric
+
 object Static {
   val ruleJsObjectJsValue = implicitly[Path => RuleLike[JsObject, JsValue]]
   val ruleJsValueJsValue = implicitly[Path => RuleLike[JsValue, JsValue]]
+  val writeJsValueJsObject = implicitly[Path => WriteLike[JsValue, JsObject]]
+  val monoidJsObject = implicitly[Monoid[JsObject]]
 }
 import Static._
 
@@ -137,7 +160,7 @@ object DeriveJson {
       sv: Lazy[RuleLike[JsValue, V]],
       st: Lazy[RuleLike[JsObject, T]]
     ): RuleLike[JsObject, FieldType[K, V] :: T] =
-      DeriveRule.ruleHCons[JsValue, JsObject, K, V, T](ruleJsObjectJsValue)(key, sv, st)
+      DeriveRule.ruleProductInductionStep[JsValue, JsObject, K, V, T](ruleJsObjectJsValue)(key, sv, st)
 
   implicit def readCompilerCantFindJsObject[K <: Symbol, V, T <: HList]
     (implicit
@@ -145,26 +168,34 @@ object DeriveJson {
       sv: Lazy[RuleLike[JsValue, V]],
       st: Lazy[RuleLike[JsValue, T]]
     ): RuleLike[JsValue, FieldType[K, V] :: T] =
-      DeriveRule.ruleHCons[JsValue, JsValue, K, V, T](ruleJsValueJsValue)(key, sv, st)
+      DeriveRule.ruleProductInductionStep[JsValue, JsValue, K, V, T](ruleJsValueJsValue)(key, sv, st)
   
   implicit def writeHConsCompilerCantFindJsValueAsJ[K <: Symbol, V, T <: HList]
     (implicit
       key: Witness.Aux[K],
       sv: Lazy[WriteLike[V, JsValue]],
-      st: Lazy[WriteLike[T, JsObject]],
-      pw: Path => WriteLike[JsValue, JsObject],
-      m: Monoid[JsObject]
+      st: Lazy[WriteLike[T, JsObject]]
     ): WriteLike[FieldType[K, V] :: T, JsObject] =
-      DeriveWrite.writeHCons[JsValue, JsObject, K, V, T](key, sv, st, pw, m)
+      DeriveWrite.writeProductInductionStep[JsValue, JsObject, K, V, T](writeJsValueJsObject, monoidJsObject)(key, sv, st)
       
-  implicit def writeHNilCompilerCantFindJsValueAsJ(implicit m: Monoid[JsObject]): WriteLike[HNil, JsObject] =
-    DeriveWrite.writeHNil[JsObject]
+  implicit val writeHNilCompilerCantFindJsValueAsJ: WriteLike[HNil, JsObject] =
+    DeriveWrite.writeProductBaseCase[JsObject](monoidJsObject)
+  
+  implicit def writeCoproductInductionStepXXX[K <: Symbol, V, T <: Coproduct]
+    (implicit
+      key: Witness.Aux[K],
+      sv: Lazy[WriteLike[V, JsObject]],
+      st: Lazy[WriteLike[T, JsObject]],
+      wl: Path => WriteLike[String, JsObject]
+    ): WriteLike[FieldType[K, V] :+: T, JsObject] =
+      DeriveWrite.writeCoproductInductionStep(monoidJsObject)(key, sv, st, wl)
 }
-
 
 sealed trait Animal
 case class Cat(name: String, fish: Int, friend: Dog) extends Animal
 case class Dog(name: String, bones: Int) extends Animal
+
+case class Dogception(animal: Animal, dogception: Option[Dogception])
 
 object main extends App {
   val catJson = Json.parse("""
@@ -182,6 +213,29 @@ object main extends App {
     {
       "name": "doge",
       "bones": 0
+    }
+  """).as[JsObject]
+
+  val dogceptionJson = Json.parse("""
+    {
+      "animal": {
+        "$type": "Dog",
+        "name": "doge",
+        "bones": 0
+      },
+      "dogception": {
+        "$type": "Some",
+        "x": {
+          "animal": {
+            "$type": "Dog",
+            "name": "nested doge",
+            "bones": 1
+          },
+          "dogception": {
+            "$type": "None"
+          }
+        }
+      }
     }
   """).as[JsObject]
   
@@ -219,12 +273,20 @@ object main extends App {
   
   {
     import DeriveRule._
-    // import DeriveWrite._
+    import DeriveWrite._
     import DeriveJson._
     
     val r = implicitly[RuleLike[JsValue, Animal]]
-    val json = dogJson ++ typePath.write[String, JsObject].writes("Dogs")
+    val w = implicitly[WriteLike[Animal, JsValue]]
+    val json = dogJson ++ typePath.write[String, JsObject].writes("Dog")
     println(json)
     println(r.validate(json))
+  }
+  
+  {
+    import DeriveRule._
+    import DeriveJson._
+    val r = implicitly[RuleLike[JsValue, Dogception]]
+    println(r.validate(dogceptionJson))
   }
 }
