@@ -124,7 +124,8 @@ trait WriteCoproduct {
           i match {
             case Inl(v) => 
               val typeInfo = typePath.write(wl).writes(key.value.name)
-              m.combine(sv.value.writes(v), typeInfo)
+              val value = sv.value.writes(v)
+              m.combine(value, typeInfo)
             case Inr(t) =>
               st.value.writes(t)
           }
@@ -240,6 +241,7 @@ object main extends App {
   """).as[JsObject]
   
   val dog = Dog("doge", 0)
+  val cat = Cat("miaou", 1, dog)
   
   val (genRuleJsValue2Dog, genRuleJsObject2Dog, genWriteDog2JsObject) = (
     Rule.gen[JsValue, Dog],
@@ -278,15 +280,15 @@ object main extends App {
     
     val r = implicitly[RuleLike[JsValue, Animal]]
     val w = implicitly[WriteLike[Animal, JsValue]]
-    val json = dogJson ++ typePath.write[String, JsObject].writes("Dog")
-    println(json)
-    println(r.validate(json))
+    List[Animal](dog, cat) foreach { animal =>
+      test(animal, r.validate(w.writes(animal)).toOption.get)
+    }
   }
   
-  {
-    import DeriveRule._
-    import DeriveJson._
-    val r = implicitly[RuleLike[JsValue, Dogception]]
-    println(r.validate(dogceptionJson))
-  }
+  // {
+  //   import DeriveRule._
+  //   import DeriveJson._
+  //   val r = implicitly[RuleLike[JsValue, Dogception]]
+  //   println(r.validate(dogceptionJson))
+  // }
 }
