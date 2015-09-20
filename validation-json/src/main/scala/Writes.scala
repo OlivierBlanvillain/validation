@@ -83,8 +83,11 @@ object Writes extends DefaultWrites with DefaultMonoids with GenericWrites[JsVal
         val ps = path.path.reverse
         val h = ps.head
         val o = writeObj(w.writes(i), h)
-        ps.tail.foldLeft(o)(writeObj).asInstanceOf[JsObject]
-      case _ => throw new RuntimeException(s"path $path is not a path of JsObject") // XXX: should be a compile time error
+        ps.tail.foldLeft(o)(writeObj).as[JsObject]
+      case Path(Nil) =>
+        w.writes(i).as[JsObject]
+      case _ =>
+        throw new RuntimeException(s"path $path is not a path of JsObject") // XXX: should be a compile time error
     }
   }
 }

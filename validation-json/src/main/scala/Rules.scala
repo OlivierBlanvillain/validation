@@ -81,10 +81,10 @@ object Rules extends DefaultRules[JsValue] {
     case JsNumber(v) => Valid(v.bigDecimal)
   }("error.number", "BigDecimal")
 
-  implicit val jsNullR = jsonAs[JsNull.type] {
+  implicit val jsNullR: Rule[JsValue, JsNull.type] = jsonAs[JsNull.type] {
     case JsNull => Valid(JsNull)
   }("error.invalid", "null")
-
+  
   implicit def ooo[O](p: Path)(implicit pick: Path => RuleLike[JsValue, JsValue], coerce: RuleLike[JsValue, O]): Rule[JsValue, Option[O]] =
     optionR(Rule.zero[O])(pick, coerce)(p)
 
