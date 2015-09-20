@@ -16,12 +16,12 @@ object DeriveRule {
     }
 
   // Induction step for products
-  implicit def ruleHCons[J, I <: J, K <: Symbol, V, T <: HList]
+  def ruleHCons[J, I <: J, K <: Symbol, V, T <: HList]
+    (rl: Path => RuleLike[I, J])
     (implicit
       key: Witness.Aux[K],
       sv: Lazy[RuleLike[J, V]],
-      st: Lazy[RuleLike[I, T]],
-      rl: Path => RuleLike[I, J]
+      st: Lazy[RuleLike[I, T]]
     ): RuleLike[I, FieldType[K, V] :: T] =
       new RuleLike[I, FieldType[K, V] :: T] {
         def validate(i: I): VA[FieldType[K, V] :: T] = {
@@ -34,40 +34,25 @@ object DeriveRule {
         }
       }
       
-  // implicit def showCCons[K <: Symbol, V, T <: Coproduct]
-  //   (implicit
-  //     key: Witness.Aux[K],
-  //     sv: Lazy[Show[V]],
-  //     st: Lazy[Show[T]]
-  //   ): Show[FieldType[K, V] :+: T] =
-  //     new Show[FieldType[K, V] :+: T] {
-  //       def show(c: FieldType[K, V] :+: T): String =
-  //         c match {
-  //           case Inl(l) => s"${key.value.name}(${sv.value.show(l)})"
-  //           case Inr(r) => st.value.show(r)
-  //         }
-  //     }
-  
   val typePath = Path \ "$type"
   
-  implicit def ruleCLast[I, O, K <: Symbol]
-    (implicit
-      key: Witness.Aux[K],
-      r: Lazy[RuleLike[I, O]]
-    ): RuleLike[I, FieldType[K, O] :+: CNil] =
-      new RuleLike[I, FieldType[K, O] :+: CNil] {
-        def validate(i: I): VA[FieldType[K, O] :+: CNil] =
-          r.value.validate(i).map(v => Inl(field[K](v)))
-      }
-      
-    // Arbitrary from Inl(h.value)
-    
+  // implicit def ruleCLast[I, O, K <: Symbol]
+  //   (implicit
+  //     key: Witness.Aux[K],
+  //     r: Lazy[RuleLike[I, O]]
+  //   ): RuleLike[I, FieldType[K, O] :+: CNil] =
+  //     new RuleLike[I, FieldType[K, O] :+: CNil] {
+  //       def validate(i: I): VA[FieldType[K, O] :+: CNil] =
+  //         r.value.validate(i).map(v => Inl(field[K](v)))
+  //     }
+  
   // Base case for coproducts
-  // implicit def ruleCNil[I]: RuleLike[I, CNil] =
-  //   new RuleLike[I, CNil] {
-  //     def validate(i: I): VA[CNil] = Invalid(Seq((Path, Seq(ValidationError("mhe")))))
-  //   }
-    
+  implicit def ruleCNil[I]: RuleLike[I, CNil] =
+    new RuleLike[I, CNil] {
+      def validate(i: I): VA[CNil] =
+        Invalid(Seq((Path, Seq(ValidationError("meh")))))
+    }
+  
   // Induction step for coproducts
   implicit def ruleCCons[I, K <: Symbol, V, T <: Coproduct]
     (implicit
@@ -78,8 +63,7 @@ object DeriveRule {
     ): RuleLike[I, FieldType[K, V] :+: T] =
       new RuleLike[I, FieldType[K, V] :+: T] {
         def validate(i: I): VA[FieldType[K, V] :+: T] = {
-          println(key.value.name)
-          typePath.read[I, String].validate(i) match {
+          typePath.read[I, String](rl).validate(i) match {
             case Valid(key.value.name) =>
               sv.value.validate(i).map(v => Inl(field[K](v)))
             case Valid(_) =>
@@ -89,7 +73,6 @@ object DeriveRule {
           }
         }
       }
-
   
   // Convert concrete type to product/coproduct representation
   implicit def ruleGeneric[I, F, G]
@@ -141,19 +124,29 @@ object DeriveWrite {
       }
 }
 
+object Static {
+  val ruleJsObjectJsValue = implicitly[Path => RuleLike[JsObject, JsValue]]
+  val ruleJsValueJsValue = implicitly[Path => RuleLike[JsValue, JsValue]]
+}
+import Static._
+
 object DeriveJson {
-  import DeriveRule._
-  import DeriveWrite._
-  
   implicit def readCompilerCantFindJsValueAsJ[K <: Symbol, V, T <: HList]
     (implicit
       key: Witness.Aux[K],
       sv: Lazy[RuleLike[JsValue, V]],
-      st: Lazy[RuleLike[JsObject, T]],
-      pr: Path => RuleLike[JsObject, JsValue]
+      st: Lazy[RuleLike[JsObject, T]]
     ): RuleLike[JsObject, FieldType[K, V] :: T] =
-      ruleHCons[JsValue, JsObject, K, V, T](key, sv, st, pr)
-      
+      DeriveRule.ruleHCons[JsValue, JsObject, K, V, T](ruleJsObjectJsValue)(key, sv, st)
+
+  implicit def readCompilerCantFindJsObject[K <: Symbol, V, T <: HList]
+    (implicit
+      key: Witness.Aux[K],
+      sv: Lazy[RuleLike[JsValue, V]],
+      st: Lazy[RuleLike[JsValue, T]]
+    ): RuleLike[JsValue, FieldType[K, V] :: T] =
+      DeriveRule.ruleHCons[JsValue, JsValue, K, V, T](ruleJsValueJsValue)(key, sv, st)
+  
   implicit def writeHConsCompilerCantFindJsValueAsJ[K <: Symbol, V, T <: HList]
     (implicit
       key: Witness.Aux[K],
@@ -162,10 +155,10 @@ object DeriveJson {
       pw: Path => WriteLike[JsValue, JsObject],
       m: Monoid[JsObject]
     ): WriteLike[FieldType[K, V] :: T, JsObject] =
-      writeHCons[JsValue, JsObject, K, V, T](key, sv, st, pw, m)
+      DeriveWrite.writeHCons[JsValue, JsObject, K, V, T](key, sv, st, pw, m)
       
   implicit def writeHNilCompilerCantFindJsValueAsJ(implicit m: Monoid[JsObject]): WriteLike[HNil, JsObject] =
-    writeHNil[JsObject]
+    DeriveWrite.writeHNil[JsObject]
 }
 
 
@@ -211,19 +204,26 @@ object main extends App {
     )
   }
   
-  // if(!(
-  //   genRuleJsValue2Dog.validate(dogJson) == derRuleJsValue2Dog.validate(dogJson) &&
-  //   genRuleJsObject2Dog.validate(dogJson) == derRuleJsObject2Dog.validate(dogJson) &&
-  //   genWriteDog2JsObject.writes(dog) == derWriteDog2JsObject.writes(dog)
-  // )) ???
+  def test[A](arg1: A, arg2: A): Unit = {
+    if(arg1 == arg2)
+      println(arg1)
+    else
+      throw new Exception(s"""
+      |  arg1: $arg1
+      |  arg2: $arg2""".stripMargin)
+  }
+  
+  test(genRuleJsValue2Dog.validate(dogJson), derRuleJsValue2Dog.validate(dogJson))
+  test(genRuleJsObject2Dog.validate(dogJson), derRuleJsObject2Dog.validate(dogJson))
+  test(genWriteDog2JsObject.writes(dog), derWriteDog2JsObject.writes(dog))
   
   {
     import DeriveRule._
-    import DeriveWrite._
-    // import DeriveJson._
+    // import DeriveWrite._
+    import DeriveJson._
     
     val r = implicitly[RuleLike[JsValue, Animal]]
-    val json = dogJson ++ typePath.write[String, JsObject].writes("Dog")
+    val json = dogJson ++ typePath.write[String, JsObject].writes("Dogs")
     println(json)
     println(r.validate(json))
   }
