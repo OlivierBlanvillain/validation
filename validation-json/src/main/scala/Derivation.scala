@@ -7,6 +7,7 @@ import shapeless.{Path => _, _}
 import play.api.libs.json.{JsValue, JsObject, Json}
 import labelled._
 import cats.Monoid
+import shapeless.test.illTyped
 
 object TypePath {
   val typePath = Path \ "$type"
@@ -78,7 +79,7 @@ trait RuleGeneric {
     }
 }
 
-trait WriteProduct extends WriteDeps {
+trait WriteProduct {
   type Output
   
   implicit def writeProductBaseCase(p: Path)(implicit m: Monoid[Output]) =
@@ -105,7 +106,7 @@ trait WriteProduct extends WriteDeps {
     }
 }
 
-trait WriteCoproduct extends WriteDeps {
+trait WriteCoproduct {
   type Output
   
   implicit val writeCoproductBaseCase =
@@ -135,16 +136,14 @@ trait WriteCoproduct extends WriteDeps {
     }
 }
 
-trait WriteGeneric extends WriteDeps {
-  type Output
-  
-  implicit def writeGeneric[F, G]
+trait WriteGeneric {
+  implicit def writeGeneric[O, F, G]
     (implicit
       gen: LabelledGeneric.Aux[F, G],
-      sg: Lazy[Path => WriteLike[G, Output]]
+      sg: Lazy[Path => WriteLike[G, O]]
     ) =
-    new WriteLike[F, Output] {
-      def writes(i: F): Output = {
+    new WriteLike[F, O] {
+      def writes(i: F): O = {
         sg.value(Path).writes(gen.to(i))
       }
     }
@@ -217,21 +216,6 @@ object main extends App {
   val dog = Dog("doge", 0)
   val cat = Cat("miaou", 1, dog)
   
-  val (genRuleJsValue2Dog, genRuleJsObject2Dog, genWriteDog2JsObject) = (
-    Rule.gen[JsValue, Dog],
-    Rule.gen[JsObject, Dog],
-    Write.gen[Dog, JsObject]
-  )
-  
-  val (derRuleJsValue2Dog, derRuleJsObject2Dog, derWriteDog2JsObject) = {
-    import DeriveJsonCoproduct._
-    (
-      implicitly[RuleLike[JsObject, Dog]],
-      implicitly[RuleLike[JsValue, Dog]],
-      implicitly[WriteLike[Dog, JsObject]]
-    )
-  }
-  
   def test[A](arg1: A, arg2: A): Unit = {
     if(arg1 == arg2)
       println(arg1)
@@ -241,20 +225,55 @@ object main extends App {
       |  arg2: $arg2""".stripMargin)
   }
   
-  test(genRuleJsValue2Dog.validate(dogJson), derRuleJsValue2Dog.validate(dogJson))
-  test(genRuleJsObject2Dog.validate(dogJson), derRuleJsObject2Dog.validate(dogJson))
-  test(genWriteDog2JsObject.writes(dog), derWriteDog2JsObject.writes(dog))
-  
-  {
-    import DeriveJsonCoproduct._
-    val r = implicitly[RuleLike[JsValue, Animal]]
-    val w = implicitly[WriteLike[Animal, JsObject]]
-    List[Animal](dog, cat) foreach { animal =>
-      test(animal, r.validate(w.writes(animal)).toOption.get)
-    }
+  def testFormat[A, AA <: A, T](r: RuleLike[A, T], w: WriteLike[T, AA])(v: T): Unit = {
+    test(Some(v), r.validate(w.writes(v)).toOption)
   }
   
-  {
+  "Derivated instance for Dog behaves the same as macro generated ones"; {
+    val (genRuleJsValue2Dog, genRuleJsObject2Dog, genWriteDog2JsObject) = (
+      Rule.gen[JsValue, Dog],
+      Rule.gen[JsObject, Dog],
+      Write.gen[Dog, JsObject]
+    )
+    
+    val (derRuleJsValue2Dog, derRuleJsObject2Dog, derWriteDog2JsObject) = {
+      import DeriveJsonCoproduct._
+      (
+        implicitly[RuleLike[JsObject, Dog]],
+        implicitly[RuleLike[JsValue, Dog]],
+        implicitly[WriteLike[Dog, JsObject]]
+      )
+    }
+    
+    test(genRuleJsValue2Dog.validate(dogJson), derRuleJsValue2Dog.validate(dogJson))
+    test(genRuleJsObject2Dog.validate(dogJson), derRuleJsObject2Dog.validate(dogJson))
+    test(genWriteDog2JsObject.writes(dog), derWriteDog2JsObject.writes(dog))
+  }
+  
+  "Recursive product derivation handles nested case classes"; {
+    import DeriveJsonCoproduct._
+    illTyped("Rule.gen[JsValue, Cat]")
+    illTyped("Write.gen[Cat, JsObject]")
+    
+    val r = implicitly[RuleLike[JsValue, Cat]]
+    val w = implicitly[WriteLike[Cat, JsObject]]
+    
+    testFormat(r, w)(cat)
+  }
+  
+  "Coproduct derivation handles ADTs"; {
+    import DeriveJsonCoproduct._
+    
+    illTyped("Rule.gen[JsValue, Animal]")
+    illTyped("Write.gen[Animal, JsObject]")
+    
+    val r = implicitly[RuleLike[JsValue, Animal]]
+    val w = implicitly[WriteLike[Animal, JsObject]]
+    
+    List(dog, cat) foreach testFormat(r, w)
+  }
+  
+  "Derivation instance with Option behaves the same as macro generated ones"; {
     case class WithOptions(i: Int, os: Option[String])
     import DeriveJsonProduct._
     val wo = WithOptions(1, Some("ksjdf"))
