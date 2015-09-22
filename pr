@@ -6,6 +6,6 @@
 
     1. We only expose one object, `Derive`, such that `import Derive._` enables the derivation of any herarchy of case classes.
     
-    2. We expose `DeriveProduct` which behaves exacltly like the current macros, 
+    2. We expose `DeriveProduct` which behaves exacltly like the current macros,
 
 - 

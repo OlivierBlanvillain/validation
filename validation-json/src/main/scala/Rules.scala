@@ -3,7 +3,33 @@ package json
 
 import play.api.libs.json.{JsValue, JsObject, Json, JsString, JsNumber, JsBoolean, JsArray, JsNull}
 
-object Rules extends DefaultRules[JsValue] {
+trait LowPri {
+  implicit def pickInJson[II <: JsValue, O](p: Path)(implicit r: RuleLike[JsValue, O]): Rule[II, O] = {
+    def search(path: Path, json: JsValue): Option[JsValue] = path.path match {
+      case KeyPathNode(k) :: t =>
+        json match {
+          case JsObject(js) =>
+            js.find(_._1 == k).flatMap(kv => search(Path(t), kv._2))
+          case _ => None
+        }
+      case IdxPathNode(i) :: t =>
+        json match {
+          case JsArray(js) => js.lift(i).flatMap(j => search(Path(t), j))
+          case _ => None
+        }
+      case Nil => Some(json)
+    }
+
+    Rule[II, JsValue] { json =>
+      search(p, json) match {
+        case None => Invalid(Seq(Path -> Seq(ValidationError("error.required"))))
+        case Some(js) => Valid(js)
+      }
+    }.compose(r)
+  }
+}
+
+object Rules extends DefaultRules[JsValue] with LowPri {
   private def jsonAs[T](f: PartialFunction[JsValue, Validated[Seq[ValidationError], T]])(msg: String, args: Any*) =
     Rule.fromMapping[JsValue, T](
       f.orElse {
@@ -96,31 +122,6 @@ object Rules extends DefaultRules[JsValue] {
 
   implicit def JsValue[O](implicit r: RuleLike[JsObject, O]): Rule[JsValue, O] =
     jsObjectR.compose(r)
-
-  implicit def pickInJson[II <: JsValue, O](p: Path)(implicit r: RuleLike[JsValue, O]): Rule[II, O] = {
-
-    def search(path: Path, json: JsValue): Option[JsValue] = path.path match {
-      case KeyPathNode(k) :: t =>
-        json match {
-          case JsObject(js) =>
-            js.find(_._1 == k).flatMap(kv => search(Path(t), kv._2))
-          case _ => None
-        }
-      case IdxPathNode(i) :: t =>
-        json match {
-          case JsArray(js) => js.lift(i).flatMap(j => search(Path(t), j))
-          case _ => None
-        }
-      case Nil => Some(json)
-    }
-
-    Rule[II, JsValue] { json =>
-      search(p, json) match {
-        case None => Invalid(Seq(Path -> Seq(ValidationError("error.required"))))
-        case Some(js) => Valid(js)
-      }
-    }.compose(r)
-  }
 
   // // XXX: a bit of boilerplate
   private def pickInS[T](implicit r: RuleLike[Seq[JsValue], T]): Rule[JsValue, T] =

@@ -84,7 +84,6 @@ object Dependencies {
     "org.specs2" %% "specs2" % "2.4.9" % "test",
     "org.specs2" %% "specs2-junit" % "2.4.9" % "test") // This is needed to avoid a classpath issue on scalaz
 
-  val shapelessDep = libraryDependencies += "com.chuusai" %% "shapeless" % "2.2.5"
   val macrosDep = addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
 
   val kindProjector = addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.6.3")
@@ -97,7 +96,8 @@ object Dependencies {
     "joda-time" % "joda-time" % "2.2",
     "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.2",
     "org.joda" % "joda-convert" % "1.3.1",
-    "org.spire-math" %% "cats" % "0.2.0"
+    "org.spire-math" %% "cats" % "0.2.0",
+    "com.chuusai" %% "shapeless" % "2.2.5"
   )
 }
 
@@ -123,8 +123,7 @@ object ValidationBuild extends Build {
     .settings(commonSettings: _*)
     .settings(playDep: _*)
     .settings(specsDep: _*)
-    .settings(shapelessDep: _*)
-    .dependsOn(core)
+    .dependsOn(core % "test->test;compile->compile")
 
   lazy val json4s = Project("validation-json4s", file("validation-json4s"))
     .settings(commonSettings: _*)
@@ -150,7 +149,6 @@ object ValidationBuild extends Build {
 
   lazy val experimental = Project("validation-experimental", file("validation-experimental"))
     .settings(commonSettings: _*)
-    .settings(shapelessDep: _*)
     .settings(specsDep: _*)
     .dependsOn(core)
 
