@@ -3,7 +3,7 @@ package json
 
 import play.api.libs.json.{JsValue, JsObject, Json, JsString, JsNumber, JsBoolean, JsArray, JsNull}
 
-object Rules extends DefaultRules[JsValue] with LowPri {
+object Rules extends DefaultRules[JsValue] {
   private def jsonAs[T](f: PartialFunction[JsValue, Validated[Seq[ValidationError], T]])(msg: String, args: Any*) =
     Rule.fromMapping[JsValue, T](
       f.orElse {
@@ -55,7 +55,7 @@ object Rules extends DefaultRules[JsValue] with LowPri {
 
   // BigDecimal.isValidFloat is buggy, see [SI-6699]
   import java.{ lang => jl }
-  private def isValidFloat(bd: BigDecimal) = {
+  private def isValidFloat(bd: BigDecimal): Boolean = {
     val d = bd.toFloat
     !d.isInfinity && bd.bigDecimal.compareTo(new java.math.BigDecimal(jl.Float.toString(d), bd.mc)) == 0
   }

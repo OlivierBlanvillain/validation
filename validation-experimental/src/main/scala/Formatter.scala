@@ -2,7 +2,7 @@ package jto.validation
 
 import shapeless._
 import ops.record.{ Selector => RSelector, Updater }
-import record.{ FieldType }
+import labelled.FieldType
 
 trait Get[I, O] {
   outer =>
@@ -16,7 +16,12 @@ trait Get[I, O] {
   }
   // def read[I, O](implicit r: Path => RuleLike[I, O]): Rule[I, O] =
 
-  def \[Out0 <: HList : lens.Gen, V](k: Witness)(implicit s: RSelector.Aux[Out0, k.T, V], u: Updater.Aux[Out0, FieldType[k.T, V], Out0]) =
+  def \[Out0 <: HList, V](k: Witness)
+    (implicit
+      s: RSelector.Aux[Out0, k.T, V],
+      u: Updater.Aux[Out0, FieldType[k.T, V], Out0],
+      mkLens: MkFieldLens[O, k.T]
+    ) =
     new Get[I, V]{
       val nodeName = k match {
         // TODO: Original line generates "a pattern match on a refinement type is unchecked"
