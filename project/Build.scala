@@ -34,6 +34,7 @@ object BuildSettings {
     "-Xlint",
     "-Yinline-warnings",
     "-Yno-adapted-args",
+    // "-Xfatal-warnings",   
     "-Ywarn-dead-code",
     "-Ywarn-numeric-widen",
     "-Ywarn-value-discard",

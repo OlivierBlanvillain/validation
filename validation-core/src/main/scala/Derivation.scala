@@ -4,15 +4,15 @@ import shapeless.{Path => _, _}
 import shapeless.labelled._
 import cats.Monoid
 
-// trait Derivation
-//   extends WriteProduct
-//   with WriteCoproduct
-//   with RuleProduct
-//   with RuleCoproduct
+trait DerivationInduction
+  extends WriteProduct
+  with WriteCoproduct
+  with RuleProduct
+  with RuleCoproduct
   
-// trait DerivationReq
-//   extends WriteGeneric
-//   with RuleGeneric
+object DerivationRec
+  extends WriteGeneric
+  with RuleGeneric
 
 trait RuleProduct {
   implicit def ruleProductBaseCase[I](p: Path): RuleLike[I, HNil] =
