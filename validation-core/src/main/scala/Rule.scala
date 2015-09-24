@@ -106,12 +106,8 @@ trait Rule[I, O] extends RuleLike[I, O] {
 object Rule {
   def gen[I, O]: Rule[I, O] = macro MappingMacros.rule[I, O]
   
-  def derive[I, F, G]
-    (implicit
-      gen: LabelledGeneric.Aux[F, G],
-      sg: Lazy[Path => RuleLike[I, G]]
-    ): RuleLike[I, F] =
-      new RuleGeneric{}.ruleGeneric
+  def derive[I, F, G](implicit gen: LabelledGeneric.Aux[F, G], sg: Lazy[Path => RuleLike[I, G]]): RuleLike[I, F] =
+    new RuleGeneric{}.ruleGeneric
 
   /**
    * Turn a `A => Rule[B, C]` into a `Rule[(A, B), C]`

@@ -20,7 +20,7 @@ object BuildSettings {
 
   // Used by api docs generation to link back to the correct branch on GitHub, only when version is a SNAPSHOT
   val sourceCodeBranch = "master"
-
+  
   val commonScalacOptions = Seq(
     "-deprecation",
     "-encoding", "UTF-8",
@@ -34,14 +34,14 @@ object BuildSettings {
     "-Xlint",
     "-Yinline-warnings",
     "-Yno-adapted-args",
-    // "-Xfatal-warnings",   
+    "-Xfatal-warnings",   
     "-Ywarn-dead-code",
     "-Ywarn-numeric-widen",
     "-Ywarn-value-discard",
     "-Ywarn-unused-import",
     "-Xfuture"
   )
-
+  
   val sonatypeSettings = Seq(
     publishMavenStyle := true,
     publishTo := {
@@ -86,13 +86,13 @@ object Dependencies {
     "org.specs2" %% "specs2-junit" % "2.4.9" % "test") // This is needed to avoid a classpath issue on scalaz
 
   val macrosDep = addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
-
+  
   val kindProjector = addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.6.3")
 
   val xmlDep = libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "1.0.5"
-
+  
   val playDep = libraryDependencies += "com.typesafe.play" %% "play-json" % playVersion
-
+  
   val coreDeps = libraryDependencies ++= Seq(
     "joda-time" % "joda-time" % "2.2",
     "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.2",
