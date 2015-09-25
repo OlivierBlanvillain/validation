@@ -31,10 +31,10 @@ object BuildSettings {
     "-language:implicitConversions",
     "-language:experimental.macros",
     "-unchecked",
+    "-Xfatal-warnings",
     "-Xlint",
     "-Yinline-warnings",
     "-Yno-adapted-args",
-    "-Xfatal-warnings",   
     "-Ywarn-dead-code",
     "-Ywarn-numeric-widen",
     "-Ywarn-value-discard",
@@ -119,7 +119,7 @@ object ValidationBuild extends Build {
     .settings(macrosDep: _*)
     .settings(specsDep: _*)
     .settings(sourceGenerators in Compile <+= (sourceManaged in Compile).map(Boilerplate.gen))
-
+  
   lazy val json = Project("validation-json", file("validation-json"))
     .settings(commonSettings: _*)
     .settings(playDep: _*)

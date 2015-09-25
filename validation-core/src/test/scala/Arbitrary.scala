@@ -1,6 +1,5 @@
 import shapeless._
 import scala.collection.generic.CanBuildFrom
-import scala.language.higherKinds
 import scala.util.Random
 
 /** Type class for generating Arbitrary values of a type T */
