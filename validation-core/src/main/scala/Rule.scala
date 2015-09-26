@@ -146,12 +146,12 @@ object Rule {
       def ap[A, B](ma: Rule[I, A])(mf: Rule[I, A => B]): Rule[I, B] = ma.ap(mf)
     }
 
-  implicit def functionalInvariantSyntaxRuleFunctor[I]: FunctorSyntaxCombine[Rule[I, ?]] =
-    new FunctorSyntaxCombine[Rule[I, ?]] {
+  implicit def functionalInvariantSyntaxRuleFunctor[I]: SyntaxCombine[Rule[I, ?]] =
+    new SyntaxCombine[Rule[I, ?]] {
       def apply[A, B](a: Rule[I, A], b: Rule[I, B]): Rule[I, A ~ B] =
         b.ap(a.map(a => c => new ~(a, c)))
     }
 
-  implicit def fboRuleFunctor[I, O](r: Rule[I, O])(implicit fcb: FunctorSyntaxCombine[Rule[I, ?]]): FunctorSyntaxObs[Rule[I, ?], O] =
+  implicit def fboRuleFunctor[I, O](r: Rule[I, O])(implicit fcb: SyntaxCombine[Rule[I, ?]]): FunctorSyntaxObs[Rule[I, ?], O] =
     new FunctorSyntaxObs[Rule[I, ?], O](r)(fcb)
 }

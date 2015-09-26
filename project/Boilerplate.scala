@@ -35,7 +35,7 @@ object Boilerplate {
   /** Returns a seq of the generated files. As a side-effect, it actually generates them... */
   def gen(dir: File) =
     for(template <- templates) yield {
-      val tgtFile = template.filename(dir)
+      val tgtFile = template.filename(dir / "jto" / "validation")
       IO.write(tgtFile, template.body)
       tgtFile
     }
@@ -72,7 +72,6 @@ object Boilerplate {
     }
   }
 
-
   /*
     Blocks in the templates below use a custom interpolator, combined with post-processing to produce the body
 
@@ -89,7 +88,7 @@ object Boilerplate {
   */
 
   object InvariantSyntax extends Template {
-    def filename(root: File) = root /  "jto" / "validation" / "InvariantSyntax.scala"
+    def filename(root: File) = root / "InvariantSyntax.scala"
 
     def content(tv: TemplateVals) = {
       import tv._
@@ -102,20 +101,7 @@ object Boilerplate {
         |
         |import cats.functor.Invariant
         |
-        |case class ~[A, B](_1: A, _2: B)
-        |
-        |trait InvariantSyntaxCombine[M[_]] {
-        |  def apply[A, B](ma: M[A], mb: M[B]): M[A ~ B]
-        |}
-        |
-        |class InvariantSyntaxObs[M[_], A](ma: M[A])(implicit fcb: InvariantSyntaxCombine[M]) {
-        |  def ~[B](mb: M[B]): InvariantSyntax[M]#InvariantSyntax2[A, B] = {
-        |    val b = new InvariantSyntax(fcb)
-        |    new b.InvariantSyntax2[A, B](ma, mb)
-        |  }
-        |}
-        |
-        |class InvariantSyntax[M[_]](combine: InvariantSyntaxCombine[M]) {
+        |class InvariantSyntax[M[_]](combine: SyntaxCombine[M]) {
         |
         -  class InvariantSyntax$arity[${`A..N`}](m1: M[${`A~N-1`}], m2: M[A${arity-1}]) {
         -    $next
@@ -136,7 +122,7 @@ object Boilerplate {
   }
 
   object FunctorSyntax extends Template {
-    def filename(root: File) = root /  "jto" / "validation" / "FunctorSyntax.scala"
+    def filename(root: File) = root / "FunctorSyntax.scala"
 
     def content(tv: TemplateVals) = {
       import tv._
@@ -149,18 +135,7 @@ object Boilerplate {
         |
         |import cats.Functor
         |
-        |trait FunctorSyntaxCombine[M[_]] {
-        |  def apply[A, B](ma: M[A], mb: M[B]): M[A ~ B]
-        |}
-        |
-        |class FunctorSyntaxObs[M[_], A](ma: M[A])(implicit fcb: FunctorSyntaxCombine[M]) {
-        |  def ~[B](mb: M[B]): FunctorSyntax[M]#FunctorSyntax2[A, B] = {
-        |    val b = new FunctorSyntax(fcb)
-        |    new b.FunctorSyntax2[A, B](ma, mb)
-        |  }
-        |}
-        |
-        |class FunctorSyntax[M[_]](combine: FunctorSyntaxCombine[M]) {
+        |class FunctorSyntax[M[_]](combine: SyntaxCombine[M]) {
         |
         -  class FunctorSyntax${arity}[${`A..N`}](m1: M[${`A~N-1`}], m2: M[A${arity-1}]) {
         -    $next
@@ -178,7 +153,7 @@ object Boilerplate {
   }
 
   object ContravariantSyntax extends Template {
-    def filename(root: File) = root /  "jto" / "validation" / "ContravariantSyntax.scala"
+    def filename(root: File) = root / "ContravariantSyntax.scala"
 
     def content(tv: TemplateVals) = {
       import tv._
@@ -191,25 +166,14 @@ object Boilerplate {
         |
         |import cats.functor.Contravariant
         |
-        |trait ContravariantSyntaxCombine[M[_]] {
-        |  def apply[A, B](ma: M[A], mb: M[B]): M[A ~ B]
-        |}
-        |
-        |class ContravariantSyntaxObs[M[_], A](ma: M[A])(implicit fcb: ContravariantSyntaxCombine[M]) {
-        |  def ~[B](mb: M[B]): ContravariantSyntax[M]#ContravariantSyntax2[A, B] = {
-        |    val b = new ContravariantSyntax(fcb)
-        |    new b.ContravariantSyntax2[A, B](ma, mb)
-        |  }
-        |}
-        |
-        |class ContravariantSyntax[M[_]](combine: ContravariantSyntaxCombine[M]) {
+        |class ContravariantSyntax[M[_]](combine: SyntaxCombine[M]) {
         |
         -  class ContravariantSyntax${arity}[${`A..N`}](m1: M[${`A~N-1`}], m2: M[A${arity-1}]) {
         -    $next
         -
         -    def apply[B](f: B => Option[(${`A..N`})])(implicit fu: Contravariant[M]): M[B] =
         -      fu.contramap(combine(m1, m2))((b: B) => { val (${`a..n`}) = f(b).get; ${`new ~(.., n)`} })
-
+        -
         -    def tupled(implicit fu: Contravariant[M]): M[(${`A..N`})] =
         -      apply[(${`A..N`})]({ (a: (${`A..N`})) => Some((${`a._1..a._N`})) })
         -  }
@@ -218,5 +182,4 @@ object Boilerplate {
       """
     }
   }
-
 }
