@@ -63,13 +63,14 @@ object Write {
         wa.contramap(f)
     }
 
-  implicit def functionalCanBuildWrite[O](implicit m: Monoid[O]): FunctionalCanBuild[Write[?, O]] =
-    new FunctionalCanBuild[Write[?, O]] {
+  implicit def functionalCanBuildWriteWWWW[O](implicit m: Monoid[O]): FunctionalCanBuildWWWW[Write[?, O]] =
+    new FunctionalCanBuildWWWW[Write[?, O]] {
       def apply[A, B](wa: Write[A, O], wb: Write[B, O]): Write[A ~ B, O] = Write[A ~ B, O] {
         case a ~ b => m.combine(wa.writes(a), wb.writes(b))
       }
     }
 
-  implicit def fboWrite[I, O : Monoid](w: Write[I, O]): FunctionalBuilderOps[Write[?, O], I] =
-    toFunctionalBuilderOps[Write[?, O], I](w)
+  implicit def fboWrite[I, O : Monoid](w: Write[I, O])(implicit fcb: FunctionalCanBuildWWWW[Write[?, O]]):
+      FunctionalBuilderOpsWWWW[Write[?, O], I] =
+    new FunctionalBuilderOpsWWWW[Write[?, O], I](w)(fcb)
 }

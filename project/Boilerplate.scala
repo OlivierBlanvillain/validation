@@ -28,7 +28,8 @@ object Boilerplate {
 
   val templates: Seq[Template] = List(
     FunctionalBuilder,
-    FunctionalBuilderRRRR
+    FunctionalBuilderRRRR,
+    FunctionalBuilderWWWW
   )
 
   /** Returns a seq of the generated files. As a side-effect, it actually generates them... */
@@ -123,12 +124,6 @@ object Boilerplate {
         -  class CanBuild$arity[${`A..N`}](m1: M[${`A~N-1`}], m2: M[A${arity-1}]) {
         -    $next
         -
-        -    def apply[B](f: (${`A..N`}) => B)(implicit fu: Functor[M]): M[B] =
-        -      fu.map[${`A~N`}, B](canBuild(m1, m2))({ case ${`a~n`} => f(${`a..n`}) })
-        -
-        -    def apply[B](f: B => Option[(${`A..N`})])(implicit fu: Contravariant[M]): M[B] =
-        -      fu.contramap(canBuild(m1, m2))((b: B) => { val (${`a..n`}) = f(b).get; ${`new ~(.., n)`} })
-        -
         -    def apply[B](f1: (${`A..N`}) => B, f2: B => Option[(${`A..N`})])(implicit fu: Invariant[M]): M[B] =
         -      fu.imap[${`A~N`}, B](
         -        canBuild(m1, m2))({ case ${`a~n`} => f1(${`a..n`}) })(
@@ -187,6 +182,56 @@ object Boilerplate {
         -
         -    def tupled(implicit fu: Functor[M]): M[(${`A..N`})] =
         -      apply[(${`A..N`})]({ (${`a:A..n:N`}) => (${`a..n`}) })
+        -  }
+        -
+        |}
+      """
+    }
+  }
+
+  object FunctionalBuilderWWWW extends Template {
+    def filename(root: File) = root /  "jto" / "validation" / "FunctionalBuilderWWWW.scala"
+
+    def content(tv: TemplateVals) = {
+      import tv._
+
+      val `a~n`          = synVals.mkString(" ~ ")
+      val `A~N`          = synTypes.mkString(" ~ ")
+      val `A~N-1`        = (0 until arity - 1).map(n => s"A$n").mkString(" ~ ")
+      val `a._1..a._N`   = (1 to arity) map (n => s"a._$n") mkString ", "
+      val `new ~(.., n)` = synVals.reduce[String] { case (acc, el) => s"new ~($acc, $el)" }
+
+      val next = if (arity + 1 <= maxArity)
+        s"def ~[A$arity](m3: M[A$arity]) = new CanBuild${arity+1}WWWW[${`A..N`}, A$arity](canBuildWWWW(m1, m2), m3)"
+      else
+        ""
+
+      block"""
+        |package jto.validation
+        |
+        |import cats.functor.Contravariant
+        |
+        |trait FunctionalCanBuildWWWW[M[_]] {
+        |  def apply[A, B](ma: M[A], mb: M[B]): M[A ~ B]
+        |}
+        |
+        |class FunctionalBuilderOpsWWWW[M[_], A](ma: M[A])(implicit fcb: FunctionalCanBuildWWWW[M]) {
+        |  def ~[B](mb: M[B]): FunctionalBuilderWWWW[M]#CanBuild2WWWW[A, B] = {
+        |    val b = new FunctionalBuilderWWWW(fcb)
+        |    new b.CanBuild2WWWW[A, B](ma, mb)
+        |  }
+        |}
+        |
+        |class FunctionalBuilderWWWW[M[_]](canBuildWWWW: FunctionalCanBuildWWWW[M]) {
+        |
+        -  class CanBuild${arity}WWWW[${`A..N`}](m1: M[${`A~N-1`}], m2: M[A${arity-1}]) {
+        -    $next
+        -
+        -    def apply[B](f: B => Option[(${`A..N`})])(implicit fu: Contravariant[M]): M[B] =
+        -      fu.contramap(canBuildWWWW(m1, m2))((b: B) => { val (${`a..n`}) = f(b).get; ${`new ~(.., n)`} })
+
+        -    def tupled(implicit fu: Contravariant[M]): M[(${`A..N`})] =
+        -      apply[(${`A..N`})]({ (a: (${`A..N`})) => Some((${`a._1..a._N`})) })
         -  }
         -
         |}

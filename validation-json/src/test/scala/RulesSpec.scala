@@ -412,7 +412,7 @@ object RulesSpec extends Specification {
         ((__ \ "firstname").read(notEmpty) ~
          (__ \ "lastname").read(notEmpty) ~
          (__ \ "company").read[Option[String]] ~
-         (__ \ "informations").read(seqR(infoValidated)))(Contact.apply _)
+         (__ \ "informations").read(seqR(infoValidated)))(Contact.apply)
       }
 
       val expected =

@@ -151,4 +151,7 @@ object Rule {
       def apply[A, B](a: Rule[I, A], b: Rule[I, B]): Rule[I, A ~ B] =
         b.ap(a.map(a => c => new ~(a, c)))
     }
+
+  implicit def fboRuleRRRR[I, O](r: Rule[I, O])(implicit fcb: FunctionalCanBuildRRRR[Rule[I, ?]]): FunctionalBuilderOpsRRRR[Rule[I, ?], O] =
+    new FunctionalBuilderOpsRRRR[Rule[I, ?], O](r)(fcb)
 }
