@@ -53,11 +53,6 @@ object DerivationSpec extends Specification {
   "Non-recursive derivation fails when macro generation fails" in {
     import Rules._, Writes._
     
-    class C(s: String)
-    
-    Rule.gen[JsValue, C]
-    Rule.derive: RuleLike[JsValue, C]
-    
     illTyped("Rule.gen[JsValue, Cat]")
     illTyped("Rule.derive: RuleLike[JsValue, Cat]")
     

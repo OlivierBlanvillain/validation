@@ -90,7 +90,7 @@ object RulesSpec extends Specification {
       }
 
       "java BigDecimal" in {
-        import java.math.{ BigDecimal => jBigDecimal }
+        import java.math.{BigDecimal => jBigDecimal}
         (Path \ "n").read[JValue, jBigDecimal].validate(JObject("n" -> JInt(4))) mustEqual(Valid(new jBigDecimal("4")))
         (Path \ "n").read[JValue, jBigDecimal].validate(JObject("n" -> JString("foo"))) mustEqual(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "BigDecimal")))))
         (Path \ "n").read[JValue, jBigDecimal].validate(JObject("n" -> JDecimal(4.8))) mustEqual(Valid(new jBigDecimal("4.8")))

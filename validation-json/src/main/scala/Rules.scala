@@ -54,7 +54,7 @@ object Rules extends DefaultRules[JsValue] {
   }("error.invalid", "Array")
 
   // BigDecimal.isValidFloat is buggy, see [SI-6699]
-  import java.{ lang => jl }
+  import java.{lang => jl}
   private def isValidFloat(bd: BigDecimal): Boolean = {
     val d = bd.toFloat
     !d.isInfinity && bd.bigDecimal.compareTo(new java.math.BigDecimal(jl.Float.toString(d), bd.mc)) == 0
@@ -76,7 +76,7 @@ object Rules extends DefaultRules[JsValue] {
     case JsNumber(v) => Valid(v)
   }("error.number", "BigDecimal")
 
-  import java.{ math => jm }
+  import java.{math => jm}
   implicit def javaBigDecimal = jsonAs[jm.BigDecimal] {
     case JsNumber(v) => Valid(v.bigDecimal)
   }("error.number", "BigDecimal")
