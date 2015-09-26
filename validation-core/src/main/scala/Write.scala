@@ -63,7 +63,7 @@ object Write {
         wa.contramap(f)
     }
 
-  implicit def functionalCanBuildWriteWWWW[O](implicit m: Monoid[O]): WWWWSyntaxCombine[Write[?, O]] =
+  implicit def functionalFFFFSyntaxWriteWWWW[O](implicit m: Monoid[O]): WWWWSyntaxCombine[Write[?, O]] =
     new WWWWSyntaxCombine[Write[?, O]] {
       def apply[A, B](wa: Write[A, O], wb: Write[B, O]): Write[A ~ B, O] = Write[A ~ B, O] {
         case a ~ b => m.combine(wa.writes(a), wb.writes(b))

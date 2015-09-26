@@ -27,7 +27,7 @@ object Boilerplate {
   val maxArity = 22
 
   val templates: Seq[Template] = List(
-    FunctionalBuilder,
+    FFFFSyntax,
     RRRRSyntax,
     WWWWSyntax
   )
@@ -88,14 +88,14 @@ object Boilerplate {
     The block otherwise behaves as a standard interpolated string with regards to variable substitution.
   */
 
-  object FunctionalBuilder extends Template {
-    def filename(root: File) = root /  "jto" / "validation" / "FunctionalBuilder.scala"
+  object FFFFSyntax extends Template {
+    def filename(root: File) = root /  "jto" / "validation" / "FFFFSyntax.scala"
 
     def content(tv: TemplateVals) = {
       import tv._
 
       val next = if (arity >= maxArity) "" else
-        s"def ~[A$arity](m3: M[A$arity]) = new CanBuild${arity+1}[${`A..N`}, A$arity](canBuild(m1, m2), m3)"
+        s"def ~[A$arity](m3: M[A$arity]) = new FFFFSyntax${arity+1}[${`A..N`}, A$arity](combine(m1, m2), m3)"
 
       block"""
         |package jto.validation
@@ -104,25 +104,25 @@ object Boilerplate {
         |
         |case class ~[A, B](_1: A, _2: B)
         |
-        |trait FunctionalCanBuild[M[_]] {
+        |trait FFFFSyntaxCombine[M[_]] {
         |  def apply[A, B](ma: M[A], mb: M[B]): M[A ~ B]
         |}
         |
-        |class FunctionalBuilderOps[M[_], A](ma: M[A])(implicit fcb: FunctionalCanBuild[M]) {
-        |  def ~[B](mb: M[B]): FunctionalBuilder[M]#CanBuild2[A, B] = {
-        |    val b = new FunctionalBuilder(fcb)
-        |    new b.CanBuild2[A, B](ma, mb)
+        |class FFFFSyntaxObs[M[_], A](ma: M[A])(implicit fcb: FFFFSyntaxCombine[M]) {
+        |  def ~[B](mb: M[B]): FFFFSyntax[M]#FFFFSyntax2[A, B] = {
+        |    val b = new FFFFSyntax(fcb)
+        |    new b.FFFFSyntax2[A, B](ma, mb)
         |  }
         |}
         |
-        |class FunctionalBuilder[M[_]](canBuild: FunctionalCanBuild[M]) {
+        |class FFFFSyntax[M[_]](combine: FFFFSyntaxCombine[M]) {
         |
-        -  class CanBuild$arity[${`A..N`}](m1: M[${`A~N-1`}], m2: M[A${arity-1}]) {
+        -  class FFFFSyntax$arity[${`A..N`}](m1: M[${`A~N-1`}], m2: M[A${arity-1}]) {
         -    $next
         -
         -    def apply[B](f1: (${`A..N`}) => B, f2: B => Option[(${`A..N`})])(implicit fu: Invariant[M]): M[B] =
         -      fu.imap[${`A~N`}, B](
-        -        canBuild(m1, m2))({ case ${`a~n`} => f1(${`a..n`}) })(
+        -        combine(m1, m2))({ case ${`a~n`} => f1(${`a..n`}) })(
         -        (b: B) => { val (${`a..n`}) = f2(b).get; ${`new ~(.., n)`} }
         -      )
         -
