@@ -28,7 +28,7 @@ object Boilerplate {
 
   val templates: Seq[Template] = List(
     FunctionalBuilder,
-    FunctionalBuilderRRRR,
+    RRRRSyntax,
     WWWWSyntax
   )
 
@@ -135,38 +135,38 @@ object Boilerplate {
     }
   }
 
-  object FunctionalBuilderRRRR extends Template {
-    def filename(root: File) = root /  "jto" / "validation" / "FunctionalBuilderRRRR.scala"
+  object RRRRSyntax extends Template {
+    def filename(root: File) = root /  "jto" / "validation" / "RRRRSyntax.scala"
 
     def content(tv: TemplateVals) = {
       import tv._
 
       val next = if (arity >= maxArity) "" else
-        s"def ~[A$arity](m3: M[A$arity]) = new CanBuild${arity+1}RRRR[${`A..N`}, A$arity](canBuildRRRR(m1, m2), m3)"
+        s"def ~[A$arity](m3: M[A$arity]) = new RRRRSyntax${arity+1}[${`A..N`}, A$arity](combine(m1, m2), m3)"
 
       block"""
         |package jto.validation
         |
         |import cats.Functor
         |
-        |trait FunctionalCanBuildRRRR[M[_]] {
+        |trait RRRRSyntaxCombine[M[_]] {
         |  def apply[A, B](ma: M[A], mb: M[B]): M[A ~ B]
         |}
         |
-        |class FunctionalBuilderOpsRRRR[M[_], A](ma: M[A])(implicit fcb: FunctionalCanBuildRRRR[M]) {
-        |  def ~[B](mb: M[B]): FunctionalBuilderRRRR[M]#CanBuild2RRRR[A, B] = {
-        |    val b = new FunctionalBuilderRRRR(fcb)
-        |    new b.CanBuild2RRRR[A, B](ma, mb)
+        |class RRRRSyntaxObs[M[_], A](ma: M[A])(implicit fcb: RRRRSyntaxCombine[M]) {
+        |  def ~[B](mb: M[B]): RRRRSyntax[M]#RRRRSyntax2[A, B] = {
+        |    val b = new RRRRSyntax(fcb)
+        |    new b.RRRRSyntax2[A, B](ma, mb)
         |  }
         |}
         |
-        |class FunctionalBuilderRRRR[M[_]](canBuildRRRR: FunctionalCanBuildRRRR[M]) {
+        |class RRRRSyntax[M[_]](combine: RRRRSyntaxCombine[M]) {
         |
-        -  class CanBuild${arity}RRRR[${`A..N`}](m1: M[${`A~N-1`}], m2: M[A${arity-1}]) {
+        -  class RRRRSyntax${arity}[${`A..N`}](m1: M[${`A~N-1`}], m2: M[A${arity-1}]) {
         -    $next
         -
         -    def apply[B](f: (${`A..N`}) => B)(implicit fu: Functor[M]): M[B] =
-        -      fu.map[${`A~N`}, B](canBuildRRRR(m1, m2))({ case ${`a~n`} => f(${`a..n`}) })
+        -      fu.map[${`A~N`}, B](combine(m1, m2))({ case ${`a~n`} => f(${`a..n`}) })
         -
         -    def tupled(implicit fu: Functor[M]): M[(${`A..N`})] =
         -      apply[(${`A..N`})]({ (${`a:A..n:N`}) => (${`a..n`}) })

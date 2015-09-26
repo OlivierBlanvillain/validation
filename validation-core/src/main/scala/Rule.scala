@@ -146,12 +146,12 @@ object Rule {
       def ap[A, B](ma: Rule[I, A])(mf: Rule[I, A => B]): Rule[I, B] = ma.ap(mf)
     }
 
-  implicit def functionalCanBuildRuleRRRR[I]: FunctionalCanBuildRRRR[Rule[I, ?]] =
-    new FunctionalCanBuildRRRR[Rule[I, ?]] {
+  implicit def functionalCanBuildRuleRRRR[I]: RRRRSyntaxCombine[Rule[I, ?]] =
+    new RRRRSyntaxCombine[Rule[I, ?]] {
       def apply[A, B](a: Rule[I, A], b: Rule[I, B]): Rule[I, A ~ B] =
         b.ap(a.map(a => c => new ~(a, c)))
     }
 
-  implicit def fboRuleRRRR[I, O](r: Rule[I, O])(implicit fcb: FunctionalCanBuildRRRR[Rule[I, ?]]): FunctionalBuilderOpsRRRR[Rule[I, ?], O] =
-    new FunctionalBuilderOpsRRRR[Rule[I, ?], O](r)(fcb)
+  implicit def fboRuleRRRR[I, O](r: Rule[I, O])(implicit fcb: RRRRSyntaxCombine[Rule[I, ?]]): RRRRSyntaxObs[Rule[I, ?], O] =
+    new RRRRSyntaxObs[Rule[I, ?], O](r)(fcb)
 }
