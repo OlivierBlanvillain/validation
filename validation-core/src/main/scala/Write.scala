@@ -63,14 +63,14 @@ object Write {
         wa.contramap(f)
     }
 
-  implicit def functionalFFFFSyntaxWriteWWWW[O](implicit m: Monoid[O]): WWWWSyntaxCombine[Write[?, O]] =
-    new WWWWSyntaxCombine[Write[?, O]] {
+  implicit def functionalInvariantSyntaxWriteContravariant[O](implicit m: Monoid[O]): ContravariantSyntaxCombine[Write[?, O]] =
+    new ContravariantSyntaxCombine[Write[?, O]] {
       def apply[A, B](wa: Write[A, O], wb: Write[B, O]): Write[A ~ B, O] = Write[A ~ B, O] {
         case a ~ b => m.combine(wa.writes(a), wb.writes(b))
       }
     }
 
-  implicit def fboWrite[I, O : Monoid](w: Write[I, O])(implicit fcb: WWWWSyntaxCombine[Write[?, O]]):
-      WWWWSyntaxObs[Write[?, O], I] =
-    new WWWWSyntaxObs[Write[?, O], I](w)(fcb)
+  implicit def fboWrite[I, O : Monoid](w: Write[I, O])(implicit fcb: ContravariantSyntaxCombine[Write[?, O]]):
+      ContravariantSyntaxObs[Write[?, O], I] =
+    new ContravariantSyntaxObs[Write[?, O], I](w)(fcb)
 }

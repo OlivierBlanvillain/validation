@@ -27,9 +27,9 @@ object Boilerplate {
   val maxArity = 22
 
   val templates: Seq[Template] = List(
-    FFFFSyntax,
-    RRRRSyntax,
-    WWWWSyntax
+    InvariantSyntax,
+    FunctorSyntax,
+    ContravariantSyntax
   )
 
   /** Returns a seq of the generated files. As a side-effect, it actually generates them... */
@@ -88,14 +88,14 @@ object Boilerplate {
     The block otherwise behaves as a standard interpolated string with regards to variable substitution.
   */
 
-  object FFFFSyntax extends Template {
-    def filename(root: File) = root /  "jto" / "validation" / "FFFFSyntax.scala"
+  object InvariantSyntax extends Template {
+    def filename(root: File) = root /  "jto" / "validation" / "InvariantSyntax.scala"
 
     def content(tv: TemplateVals) = {
       import tv._
 
       val next = if (arity >= maxArity) "" else
-        s"def ~[A$arity](m3: M[A$arity]) = new FFFFSyntax${arity+1}[${`A..N`}, A$arity](combine(m1, m2), m3)"
+        s"def ~[A$arity](m3: M[A$arity]) = new InvariantSyntax${arity+1}[${`A..N`}, A$arity](combine(m1, m2), m3)"
 
       block"""
         |package jto.validation
@@ -104,20 +104,20 @@ object Boilerplate {
         |
         |case class ~[A, B](_1: A, _2: B)
         |
-        |trait FFFFSyntaxCombine[M[_]] {
+        |trait InvariantSyntaxCombine[M[_]] {
         |  def apply[A, B](ma: M[A], mb: M[B]): M[A ~ B]
         |}
         |
-        |class FFFFSyntaxObs[M[_], A](ma: M[A])(implicit fcb: FFFFSyntaxCombine[M]) {
-        |  def ~[B](mb: M[B]): FFFFSyntax[M]#FFFFSyntax2[A, B] = {
-        |    val b = new FFFFSyntax(fcb)
-        |    new b.FFFFSyntax2[A, B](ma, mb)
+        |class InvariantSyntaxObs[M[_], A](ma: M[A])(implicit fcb: InvariantSyntaxCombine[M]) {
+        |  def ~[B](mb: M[B]): InvariantSyntax[M]#InvariantSyntax2[A, B] = {
+        |    val b = new InvariantSyntax(fcb)
+        |    new b.InvariantSyntax2[A, B](ma, mb)
         |  }
         |}
         |
-        |class FFFFSyntax[M[_]](combine: FFFFSyntaxCombine[M]) {
+        |class InvariantSyntax[M[_]](combine: InvariantSyntaxCombine[M]) {
         |
-        -  class FFFFSyntax$arity[${`A..N`}](m1: M[${`A~N-1`}], m2: M[A${arity-1}]) {
+        -  class InvariantSyntax$arity[${`A..N`}](m1: M[${`A~N-1`}], m2: M[A${arity-1}]) {
         -    $next
         -
         -    def apply[B](f1: (${`A..N`}) => B, f2: B => Option[(${`A..N`})])(implicit fu: Invariant[M]): M[B] =
@@ -135,34 +135,34 @@ object Boilerplate {
     }
   }
 
-  object RRRRSyntax extends Template {
-    def filename(root: File) = root /  "jto" / "validation" / "RRRRSyntax.scala"
+  object FunctorSyntax extends Template {
+    def filename(root: File) = root /  "jto" / "validation" / "FunctorSyntax.scala"
 
     def content(tv: TemplateVals) = {
       import tv._
 
       val next = if (arity >= maxArity) "" else
-        s"def ~[A$arity](m3: M[A$arity]) = new RRRRSyntax${arity+1}[${`A..N`}, A$arity](combine(m1, m2), m3)"
+        s"def ~[A$arity](m3: M[A$arity]) = new FunctorSyntax${arity+1}[${`A..N`}, A$arity](combine(m1, m2), m3)"
 
       block"""
         |package jto.validation
         |
         |import cats.Functor
         |
-        |trait RRRRSyntaxCombine[M[_]] {
+        |trait FunctorSyntaxCombine[M[_]] {
         |  def apply[A, B](ma: M[A], mb: M[B]): M[A ~ B]
         |}
         |
-        |class RRRRSyntaxObs[M[_], A](ma: M[A])(implicit fcb: RRRRSyntaxCombine[M]) {
-        |  def ~[B](mb: M[B]): RRRRSyntax[M]#RRRRSyntax2[A, B] = {
-        |    val b = new RRRRSyntax(fcb)
-        |    new b.RRRRSyntax2[A, B](ma, mb)
+        |class FunctorSyntaxObs[M[_], A](ma: M[A])(implicit fcb: FunctorSyntaxCombine[M]) {
+        |  def ~[B](mb: M[B]): FunctorSyntax[M]#FunctorSyntax2[A, B] = {
+        |    val b = new FunctorSyntax(fcb)
+        |    new b.FunctorSyntax2[A, B](ma, mb)
         |  }
         |}
         |
-        |class RRRRSyntax[M[_]](combine: RRRRSyntaxCombine[M]) {
+        |class FunctorSyntax[M[_]](combine: FunctorSyntaxCombine[M]) {
         |
-        -  class RRRRSyntax${arity}[${`A..N`}](m1: M[${`A~N-1`}], m2: M[A${arity-1}]) {
+        -  class FunctorSyntax${arity}[${`A..N`}](m1: M[${`A~N-1`}], m2: M[A${arity-1}]) {
         -    $next
         -
         -    def apply[B](f: (${`A..N`}) => B)(implicit fu: Functor[M]): M[B] =
@@ -177,34 +177,34 @@ object Boilerplate {
     }
   }
 
-  object WWWWSyntax extends Template {
-    def filename(root: File) = root /  "jto" / "validation" / "WWWWSyntax.scala"
+  object ContravariantSyntax extends Template {
+    def filename(root: File) = root /  "jto" / "validation" / "ContravariantSyntax.scala"
 
     def content(tv: TemplateVals) = {
       import tv._
 
       val next = if (arity >= maxArity) "" else
-        s"def ~[A$arity](m3: M[A$arity]) = new WWWSyntax${arity+1}[${`A..N`}, A$arity](combine(m1, m2), m3)"
+        s"def ~[A$arity](m3: M[A$arity]) = new ContravariantSyntax${arity+1}[${`A..N`}, A$arity](combine(m1, m2), m3)"
 
       block"""
         |package jto.validation
         |
         |import cats.functor.Contravariant
         |
-        |trait WWWWSyntaxCombine[M[_]] {
+        |trait ContravariantSyntaxCombine[M[_]] {
         |  def apply[A, B](ma: M[A], mb: M[B]): M[A ~ B]
         |}
         |
-        |class WWWWSyntaxObs[M[_], A](ma: M[A])(implicit fcb: WWWWSyntaxCombine[M]) {
-        |  def ~[B](mb: M[B]): WWWWSyntax[M]#WWWSyntax2[A, B] = {
-        |    val b = new WWWWSyntax(fcb)
-        |    new b.WWWSyntax2[A, B](ma, mb)
+        |class ContravariantSyntaxObs[M[_], A](ma: M[A])(implicit fcb: ContravariantSyntaxCombine[M]) {
+        |  def ~[B](mb: M[B]): ContravariantSyntax[M]#ContravariantSyntax2[A, B] = {
+        |    val b = new ContravariantSyntax(fcb)
+        |    new b.ContravariantSyntax2[A, B](ma, mb)
         |  }
         |}
         |
-        |class WWWWSyntax[M[_]](combine: WWWWSyntaxCombine[M]) {
+        |class ContravariantSyntax[M[_]](combine: ContravariantSyntaxCombine[M]) {
         |
-        -  class WWWSyntax${arity}[${`A..N`}](m1: M[${`A~N-1`}], m2: M[A${arity-1}]) {
+        -  class ContravariantSyntax${arity}[${`A..N`}](m1: M[${`A~N-1`}], m2: M[A${arity-1}]) {
         -    $next
         -
         -    def apply[B](f: B => Option[(${`A..N`})])(implicit fu: Contravariant[M]): M[B] =

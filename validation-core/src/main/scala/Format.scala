@@ -25,12 +25,12 @@ object Format {
         Format[IR, IW, B](Rule.toRule(fa).map(f1), Write.toWrite(fa).contramap(f2))
     }
 
-  implicit def functionalFFFFSyntaxFormat[IR, IW : Monoid](implicit rcb: RRRRSyntaxCombine[Rule[IR, ?]], wcb: WWWWSyntaxCombine[Write[?, IW]]): FFFFSyntaxCombine[Format[IR, IW, ?]] =
-    new FFFFSyntaxCombine[Format[IR, IW, ?]] {
+  implicit def functionalInvariantSyntaxFormat[IR, IW : Monoid](implicit rcb: FunctorSyntaxCombine[Rule[IR, ?]], wcb: ContravariantSyntaxCombine[Write[?, IW]]): InvariantSyntaxCombine[Format[IR, IW, ?]] =
+    new InvariantSyntaxCombine[Format[IR, IW, ?]] {
       def apply[A, B](fa: Format[IR, IW, A], fb: Format[IR, IW, B]): Format[IR, IW, A ~ B] =
         Format[IR, IW, A ~ B](rcb(Rule.toRule(fa), Rule.toRule(fb)), wcb(Write.toWrite(fa), Write.toWrite(fb)))
     }
 
-  implicit def fboFormat[IR, IW : Monoid, O](f: Format[IR, IW, O])(implicit fcb: FFFFSyntaxCombine[Format[IR, IW, ?]]): FFFFSyntaxObs[Format[IR, IW, ?], O] =
-    new FFFFSyntaxObs[Format[IR, IW, ?], O](f)(fcb)
+  implicit def fboFormat[IR, IW : Monoid, O](f: Format[IR, IW, O])(implicit fcb: InvariantSyntaxCombine[Format[IR, IW, ?]]): InvariantSyntaxObs[Format[IR, IW, ?], O] =
+    new InvariantSyntaxObs[Format[IR, IW, ?], O](f)(fcb)
 }

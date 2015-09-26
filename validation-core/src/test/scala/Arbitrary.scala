@@ -1,5 +1,5 @@
 import shapeless._
-import scala.collection.generic.FFFFSyntaxFrom
+import scala.collection.generic.CanBuildFrom
 import scala.util.Random
 
 /** Type class for generating Arbitrary values of a type T */
@@ -19,7 +19,7 @@ object Arbitrary {
 
   implicit def arbitraryScalaCollection[Coll[_], T]
     (implicit
-      cbf: FFFFSyntaxFrom[Nothing, T, Coll[T]],
+      cbf: CanBuildFrom[Nothing, T, Coll[T]],
       a: Arbitrary[T]
     ): Arbitrary[Coll[T]] =
       Arbitrary {
