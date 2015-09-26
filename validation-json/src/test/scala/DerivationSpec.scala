@@ -104,104 +104,65 @@ object DerivationSpec extends Specification {
     Rule.gen[JsValue, WithOptions].validate(woNoneJson) mustEqual implicitly[RuleLike[JsValue, WithOptions]].validate(woNoneJson)
   }
   
-  case class Cat2(name: String)
-  case class Contact2(firstname: String, lastname: String, company: Option[String], informations: Seq[ContactInformation])
-  case class ContactInformation(label: String, email: Option[String], phones: Seq[String])
-  case class Dog2(name: String, master: User)
-  case class Foo(name: String)
-  case class Id(value: String) extends AnyVal
-  case class Person(name: String, age: Int)
-  case class Person2(names: List[String])
-  case class RecUser(name: String, cat: Option[Cat] = None, hobbies: Seq[String] = Seq(), friends: Seq[RecUser] = Seq())
-  case class RecUser2(name: String, friends: List[RecUser] = Nil)
-  case class RecUser3(name: String, friends: Seq[RecUser] = Nil)
-  case class Toto(name: String)
-  case class Toto2(name: Option[String])
-  case class Toto3(name: List[Double])
-  case class Toto4(name: Set[Long])
-  case class Toto5(name: Map[String, Int])
-  case class Toto6(name: Seq[Dog])
-  case class User(age: Int, name: String)
-  case class User1(name: String, friend: Option[User1] = None)
-  case class User2(id: Long, name: String)
-  case class UserFail(name: String, bd: Toto)
-  case class UserMap(name: String, friends: Map[String, UserMap] = Map())
-  case class WithList(ls: List[String])
-
-  trait A
-  case class B(foo: Int) extends A
-  case class C(bar: Int) extends A
-
-  case class X(_1: String, _2: String, _3: String, _4: String, _5: String, _6: String, _7: String, _8: String, _9: String, _10: String, _11: String, _12: String, _13: String, _14: String, _15: String, _16: String, _17: String, _18: String, _19: String, _20: String, _21: String)
-
-  case class Program(id: Long, name: String, logoPath: Option[String], logoThumb: Option[String])
-  object Program { def programs = List.empty[Program] }
-
-  case class ManyApplies(foo: String, bar: Int)
-  object ManyApplies {
-    def apply(x: Option[Int]) = 9
-    def apply(y: String) = 4
-    def apply(x: String, y: String) = 10
-  }
-
   "S'il vous plait... derive-moi un mouton !" in {
     import Rules._, Writes._
     import DerivationRec._
-
-    def testAgainstMacro[O, OO <: O, T](macroFormat: Format[O, OO, T])
-      (implicit
-        derivedRule: RuleLike[O, T],
-        derivedWrite: WriteLike[T, OO],
-        arbitrary: Arbitrary[T]
-      ): MatchResult[Any] = {
-        val t = arbitrary.value
-        val a = macroFormat.writes(t)
-        a mustEqual derivedWrite.writes(t)
-        macroFormat.validate(a) mustEqual derivedRule.validate(a)
-        derivedRule.validate(a) mustEqual Valid(t)
-      }
-
-    def testAgainstItself[O, OO <: O, T]
-      (implicit
-        derivedRule: RuleLike[O, T],
-        derivedWrite: WriteLike[T, OO],
-        arbitrary: Arbitrary[T]
-      ): MatchResult[Any] = {
-        val t = arbitrary.value
-        t mustEqual derivedRule.validate(derivedWrite.writes(t)).toOption.get
-      }
-
-    testAgainstMacro(Format.gen[JsValue, JsObject, B])
-    // testAgainstMacro(Format.gen[JsValue, JsObject, C])
-    // testAgainstMacro(Format.gen[JsValue, JsObject, Cat2])
-    // testAgainstMacro(Format.gen[JsValue, JsObject, ContactInformation])
-    // testAgainstMacro(Format.gen[JsValue, JsObject, Foo])
-    // testAgainstMacro(Format.gen[JsValue, JsObject, Id])
-    // testAgainstMacro(Format.gen[JsValue, JsObject, IdxPathNode])
-    // testAgainstMacro(Format.gen[JsValue, JsObject, KeyPathNode])
-    // testAgainstMacro(Format.gen[JsValue, JsObject, Person2])
-    // testAgainstMacro(Format.gen[JsValue, JsObject, Person])
-    // testAgainstMacro(Format.gen[JsValue, JsObject, Program])
-    // testAgainstMacro(Format.gen[JsValue, JsObject, Toto2])
-    // testAgainstMacro(Format.gen[JsValue, JsObject, Toto3])
-    // testAgainstMacro(Format.gen[JsValue, JsObject, Toto4])
-    // testAgainstMacro(Format.gen[JsValue, JsObject, Toto5])
-    // testAgainstMacro(Format.gen[JsValue, JsObject, Toto])
-    // testAgainstMacro(Format.gen[JsValue, JsObject, User2])
-    // testAgainstMacro(Format.gen[JsValue, JsObject, User])
-    // testAgainstMacro(Format.gen[JsValue, JsObject, WithList])
-    // testAgainstMacro(Format.gen[JsValue, JsObject, X])
     
-    testAgainstItself[JsValue, JsObject, Contact2]
-    // testAgainstItself[JsValue, JsObject, Dog2]
-    // testAgainstItself[JsValue, JsObject, ManyApplies]
-    // testAgainstItself[JsValue, JsObject, RecUser3]
-    // testAgainstItself[JsValue, JsObject, RecUser2]
-    // testAgainstItself[JsValue, JsObject, RecUser]
-    // testAgainstItself[JsValue, JsObject, Toto6]
-    // testAgainstItself[JsValue, JsObject, User1]
-    // testAgainstItself[JsValue, JsObject, User2]
-    // testAgainstItself[JsValue, JsObject, UserFail]
-    // testAgainstItself[JsValue, JsObject, UserMap]
+    sealed trait A
+    case class B(foo: Int) extends A
+    case class C(bar: Int) extends A
+    case class Cat2(name: String)
+    case class Contact2(firstname: String, lastname: String, company: Option[String], informations: Seq[ContactInformation])
+    case class ContactInformation(label: String, email: Option[String], phones: Seq[String])
+    case class Dog2(name: String, master: User)
+    case class Foo(name: String)
+    case class Person(name: String, age: Int)
+    case class Person2(names: List[String])
+    case class Program(id: Long, name: String, logoPath: Option[String], logoThumb: Option[String])
+    case class RecUser(name: String, cat: Option[Cat] = None, hobbies: Seq[String] = Seq(), friends: Seq[RecUser] = Seq())
+    case class RecUser2(name: String, friends: List[RecUser] = Nil)
+    case class RecUser3(name: String, friends: Seq[RecUser] = Nil)
+    case class Toto(name: String)
+    case class Toto2(name: Option[String])
+    case class Toto3(name: List[Double])
+    case class Toto4(name: Set[Long])
+    case class Toto5(name: Map[String, Int])
+    case class Toto6(name: Seq[Dog])
+    case class User(age: Int, name: String)
+    case class User1(name: String, friend: Option[User1] = None)
+    case class User2(id: Long, name: String)
+    case class UserFail(name: String, bd: Toto)
+    case class UserMap(name: String, friends: Map[String, UserMap] = Map())
+    case class WithList(ls: List[String])
+    case class X(_1: String, _2: String, _3: String, _4: String, _5: String, _6: String, _7: String, _8: String, _9: String, _10: String, _11: String, _12: String, _13: String, _14: String, _15: String, _16: String, _17: String, _18: String, _19: String, _20: String, _21: String)
+
+    TestRandomly.implicitly[JsValue, JsObject, A]
+    TestRandomly.implicitly[JsValue, JsObject, B]
+    TestRandomly.implicitly[JsValue, JsObject, C]
+    TestRandomly.implicitly[JsValue, JsObject, Cat2]
+    TestRandomly.implicitly[JsValue, JsObject, Contact2]
+    TestRandomly.implicitly[JsValue, JsObject, ContactInformation]
+    TestRandomly.implicitly[JsValue, JsObject, Dog2]
+    TestRandomly.implicitly[JsValue, JsObject, Foo]
+    TestRandomly.implicitly[JsValue, JsObject, Person2]
+    TestRandomly.implicitly[JsValue, JsObject, Program]
+    TestRandomly.implicitly[JsValue, JsObject, Person]
+    TestRandomly.implicitly[JsValue, JsObject, RecUser]
+    TestRandomly.implicitly[JsValue, JsObject, RecUser2]
+    TestRandomly.implicitly[JsValue, JsObject, RecUser3]
+    TestRandomly.implicitly[JsValue, JsObject, Toto]
+    TestRandomly.implicitly[JsValue, JsObject, Toto2]
+    TestRandomly.implicitly[JsValue, JsObject, Toto3]
+    TestRandomly.implicitly[JsValue, JsObject, Toto4]
+    TestRandomly.implicitly[JsValue, JsObject, Toto5]
+    TestRandomly.implicitly[JsValue, JsObject, Toto6]
+    TestRandomly.implicitly[JsValue, JsObject, User]
+    TestRandomly.implicitly[JsValue, JsObject, User1]
+    TestRandomly.implicitly[JsValue, JsObject, User2]
+    TestRandomly.implicitly[JsValue, JsObject, UserFail]
+    TestRandomly.implicitly[JsValue, JsObject, UserMap]
+    TestRandomly.implicitly[JsValue, JsObject, WithList]
+    TestRandomly.implicitly[JsValue, JsObject, X]
   }
 }
+  

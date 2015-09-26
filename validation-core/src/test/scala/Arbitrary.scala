@@ -5,7 +5,6 @@ import scala.util.Random
 /** Type class for generating Arbitrary values of a type T */
 trait Arbitrary[T] {
   def value: T
-  def map[A](f: T => A): Arbitrary[A] = Arbitrary[A](f(value))
 }
 
 object Arbitrary {
