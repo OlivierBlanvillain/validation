@@ -25,7 +25,7 @@ object Format {
         Format[IR, IW, B](Rule.toRule(fa).map(f1), Write.toWrite(fa).contramap(f2))
     }
 
-  implicit def functionalCanBuildFormat[IR, IW : Monoid](implicit rcb: FunctionalCanBuildRRRR[Rule[IR, ?]], wcb: FunctionalCanBuildWWWW[Write[?, IW]]): FunctionalCanBuild[Format[IR, IW, ?]] =
+  implicit def functionalCanBuildFormat[IR, IW : Monoid](implicit rcb: FunctionalCanBuildRRRR[Rule[IR, ?]], wcb: WWWWSyntaxCombine[Write[?, IW]]): FunctionalCanBuild[Format[IR, IW, ?]] =
     new FunctionalCanBuild[Format[IR, IW, ?]] {
       def apply[A, B](fa: Format[IR, IW, A], fb: Format[IR, IW, B]): Format[IR, IW, A ~ B] =
         Format[IR, IW, A ~ B](rcb(Rule.toRule(fa), Rule.toRule(fb)), wcb(Write.toWrite(fa), Write.toWrite(fb)))

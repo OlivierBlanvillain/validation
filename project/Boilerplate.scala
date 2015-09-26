@@ -29,7 +29,7 @@ object Boilerplate {
   val templates: Seq[Template] = List(
     FunctionalBuilder,
     FunctionalBuilderRRRR,
-    FunctionalBuilderWWWW
+    WWWWSyntax
   )
 
   /** Returns a seq of the generated files. As a side-effect, it actually generates them... */
@@ -41,16 +41,21 @@ object Boilerplate {
     }
 
   class TemplateVals(val arity: Int) {
-    val synTypes     = (0 until arity) map (n => s"A$n")
-    val synVals      = (0 until arity) map (n => s"a$n")
-    val synTypedVals = (synVals zip synTypes) map { case (v,t) => v + ": " + t}
-    val `A..N`       = synTypes.mkString(", ")
-    val `a..n`       = synVals.mkString(", ")
-    val `_.._`       = Seq.fill(arity)("_").mkString(", ")
-    val `(A..N)`     = if (arity == 1) "Tuple1[A]" else synTypes.mkString("(", ", ", ")")
-    val `(_.._)`     = if (arity == 1) "Tuple1[_]" else Seq.fill(arity)("_").mkString("(", ", ", ")")
-    val `(a..n)`     = if (arity == 1) "Tuple1(a)" else synVals.mkString("(", ", ", ")")
-    val `a:A..n:N`   = synTypedVals mkString ", "
+    val synTypes       = (0 until arity) map (n => s"A$n")
+    val synVals        = (0 until arity) map (n => s"a$n")
+    val synTypedVals   = (synVals zip synTypes) map { case (v,t) => v + ": " + t}
+    val `A..N`         = synTypes.mkString(", ")
+    val `a..n`         = synVals.mkString(", ")
+    val `_.._`         = Seq.fill(arity)("_").mkString(", ")
+    val `(A..N)`       = if (arity == 1) "Tuple1[A]" else synTypes.mkString("(", ", ", ")")
+    val `(_.._)`       = if (arity == 1) "Tuple1[_]" else Seq.fill(arity)("_").mkString("(", ", ", ")")
+    val `(a..n)`       = if (arity == 1) "Tuple1(a)" else synVals.mkString("(", ", ", ")")
+    val `a:A..n:N`     = synTypedVals mkString ", "
+    val `a~n`          = synVals.mkString(" ~ ")
+    val `A~N`          = synTypes.mkString(" ~ ")
+    val `A~N-1`        = (0 until arity - 1).map(n => s"A$n").mkString(" ~ ")
+    val `a._1..a._N`   = (1 to arity) map (n => s"a._$n") mkString ", "
+    val `new ~(.., n)` = synVals.reduce[String] { case (acc, el) => s"new ~($acc, $el)" }
   }
 
   trait Template {
@@ -89,22 +94,13 @@ object Boilerplate {
     def content(tv: TemplateVals) = {
       import tv._
 
-      val `a~n`          = synVals.mkString(" ~ ")
-      val `A~N`          = synTypes.mkString(" ~ ")
-      val `A~N-1`        = (0 until arity - 1).map(n => s"A$n").mkString(" ~ ")
-      val `a._1..a._N`   = (1 to arity) map (n => s"a._$n") mkString ", "
-      val `new ~(.., n)` = synVals.reduce[String] { case (acc, el) => s"new ~($acc, $el)" }
-
-      val next = if (arity + 1 <= maxArity)
+      val next = if (arity >= maxArity) "" else
         s"def ~[A$arity](m3: M[A$arity]) = new CanBuild${arity+1}[${`A..N`}, A$arity](canBuild(m1, m2), m3)"
-      else
-        ""
 
       block"""
         |package jto.validation
         |
-        |import cats.Functor
-        |import cats.functor._
+        |import cats.functor.Invariant
         |
         |case class ~[A, B](_1: A, _2: B)
         |
@@ -145,16 +141,8 @@ object Boilerplate {
     def content(tv: TemplateVals) = {
       import tv._
 
-      val `a~n`          = synVals.mkString(" ~ ")
-      val `A~N`          = synTypes.mkString(" ~ ")
-      val `A~N-1`        = (0 until arity - 1).map(n => s"A$n").mkString(" ~ ")
-      val `a._1..a._N`   = (1 to arity) map (n => s"a._$n") mkString ", "
-      val `new ~(.., n)` = synVals.reduce[String] { case (acc, el) => s"new ~($acc, $el)" }
-
-      val next = if (arity + 1 <= maxArity)
+      val next = if (arity >= maxArity) "" else
         s"def ~[A$arity](m3: M[A$arity]) = new CanBuild${arity+1}RRRR[${`A..N`}, A$arity](canBuildRRRR(m1, m2), m3)"
-      else
-        ""
 
       block"""
         |package jto.validation
@@ -189,46 +177,38 @@ object Boilerplate {
     }
   }
 
-  object FunctionalBuilderWWWW extends Template {
-    def filename(root: File) = root /  "jto" / "validation" / "FunctionalBuilderWWWW.scala"
+  object WWWWSyntax extends Template {
+    def filename(root: File) = root /  "jto" / "validation" / "WWWWSyntax.scala"
 
     def content(tv: TemplateVals) = {
       import tv._
 
-      val `a~n`          = synVals.mkString(" ~ ")
-      val `A~N`          = synTypes.mkString(" ~ ")
-      val `A~N-1`        = (0 until arity - 1).map(n => s"A$n").mkString(" ~ ")
-      val `a._1..a._N`   = (1 to arity) map (n => s"a._$n") mkString ", "
-      val `new ~(.., n)` = synVals.reduce[String] { case (acc, el) => s"new ~($acc, $el)" }
-
-      val next = if (arity + 1 <= maxArity)
-        s"def ~[A$arity](m3: M[A$arity]) = new CanBuild${arity+1}WWWW[${`A..N`}, A$arity](canBuildWWWW(m1, m2), m3)"
-      else
-        ""
+      val next = if (arity >= maxArity) "" else
+        s"def ~[A$arity](m3: M[A$arity]) = new WWWSyntax${arity+1}[${`A..N`}, A$arity](combine(m1, m2), m3)"
 
       block"""
         |package jto.validation
         |
         |import cats.functor.Contravariant
         |
-        |trait FunctionalCanBuildWWWW[M[_]] {
+        |trait WWWWSyntaxCombine[M[_]] {
         |  def apply[A, B](ma: M[A], mb: M[B]): M[A ~ B]
         |}
         |
-        |class FunctionalBuilderOpsWWWW[M[_], A](ma: M[A])(implicit fcb: FunctionalCanBuildWWWW[M]) {
-        |  def ~[B](mb: M[B]): FunctionalBuilderWWWW[M]#CanBuild2WWWW[A, B] = {
-        |    val b = new FunctionalBuilderWWWW(fcb)
-        |    new b.CanBuild2WWWW[A, B](ma, mb)
+        |class WWWWSyntaxObs[M[_], A](ma: M[A])(implicit fcb: WWWWSyntaxCombine[M]) {
+        |  def ~[B](mb: M[B]): WWWWSyntax[M]#WWWSyntax2[A, B] = {
+        |    val b = new WWWWSyntax(fcb)
+        |    new b.WWWSyntax2[A, B](ma, mb)
         |  }
         |}
         |
-        |class FunctionalBuilderWWWW[M[_]](canBuildWWWW: FunctionalCanBuildWWWW[M]) {
+        |class WWWWSyntax[M[_]](combine: WWWWSyntaxCombine[M]) {
         |
-        -  class CanBuild${arity}WWWW[${`A..N`}](m1: M[${`A~N-1`}], m2: M[A${arity-1}]) {
+        -  class WWWSyntax${arity}[${`A..N`}](m1: M[${`A~N-1`}], m2: M[A${arity-1}]) {
         -    $next
         -
         -    def apply[B](f: B => Option[(${`A..N`})])(implicit fu: Contravariant[M]): M[B] =
-        -      fu.contramap(canBuildWWWW(m1, m2))((b: B) => { val (${`a..n`}) = f(b).get; ${`new ~(.., n)`} })
+        -      fu.contramap(combine(m1, m2))((b: B) => { val (${`a..n`}) = f(b).get; ${`new ~(.., n)`} })
 
         -    def tupled(implicit fu: Contravariant[M]): M[(${`A..N`})] =
         -      apply[(${`A..N`})]({ (a: (${`A..N`})) => Some((${`a._1..a._N`})) })
