@@ -30,6 +30,8 @@ package object validation {
 
   implicit def toFunctionalBuilderOps[M[_], A](a: M[A])(implicit fcb: FunctionalCanBuild[M]): FunctionalBuilderOps[M, A] = new FunctionalBuilderOps[M, A](a)(fcb)
 
+  implicit def toFunctionalBuilderOpsRRRR[M[_], A](a: M[A])(implicit fcb: FunctionalCanBuildRRRR[M]): FunctionalBuilderOpsRRRR[M, A] = new FunctionalBuilderOpsRRRR[M, A](a)(fcb)
+
   implicit def applySyntaxU[FA](fa: FA)(implicit U: Unapply[Apply, FA]): ApplyOps[U.M, U.A] = {
     object As extends ApplySyntax1
     As.applySyntaxU(fa)
