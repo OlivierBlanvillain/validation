@@ -8,16 +8,16 @@ import org.specs2.matcher.MatchResult
 import shapeless.test.illTyped
 
 object DerivationSpec extends Specification {
-  
+
   implicit def iDontLikeSpec2[T](t: T): Result = Result.unit(())
-  
+
   sealed trait Animal
   case class Dog(name: String, bones: Int) extends Animal
   case class Cat(name: String, fish: Int, friend: Option[Cat]) extends Animal
-  
+
   "Derivation syntax should be similar macro syntax" in {
     import Rules._, Writes._
-    
+
     val derivedRuleJsObject: RuleLike[JsObject, Dog] = Rule.derive
     val macroRuleJsObejct: RuleLike[JsObject, Dog] = Rule.gen[JsObject, Dog]
 
@@ -26,21 +26,21 @@ object DerivationSpec extends Specification {
 
     val derivedWriteJsObject: WriteLike[Dog, JsObject] = Write.derive
     val macroWriteJsObject: WriteLike[Dog, JsObject] = Write.gen[Dog, JsObject]
-    
+
     val dogJson = Json.parse("""{"name": "doge", "bones": 0}""").as[JsObject]
     val dog = Dog("doge", 0)
-    
+
     derivedRuleJsObject.validate(dogJson) mustEqual macroRuleJsObejct.validate(dogJson)
     derivedRuleJsValue.validate(dogJson) mustEqual macroRuleJsValue.validate(dogJson)
     derivedWriteJsObject.writes(dog) mustEqual macroWriteJsObject.writes(dog)
   }
-  
+
   "Recursive derivation handles recursive case classes" in {
     import Rules._, Writes._
-    
+
     illTyped("Rule.gen[JsValue, Cat]")
     illTyped("Write.gen[Cat, JsObject]")
-    
+
     import DerivationRec._
 
     val cat = Cat("le chat", 1, Some(Cat("garfield", 0, None)))
@@ -52,20 +52,20 @@ object DerivationSpec extends Specification {
 
   "Non-recursive derivation fails when macro generation fails" in {
     import Rules._, Writes._
-    
+
     illTyped("Rule.gen[JsValue, Cat]")
     illTyped("Rule.derive: RuleLike[JsValue, Cat]")
-    
+
     illTyped("Write.gen[Cat, JsObject]")
     illTyped("Write.derive: WriteLike[Cat, JsObject]")
 
     illTyped("Rule.gen[JsValue, Animal]")
     illTyped("Rule.derive: RuleLike[JsValue, Animal]")
-    
+
     illTyped("Write.gen[Animal, JsObject]")
     illTyped("Write.derive: WriteLike[Animal, JsObject]")
   }
-  
+
   sealed trait ADT
   case object ADT1 extends ADT
   case object ADT2 extends ADT
@@ -74,40 +74,40 @@ object DerivationSpec extends Specification {
   "Derivation handles ADTs" in {
     import Rules._, Writes._
     import DerivationRec._
-    
+
     illTyped("Write.gen[ADT, JsObject]")
     illTyped("Rule.gen[JsValue, ADT]")
-    
+
     val a = ADT1
     val aJson = Json.parse("""{"$type":"ADT1"}""")
-    
+
     implicitly[WriteLike[ADT, JsObject]].writes(a) mustEqual aJson
     implicitly[RuleLike[JsValue, ADT]].validate(aJson) mustEqual Valid(a)
   }
-  
+
   case class WithOptions(os: Option[String])
-  
+
   "Derivated instance with Option behaves like macro generated instance" in {
     import Rules._, Writes._
     import DerivationRec._
-    
+
     val woSome = WithOptions(Some("ksjdf"))
     val woSomeJson = Json.parse("""{"os": "ksjdf"}""")
-    
+
     val woNone = WithOptions(None)
     val woNoneJson = Json.parse("{}")
-    
+
     Write.gen[WithOptions, JsObject].writes(woSome) mustEqual implicitly[WriteLike[WithOptions, JsObject]].writes(woSome)
     Write.gen[WithOptions, JsObject].writes(woNone) mustEqual implicitly[WriteLike[WithOptions, JsObject]].writes(woNone)
 
     Rule.gen[JsValue, WithOptions].validate(woSomeJson) mustEqual implicitly[RuleLike[JsValue, WithOptions]].validate(woSomeJson)
     Rule.gen[JsValue, WithOptions].validate(woNoneJson) mustEqual implicitly[RuleLike[JsValue, WithOptions]].validate(woNoneJson)
   }
-  
+
   "S'il vous plait... derive-moi un mouton !" in {
     import Rules._, Writes._
     import DerivationRec._
-    
+
     sealed trait A
     case class B(foo: Int) extends A
     case class C(bar: Int) extends A
@@ -165,4 +165,4 @@ object DerivationSpec extends Specification {
     TestRandomly.implicitly[JsValue, JsObject, X]
   }
 }
-  
+

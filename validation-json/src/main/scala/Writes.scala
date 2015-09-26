@@ -5,7 +5,7 @@ import play.api.libs.json.{JsValue, JsObject, Json, JsString, JsNumber, JsBoolea
 
 trait DefaultMonoids {
   import cats.Monoid
-  
+
   implicit def jsonMonoid = new Monoid[JsObject] {
     def combine(a1: JsObject, a2: JsObject): JsObject = a1 deepMerge a2
     def empty: JsObject = Json.obj()

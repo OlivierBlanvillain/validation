@@ -35,15 +35,15 @@ object Rules extends DefaultRules[JValue] {
   implicit def jsDouble = jsonAs[JsonAST.JDouble] {
     case v: JsonAST.JDouble => Valid(v)
   }("error.number", "Number")
-  
+
   implicit def jsDecimal = jsonAs[JsonAST.JDecimal] {
     case v: JsonAST.JDecimal => Valid(v)
   }("error.number", "Number")
-  
+
   implicit def jsInt = jsonAs[JsonAST.JInt] {
     case v: JsonAST.JInt => Valid(v)
   }("error.number", "Number")
-  
+
   implicit def jsBooleanR = jsonAs[JBool] {
     case v @ JBool(_) => Valid(v)
   }("error.invalid", "Boolean")

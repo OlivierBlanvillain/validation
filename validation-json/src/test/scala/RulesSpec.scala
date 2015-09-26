@@ -485,7 +485,7 @@ object RulesSpec extends Specification {
         }
 
       val jsonR = {
-        
+
         genR[JsValue](optionR(_))
       }
 

@@ -6,7 +6,7 @@ import org.json4s._
 object RulesSpec extends Specification {
 
   "Json Rules" should {
-    
+
     import Rules._
 
     val valid = JObject(
@@ -487,7 +487,7 @@ object RulesSpec extends Specification {
         }
 
       val jsonR = {
-        
+
         genR[JValue](optionR(_))
       }
 
@@ -499,7 +499,7 @@ object RulesSpec extends Specification {
 
 
       // val formR = {
-      //   
+      //
       //   genR[UrlFormEncoded](optionR(_))
       // }
       // val form = Map("name" -> Seq("bob"), "color" -> Seq("blue"))

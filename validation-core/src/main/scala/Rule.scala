@@ -94,7 +94,7 @@ trait Rule[I, O] extends RuleLike[I, O] {
 
   def map[B](f: O => B): Rule[I, B] =
     Rule(d => this.validate(d).map(f))
-  
+
   def ap[A](mf: Rule[I, O => A]): Rule[I, A] =
     Rule { d =>
       val a = validate(d)
@@ -105,7 +105,7 @@ trait Rule[I, O] extends RuleLike[I, O] {
 
 object Rule {
   def gen[I, O]: Rule[I, O] = macro MappingMacros.rule[I, O]
-  
+
   def derive[I, F, G](implicit gen: LabelledGeneric.Aux[F, G], sg: Lazy[Path => RuleLike[I, G]]): RuleLike[I, F] =
     new RuleGeneric{}.ruleGeneric
 
@@ -123,7 +123,7 @@ object Rule {
 
   def zero[O]: Rule[O, O] =
     toRule(RuleLike.zero[O])
-  
+
   def pure[I, O](o: O): Rule[I, O] =
     Rule(_ => Valid(o))
 

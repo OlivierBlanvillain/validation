@@ -4,15 +4,9 @@ import shapeless.{Path => _, _}
 import shapeless.labelled._
 import cats.Monoid
 
-trait DerivationInduction
-  extends WriteProduct
-  with WriteCoproduct
-  with RuleProduct
-  with RuleCoproduct
-  
-object DerivationRec
-  extends WriteGeneric
-  with RuleGeneric
+trait DerivationInduction extends WriteProduct with WriteCoproduct with RuleProduct with RuleCoproduct
+
+object DerivationRec extends WriteGeneric with RuleGeneric
 
 trait RuleProduct {
   implicit def ruleProductBaseCase[I](p: Path): RuleLike[I, HNil] =
@@ -40,13 +34,13 @@ trait RuleProduct {
 
 trait RuleCoproduct {
   def typePath: Path
-  
+
   implicit def ruleCoproductBaseCase[I](p: Path): RuleLike[I, CNil] =
     new RuleLike[I, CNil] {
       def validate(i: I): VA[CNil] =
         Invalid(Seq((typePath, Seq(ValidationError("Unknown $type")))))
     }
-  
+
   implicit def ruleCoproductInductionStep[I, K <: Symbol, V, T <: Coproduct](p: Path)
     (implicit
       key: Witness.Aux[K],
@@ -83,12 +77,12 @@ trait RuleGeneric {
 
 trait WriteProduct {
   type Output
-  
+
   implicit def writeProductBaseCase(p: Path)(implicit m: Monoid[Output]) =
     new WriteLike[HNil, Output] {
       def writes(i: HNil): Output = m.empty
     }
-  
+
   implicit def writeProductInductionStep[K <: Symbol, V, T <: HList](p: Path)
     (implicit
       key: Witness.Aux[K],
@@ -111,12 +105,12 @@ trait WriteProduct {
 trait WriteCoproduct {
   def typePath: Path
   type Output
-  
+
   implicit val writeCoproductBaseCase =
     new WriteLike[CNil, Output] {
       def writes(i: CNil): Output = ???
     }
-  
+
   implicit def writeCoproductInductionStep[K <: Symbol, V, T <: Coproduct](p: Path)
     (implicit
       key: Witness.Aux[K],
@@ -128,7 +122,7 @@ trait WriteCoproduct {
     new WriteLike[FieldType[K, V] :+: T, Output] {
       def writes(i: FieldType[K, V] :+: T): Output = {
         i match {
-          case Inl(v) => 
+          case Inl(v) =>
             val typeInfo = typePath.write(wl).writes(key.value.name)
             val value = sv.value(p).writes(v)
             m.combine(value, typeInfo)

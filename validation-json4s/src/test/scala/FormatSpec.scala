@@ -9,9 +9,9 @@ object FormatSpec extends Specification {
 
   "Format" should {
 
-    
-    
-    
+
+
+
 
     "serialize and deserialize primitives" in {
       import Rules._

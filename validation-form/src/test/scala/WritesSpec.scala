@@ -306,7 +306,7 @@ class WritesSpec extends Specification {
         w3.writes(u1) mustEqual m1
       }
     }
-    
+
     "support write of value class" in {
       import TestValueClass._
 
