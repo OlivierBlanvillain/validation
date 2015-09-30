@@ -4,17 +4,17 @@ val org = "io.github.jto"
 val license = ("Apache License", url("http://www.apache.org/licenses/LICENSE-2.0.txt"))
 
 val catsVersion = "0.2.0"
-val json4sVersion = "3.2.10"
 val jodaConvertVersion = "1.3.1"
 val jodaTimeVersion = "2.2"
+val json4sVersion = "3.2.10"
 val kindProjectorVersion = "0.6.3"
 val paradiseVersion = "2.1.0-M5"
-val parserCombinatorsVersion = "1.0.2"
 val playVersion = "2.4.3"
+val scalacVersion = "2.11.7"
+val scalatestVersion = "3.0.0-M7"
 val scalaXmlVersion = "1.0.5"
 val shapelessVersion = "2.2.5"
-val specs2Version = "2.4.9"
-val scalacVersion = "2.11.7"
+// val specs2Version = "2.4.9"
 
 val commonScalacOptions = Seq(
   "-deprecation",
@@ -38,10 +38,8 @@ val commonScalacOptions = Seq(
 )
 
 val resolver = Seq(
-  // Resolver.sonatypeRepo("snapshots"),
-  Resolver.bintrayRepo("scalaz", "releases"),
+  // Resolver.bintrayRepo("scalaz", "releases"),
   Resolver.sonatypeRepo("releases")
-  // Resolver.typesafeRepo("releases")
 )
 
 lazy val commonSettings = Seq(
@@ -49,63 +47,66 @@ lazy val commonSettings = Seq(
   organization := org,
   scalacOptions ++= commonScalacOptions,
   resolvers ++= resolver,
-  parallelExecution in Test := true,
-  fork in Test := true
+  parallelExecution in Test := true
 )
 
-lazy val validationSettings = commonSettings ++ publishSettings ++ specsDependency
+lazy val validationSettings = commonSettings ++ publishSettings // ++  specsDependency
 
-// lazy val commonJsSettings = Seq(
-//   scalaJSStage in Global := FastOptStage
-// )
+lazy val commonJsSettings = Seq(
+  scalaJSStage in Global := FastOptStage
+)
 
-// lazy val commonJvmSettings = Seq(
-//   // testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF)
-// )
+lazy val commonJvmSettings = Seq(
+  // testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF)
+)
 
 lazy val root = project.in(file("."))
-  .aggregate(core, json, form, delimited, xml, json4s, experimental)
+  .aggregate(coreJVM, json, form, delimited, xml, json4s, experimental)
   .settings(validationSettings: _*)
   .settings(noPublishSettings: _*)
 
-lazy val core = project.in(file("validation-core"))
-  .settings(moduleName := "validation-core")
+lazy val `validation-core` = crossProject.crossType(CrossType.Pure)
   .settings(validationSettings: _*)
   .settings(coreDependencies: _*)
   .settings(generateBoilerplate: _*)
+lazy val coreJVM = `validation-core`.jvm
+lazy val coreJS = `validation-core`.js
 
 lazy val json = project.in(file("validation-json"))
   .settings(moduleName := "validation-json")
   .settings(validationSettings: _*)
-  .settings(playDependency: _*)
-  .dependsOn(core % "test->test;compile->compile")
+  .settings(libraryDependencies +=
+    "com.typesafe.play" %% "play-json" % playVersion)
+  .dependsOn(coreJVM % "test->test;compile->compile")
 
 lazy val json4s = project.in(file("validation-json4s"))
   .settings(moduleName := "validation-json4s")
   .settings(validationSettings: _*)
-  .settings(json4sDependency: _*)
-  .dependsOn(core)
+  .settings(libraryDependencies +=
+    "org.json4s" %% "json4s-native" % json4sVersion)
+  .dependsOn(coreJVM)
 
 lazy val form = project.in(file("validation-form"))
   .settings(moduleName := "validation-form")
   .settings(validationSettings: _*)
-  .dependsOn(core)
+  .dependsOn(coreJVM)
 
 lazy val delimited = project.in(file("validation-delimited"))
   .settings(moduleName := "validation-delimited")
   .settings(validationSettings: _*)
-  .dependsOn(core)
+  .dependsOn(coreJVM)
 
 lazy val xml = project.in(file("validation-xml"))
   .settings(moduleName := "validation-xml")
   .settings(validationSettings: _*)
-  .settings(xmlDependency: _*)
-  .dependsOn(core)
+  .settings(libraryDependencies +=
+    "org.scala-lang.modules" %% "scala-xml" % scalaXmlVersion)
+  .dependsOn(coreJVM)
 
 lazy val experimental = project.in(file("validation-experimental"))
   .settings(moduleName := "validation-experimental")
   .settings(validationSettings: _*)
-  .dependsOn(core)
+  .dependsOn(coreJVM)
 
 lazy val docs = project.in(file("validation-docs"))
   .settings(validationSettings: _*)
@@ -113,27 +114,21 @@ lazy val docs = project.in(file("validation-docs"))
   .settings(crossTarget := file(".") / "documentation")
   .settings(tutSettings: _*)
   .settings(scalacOptions -= "-Ywarn-unused-import")
-  .dependsOn(core, json, json4s, form, xml, experimental)
+  .dependsOn(coreJVM, json, json4s, form, xml, experimental)
 
-lazy val specsDependency = libraryDependencies ++= Seq(
-  "org.specs2" %% "specs2" % "2.4.9" % "test",
-  "org.specs2" %% "specs2-junit" % "2.4.9" % "test")
-
-lazy val xmlDependency = libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "1.0.5"
-
-lazy val json4sDependency = libraryDependencies += "org.json4s" %% "json4s-native" % json4sVersion
-
-lazy val playDependency = libraryDependencies += "com.typesafe.play" %% "play-json" % playVersion
+// lazy val specsDependency = libraryDependencies ++= Seq(
+//   "org.specs2" %% "specs2" % "2.4.9" % "test",
+//   "org.specs2" %% "specs2-junit" % "2.4.9" % "test")
 
 lazy val coreDependencies = Seq(
   libraryDependencies ++= Seq(
-    "joda-time" % "joda-time" % "2.2",
-    "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.2",
-    "org.joda" % "joda-convert" % "1.3.1",
-    "org.spire-math" %% "cats" % "0.2.0",
-    "com.chuusai" %% "shapeless" % "2.2.5"
+    "joda-time" % "joda-time" % jodaTimeVersion,
+    "org.joda" % "joda-convert" % jodaConvertVersion,
+    "org.spire-math" %%% "cats" % catsVersion,
+    "com.chuusai" %% "shapeless" % shapelessVersion,
+    "org.scalatest" %%% "scalatest" % scalatestVersion % "test"
   ),
-  addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.6.3"),
+  addCompilerPlugin("org.spire-math" %% "kind-projector" % kindProjectorVersion),
   addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
 )
 
