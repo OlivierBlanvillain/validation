@@ -9,6 +9,7 @@ val jodaTimeVersion = "2.2"
 val json4sVersion = "3.2.10"
 val kindProjectorVersion = "0.6.3"
 val paradiseVersion = "2.1.0-M5"
+val parserCombinatorsVersion = "1.0.2"
 val playVersion = "2.4.3"
 val scalacVersion = "2.11.7"
 val scalatestVersion = "3.0.0-M7"
@@ -50,7 +51,7 @@ lazy val commonSettings = Seq(
   parallelExecution in Test := true
 )
 
-lazy val validationSettings = commonSettings ++ publishSettings // ++  specsDependency
+lazy val validationSettings = commonSettings ++ publishSettings ++ coreDependencies // ++  specsDependency
 
 lazy val commonJsSettings = Seq(
   scalaJSStage in Global := FastOptStage
@@ -61,16 +62,35 @@ lazy val commonJvmSettings = Seq(
 )
 
 lazy val root = project.in(file("."))
-  .aggregate(coreJVM, json, form, delimited, xml, json4s, experimental)
+  .aggregate(coreJVM, json, formJVM, delimited, xml, json4s, experimental)
   .settings(validationSettings: _*)
   .settings(noPublishSettings: _*)
 
 lazy val `validation-core` = crossProject.crossType(CrossType.Pure)
   .settings(validationSettings: _*)
-  .settings(coreDependencies: _*)
   .settings(generateBoilerplate: _*)
 lazy val coreJVM = `validation-core`.jvm
 lazy val coreJS = `validation-core`.js
+
+lazy val `validation-form` = crossProject.crossType(CrossType.Pure)
+  .settings(validationSettings: _*)
+  .dependsOn(`validation-core`)
+  .jvmSettings(libraryDependencies +=
+    "org.scala-lang.modules" %% "scala-parser-combinators" % parserCombinatorsVersion)
+  .jsSettings(libraryDependencies +=
+    "org.scala-js" %%% "scala-parser-combinators" % parserCombinatorsVersion)
+lazy val formJVM = `validation-form`.jvm
+lazy val formJS = `validation-form`.js
+
+lazy val delimited = project.in(file("validation-delimited"))
+  .settings(moduleName := "validation-delimited")
+  .settings(validationSettings: _*)
+  .dependsOn(coreJVM)
+
+lazy val experimental = project.in(file("validation-experimental"))
+  .settings(moduleName := "validation-experimental")
+  .settings(validationSettings: _*)
+  .dependsOn(coreJVM)
 
 lazy val json = project.in(file("validation-json"))
   .settings(moduleName := "validation-json")
@@ -85,27 +105,11 @@ lazy val json4s = project.in(file("validation-json4s"))
   .settings(libraryDependencies +=
     "org.json4s" %% "json4s-native" % json4sVersion)
   .dependsOn(coreJVM)
-
-lazy val form = project.in(file("validation-form"))
-  .settings(moduleName := "validation-form")
-  .settings(validationSettings: _*)
-  .dependsOn(coreJVM)
-
-lazy val delimited = project.in(file("validation-delimited"))
-  .settings(moduleName := "validation-delimited")
-  .settings(validationSettings: _*)
-  .dependsOn(coreJVM)
-
 lazy val xml = project.in(file("validation-xml"))
   .settings(moduleName := "validation-xml")
   .settings(validationSettings: _*)
   .settings(libraryDependencies +=
     "org.scala-lang.modules" %% "scala-xml" % scalaXmlVersion)
-  .dependsOn(coreJVM)
-
-lazy val experimental = project.in(file("validation-experimental"))
-  .settings(moduleName := "validation-experimental")
-  .settings(validationSettings: _*)
   .dependsOn(coreJVM)
 
 lazy val docs = project.in(file("validation-docs"))
@@ -114,7 +118,7 @@ lazy val docs = project.in(file("validation-docs"))
   .settings(crossTarget := file(".") / "documentation")
   .settings(tutSettings: _*)
   .settings(scalacOptions -= "-Ywarn-unused-import")
-  .dependsOn(coreJVM, json, json4s, form, xml, experimental)
+  .dependsOn(coreJVM, json, json4s, formJVM, xml, experimental)
 
 // lazy val specsDependency = libraryDependencies ++= Seq(
 //   "org.specs2" %% "specs2" % "2.4.9" % "test",
@@ -122,8 +126,8 @@ lazy val docs = project.in(file("validation-docs"))
 
 lazy val coreDependencies = Seq(
   libraryDependencies ++= Seq(
-    "joda-time" % "joda-time" % jodaTimeVersion,
-    "org.joda" % "joda-convert" % jodaConvertVersion,
+    // "joda-time" % "joda-time" % jodaTimeVersion,
+    // "org.joda" % "joda-convert" % jodaConvertVersion,
     "org.spire-math" %%% "cats" % catsVersion,
     "com.chuusai" %% "shapeless" % shapelessVersion,
     "org.scalatest" %%% "scalatest" % scalatestVersion % "test"

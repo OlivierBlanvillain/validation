@@ -6,103 +6,103 @@ package jto.validation
  */
 trait DateRules {
 
-  /**
-   * Rule for the `java.util.Date` type.
-   *
-   * @param pattern a date pattern, as specified in `java.text.SimpleDateFormat`.
-   * @param corrector a simple string transformation function that can be used to transform input String before parsing. Useful when standards are not exactly respected and require a few tweaks
-   */
-  def date(format: String = "yyyy-MM-dd", corrector: String => String = identity) = Rule.fromMapping[String, java.util.Date] { s =>
-    def parseDate(input: String): Option[java.util.Date] = {
-      // REMEMBER THAT SIMPLEDATEFORMAT IS NOT THREADSAFE
-      val df = new java.text.SimpleDateFormat(format)
-      df.setLenient(false)
-      try { Some(df.parse(input)) } catch {
-        case _: java.text.ParseException => None
-      }
-    }
+  // /**
+  //  * Rule for the `java.util.Date` type.
+  //  *
+  //  * @param pattern a date pattern, as specified in `java.text.SimpleDateFormat`.
+  //  * @param corrector a simple string transformation function that can be used to transform input String before parsing. Useful when standards are not exactly respected and require a few tweaks
+  //  */
+  // def date(format: String = "yyyy-MM-dd", corrector: String => String = identity) = Rule.fromMapping[String, java.util.Date] { s =>
+  //   def parseDate(input: String): Option[java.util.Date] = {
+  //     // REMEMBER THAT SIMPLEDATEFORMAT IS NOT THREADSAFE
+  //     val df = new java.text.SimpleDateFormat(format)
+  //     df.setLenient(false)
+  //     try { Some(df.parse(input)) } catch {
+  //       case _: java.text.ParseException => None
+  //     }
+  //   }
 
-    parseDate(corrector(s)) match {
-      case Some(d) => Valid(d)
-      case None => Invalid(Seq(ValidationError("error.expected.date", format)))
-    }
-  }
+  //   parseDate(corrector(s)) match {
+  //     case Some(d) => Valid(d)
+  //     case None => Invalid(Seq(ValidationError("error.expected.date", format)))
+  //   }
+  // }
 
-  /**
-   * default Rule for the `java.util.Date` type.
-   * It uses the default date format: `yyyy-MM-dd`
-   */
-  implicit val date: Rule[String, java.util.Date] = date()
+  // /**
+  //  * default Rule for the `java.util.Date` type.
+  //  * It uses the default date format: `yyyy-MM-dd`
+  //  */
+  // implicit val date: Rule[String, java.util.Date] = date()
 
-  /**
-   * Rule for the `org.joda.time.DateTime` type.
-   *
-   * @param pattern a date pattern, as specified in `java.text.SimpleDateFormat`.
-   * @param corrector a simple string transformation function that can be used to transform input String before parsing. Useful when standards are not exactly respected and require a few tweaks
-   */
-  def jodaDateRule(pattern: String, corrector: String => String = identity) = Rule.fromMapping[String, org.joda.time.DateTime] { s =>
-    import scala.util.Try
+  // /**
+  //  * Rule for the `org.joda.time.DateTime` type.
+  //  *
+  //  * @param pattern a date pattern, as specified in `java.text.SimpleDateFormat`.
+  //  * @param corrector a simple string transformation function that can be used to transform input String before parsing. Useful when standards are not exactly respected and require a few tweaks
+  //  */
+  // def jodaDateRule(pattern: String, corrector: String => String = identity) = Rule.fromMapping[String, org.joda.time.DateTime] { s =>
+  //   import scala.util.Try
 
-    val df = org.joda.time.format.DateTimeFormat.forPattern(pattern)
-    Try(df.parseDateTime(corrector(s)))
-      .map(Valid.apply)
-      .getOrElse(Invalid(Seq(ValidationError("error.expected.jodadate.format", pattern))))
-  }
+  //   val df = org.joda.time.format.DateTimeFormat.forPattern(pattern)
+  //   Try(df.parseDateTime(corrector(s)))
+  //     .map(Valid.apply)
+  //     .getOrElse(Invalid(Seq(ValidationError("error.expected.jodadate.format", pattern))))
+  // }
 
-  /**
-   * default Rule for the `java.util.DateTime` type.
-   */
-  implicit def jodaTime = Rule.fromMapping[Long, org.joda.time.DateTime] { d =>
-    import org.joda.time.DateTime
-    Valid(new DateTime(d.toLong))
-  }
+  // /**
+  //  * default Rule for the `java.util.DateTime` type.
+  //  */
+  // implicit def jodaTime = Rule.fromMapping[Long, org.joda.time.DateTime] { d =>
+  //   import org.joda.time.DateTime
+  //   Valid(new DateTime(d.toLong))
+  // }
 
-  /**
-   * the default implicit JodaDate reads
-   * It uses the default date format: `yyyy-MM-dd`
-   */
-  implicit val jodaDate = jodaDateRule("yyyy-MM-dd")
+  // /**
+  //  * the default implicit JodaDate reads
+  //  * It uses the default date format: `yyyy-MM-dd`
+  //  */
+  // implicit val jodaDate = jodaDateRule("yyyy-MM-dd")
 
-  implicit def jodaLocalDateRule(pattern: String, corrector: String => String = identity) = Rule.fromMapping[String, org.joda.time.LocalDate] { s =>
-    import scala.util.Try
-    import org.joda.time.LocalDate
-    import org.joda.time.format.{DateTimeFormat, ISODateTimeFormat}
+  // implicit def jodaLocalDateRule(pattern: String, corrector: String => String = identity) = Rule.fromMapping[String, org.joda.time.LocalDate] { s =>
+  //   import scala.util.Try
+  //   import org.joda.time.LocalDate
+  //   import org.joda.time.format.{DateTimeFormat, ISODateTimeFormat}
 
-    val df = if (pattern == "") ISODateTimeFormat.localDateParser else DateTimeFormat.forPattern(pattern)
-    Try(LocalDate.parse(corrector(s), df))
-      .map(Valid.apply)
-      .getOrElse(Invalid(Seq(ValidationError("error.expected.jodadate.format", pattern))))
-  }
-  /**
-   * the default implicit Rule for `org.joda.time.LocalDate`
-   */
-  implicit val jodaLocalDate = jodaLocalDateRule("")
+  //   val df = if (pattern == "") ISODateTimeFormat.localDateParser else DateTimeFormat.forPattern(pattern)
+  //   Try(LocalDate.parse(corrector(s), df))
+  //     .map(Valid.apply)
+  //     .getOrElse(Invalid(Seq(ValidationError("error.expected.jodadate.format", pattern))))
+  // }
+  // /**
+  //  * the default implicit Rule for `org.joda.time.LocalDate`
+  //  */
+  // implicit val jodaLocalDate = jodaLocalDateRule("")
 
-  /**
-   * ISO 8601 Reads
-   */
-  val isoDate = Rule.fromMapping[String, java.util.Date] { s =>
-    import scala.util.Try
-    import org.joda.time.format.ISODateTimeFormat
-    val parser = ISODateTimeFormat.dateOptionalTimeParser()
-    Try(parser.parseDateTime(s).toDate())
-      .map(Valid.apply)
-      .getOrElse(Invalid(Seq(ValidationError("error.expected.date.isoformat"))))
-  }
+  // /**
+  //  * ISO 8601 Reads
+  //  */
+  // val isoDate = Rule.fromMapping[String, java.util.Date] { s =>
+  //   import scala.util.Try
+  //   import org.joda.time.format.ISODateTimeFormat
+  //   val parser = ISODateTimeFormat.dateOptionalTimeParser()
+  //   Try(parser.parseDateTime(s).toDate())
+  //     .map(Valid.apply)
+  //     .getOrElse(Invalid(Seq(ValidationError("error.expected.date.isoformat"))))
+  // }
 
-  /**
-   * Rule for the `java.sql.Date` type.
-   *
-   * @param pattern a date pattern, as specified in `java.text.SimpleDateFormat`.
-   * @param corrector a simple string transformation function that can be used to transform input String before parsing. Useful when standards are not exactly respected and require a few tweaks
-   */
-  def sqlDateRule(pattern: String, corrector: String => String = identity): Rule[String, java.sql.Date] =
-    date(pattern, corrector).map((d: java.util.Date) => new java.sql.Date(d.getTime))
+  // /**
+  //  * Rule for the `java.sql.Date` type.
+  //  *
+  //  * @param pattern a date pattern, as specified in `java.text.SimpleDateFormat`.
+  //  * @param corrector a simple string transformation function that can be used to transform input String before parsing. Useful when standards are not exactly respected and require a few tweaks
+  //  */
+  // def sqlDateRule(pattern: String, corrector: String => String = identity): Rule[String, java.sql.Date] =
+  //   date(pattern, corrector).map((d: java.util.Date) => new java.sql.Date(d.getTime))
 
-  /**
-   * the default implicit Rule for `java.sql.Date`
-   */
-  implicit val sqlDate = sqlDateRule("yyyy-MM-dd")
+  // /**
+  //  * the default implicit Rule for `java.sql.Date`
+  //  */
+  // implicit val sqlDate = sqlDateRule("yyyy-MM-dd")
 }
 
 /**
