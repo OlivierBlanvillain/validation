@@ -17,7 +17,6 @@ object RuleLike {
 }
 
 trait Rule[I, O] extends RuleLike[I, O] {
-
   /**
    * Compose two Rules
    * {{{

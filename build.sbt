@@ -1,6 +1,6 @@
 val home = "https://github.com/jto/validation"
 val repo = "git@github.com:jto/validation.git"
-val organization = "io.github.jto"
+val org = "io.github.jto"
 val license = ("Apache License", url("http://www.apache.org/licenses/LICENSE-2.0.txt"))
 
 val catsVersion = "0.2.0"
@@ -37,23 +37,23 @@ val commonScalacOptions = Seq(
   "-Xfuture"
 )
 
-val resolvers = Seq(
-  Resolver.sonatypeRepo("snapshots"),
-  Resolver.sonatypeRepo("releases"),
+val resolver = Seq(
+  // Resolver.sonatypeRepo("snapshots"),
   Resolver.bintrayRepo("scalaz", "releases"),
-  Resolver.typesafeRepo("releases")
+  Resolver.sonatypeRepo("releases")
+  // Resolver.typesafeRepo("releases")
 )
 
 lazy val commonSettings = Seq(
   scalaVersion := scalacVersion,
+  organization := org,
   scalacOptions ++= commonScalacOptions,
-  organization := organization,
-  resolvers ++= resolvers,
+  resolvers ++= resolver,
   parallelExecution in Test := true,
   fork in Test := true
 )
 
-lazy val validationSettings = commonSettings ++ publishSettings ++ specsDep
+lazy val validationSettings = commonSettings ++ publishSettings ++ specsDependency
 
 // lazy val commonJsSettings = Seq(
 //   scalaJSStage in Global := FastOptStage
@@ -111,6 +111,7 @@ lazy val docs = project.in(file("validation-docs"))
   .settings(validationSettings: _*)
   .settings(noPublishSettings: _*)
   .settings(crossTarget := file(".") / "documentation")
+  .settings(tutSettings: _*)
   .settings(scalacOptions -= "-Ywarn-unused-import")
   .dependsOn(core, json, json4s, form, xml, experimental)
 
@@ -143,8 +144,7 @@ lazy val generateBoilerplate = Seq(
 lazy val publishSettings = Seq(
   homepage := Some(url(home)),
   scmInfo :=  Some(ScmInfo(url(home), "scm:git:" + repo)),
-  licenses += license,
-  releaseCrossBuild := true,
+  licenses := Seq(license),
   publishMavenStyle := true,
   publishTo := {
     val nexus = "https://oss.sonatype.org/"
