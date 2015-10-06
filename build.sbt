@@ -16,49 +16,12 @@ val scalatestVersion = "3.0.0-M7"
 val scalaXmlVersion = "1.0.5"
 val shapelessVersion = "2.2.5"
 
-val commonScalacOptions = Seq(
-  "-deprecation",
-  "-encoding", "UTF-8",
-  "-feature",
-  "-language:existentials",
-  "-language:higherKinds",
-  "-language:reflectiveCalls", // Needed? TODO
-  "-language:implicitConversions",
-  "-language:experimental.macros",
-  "-unchecked",
-  "-Xfatal-warnings",
-  "-Xlint",
-  "-Yinline-warnings",
-  "-Yno-adapted-args",
-  "-Ywarn-dead-code",
-  "-Ywarn-numeric-widen",
-  "-Ywarn-value-discard",
-  "-Ywarn-unused-import",
-  "-Xfuture"
-)
-
-lazy val commonSettings = Seq(
-  scalaVersion := scalacVersion,
-  organization := org,
-  scalacOptions ++= commonScalacOptions,
-  resolvers += Resolver.sonatypeRepo("releases"),
-  parallelExecution in Test := true
-)
-
 lazy val validationSettings = commonSettings ++ publishSettings ++ coreDependencies
 
-lazy val commonJsSettings = Seq(
-  scalaJSStage in Global := FastOptStage
-)
-
-lazy val commonJvmSettings = Seq(
-  // testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF)
-)
-
 lazy val root = project.in(file("."))
-.aggregate(coreJVM, coreJS, formJVM, formJS, `validation-json`, `validation-delimited`, `validation-xml`, `validation-json4s`, `validation-experimental`)
-.settings(validationSettings: _*)
-.settings(noPublishSettings: _*)
+  .aggregate(coreJVM, coreJS, formJVM, formJS, `validation-json`, `validation-delimited`, `validation-xml`, `validation-json4s`, `validation-experimental`)
+  .settings(validationSettings: _*)
+  .settings(noPublishSettings: _*)
 
 lazy val `validation-core` = crossProject.crossType(CrossType.Pure)
   .settings(validationSettings: _*)
@@ -110,10 +73,36 @@ lazy val `validation-docs` = project
   .settings(scalacOptions -= "-Ywarn-unused-import")
   .dependsOn(coreJVM, formJVM, `validation-json`, `validation-json4s`, `validation-xml`, `validation-experimental`)
 
+val commonScalacOptions = Seq(
+  "-deprecation",
+  "-encoding", "UTF-8",
+  "-feature",
+  "-language:existentials",
+  "-language:higherKinds",
+  "-language:implicitConversions",
+  "-language:experimental.macros",
+  "-unchecked",
+  "-Xfatal-warnings",
+  "-Xlint",
+  "-Yinline-warnings",
+  "-Yno-adapted-args",
+  "-Ywarn-dead-code",
+  "-Ywarn-numeric-widen",
+  "-Ywarn-value-discard",
+  "-Ywarn-unused-import",
+  "-Xfuture"
+)
+
+lazy val commonSettings = Seq(
+  scalaVersion := scalacVersion,
+  organization := org,
+  scalacOptions ++= commonScalacOptions,
+  resolvers += Resolver.sonatypeRepo("releases"),
+  parallelExecution in Test := true
+)
+
 lazy val coreDependencies = Seq(
   libraryDependencies ++= Seq(
-    // "joda-time" % "joda-time" % jodaTimeVersion,
-    // "org.joda" % "joda-convert" % jodaConvertVersion,
     "org.spire-math" %%% "cats" % catsVersion,
     "com.chuusai" %% "shapeless" % shapelessVersion,
     "org.scalatest" %%% "scalatest" % scalatestVersion % "test"
