@@ -99,49 +99,49 @@ class WritesSpec extends WordSpec with Matchers {
         (Path \ "n" \ "o" \ "p").write[BigDecimal, JObject].writes(BigDecimal("4.8")) shouldBe(JObject("n" -> JObject("o"-> JObject("p"-> JDecimal(4.8)))))
       }
 
-      "date" in {
-        import java.util.Date
-        val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
-        val d = f.parse("1985-09-10")
-        (Path \ "n").write(date).writes(d) shouldBe(JObject("n" -> JString("1985-09-10")))
-      }
+      // "date" in {
+      //   import java.util.Date
+      //   val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
+      //   val d = f.parse("1985-09-10")
+      //   (Path \ "n").write(date).writes(d) shouldBe(JObject("n" -> JString("1985-09-10")))
+      // }
 
-      "iso date" in {
-        skipped("Can't test on CI")
-        import java.util.Date
-        val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
-        val d = f.parse("1985-09-10")
-        (Path \ "n").write(isoDate).writes(d) shouldBe(JObject("n" -> JString("1985-09-10T00:00:00+02:00")))
-      }
+      // "iso date" in {
+      //   skipped("Can't test on CI")
+      //   import java.util.Date
+      //   val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
+      //   val d = f.parse("1985-09-10")
+      //   (Path \ "n").write(isoDate).writes(d) shouldBe(JObject("n" -> JString("1985-09-10T00:00:00+02:00")))
+      // }
 
-      "joda" in {
-        import org.joda.time.DateTime
-        val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
-        val dd = f.parse("1985-09-10")
-        val jd = new DateTime(dd)
+      // "joda" in {
+      //   import org.joda.time.DateTime
+      //   val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
+      //   val dd = f.parse("1985-09-10")
+      //   val jd = new DateTime(dd)
 
-        "date" in {
-          (Path \ "n").write(jodaDate).writes(jd) shouldBe(JObject("n" -> JString("1985-09-10")))
-        }
+      //   "date" in {
+      //     (Path \ "n").write(jodaDate).writes(jd) shouldBe(JObject("n" -> JString("1985-09-10")))
+      //   }
 
-        "time" in {
-          (Path \ "n").write(jodaTime).writes(jd) shouldBe(JObject("n" -> JInt(dd.getTime)))
-        }
+      //   "time" in {
+      //     (Path \ "n").write(jodaTime).writes(jd) shouldBe(JObject("n" -> JInt(dd.getTime)))
+      //   }
 
-        "local date" in {
-          import org.joda.time.LocalDate
-          val ld = new LocalDate()
-          (Path \ "n").write(jodaLocalDate).writes(ld) shouldBe(JObject("n" -> JString(ld.toString)))
-        }
-      }
+      //   "local date" in {
+      //     import org.joda.time.LocalDate
+      //     val ld = new LocalDate()
+      //     (Path \ "n").write(jodaLocalDate).writes(ld) shouldBe(JObject("n" -> JString(ld.toString)))
+      //   }
+      // }
 
-      "sql date" in {
-        import java.util.Date
-        val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
-        val dd = f.parse("1985-09-10")
-        val ds = new java.sql.Date(dd.getTime())
-        (Path \ "n").write(sqlDate).writes(ds) shouldBe(JObject("n" -> JString("1985-09-10")))
-      }
+      // "sql date" in {
+      //   import java.util.Date
+      //   val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
+      //   val dd = f.parse("1985-09-10")
+      //   val ds = new java.sql.Date(dd.getTime())
+      //   (Path \ "n").write(sqlDate).writes(ds) shouldBe(JObject("n" -> JString("1985-09-10")))
+      // }
 
       "Boolean" in {
         (Path \ "n").write[Boolean, JObject].writes(true) shouldBe(JObject("n" -> JBool(true)))

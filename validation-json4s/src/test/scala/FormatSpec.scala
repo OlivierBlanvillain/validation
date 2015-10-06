@@ -120,81 +120,81 @@ class FormatSpec extends WordSpec with Matchers {
         Formatting[JValue, JObject] { __ => (__ \ "n").format[BigDecimal] }.validate(JObject("n" -> JDecimal(4.8))) shouldBe(Valid(BigDecimal(4.8)))
       }
 
-      "date" in {
-        import java.util.Date
-        val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
-        Formatting[JValue, JObject] { __ =>
-          (__ \ "n").format(Rules.date, Writes.date)
-        }.validate(JObject("n" -> JString("1985-09-10"))) shouldBe(Valid(f.parse("1985-09-10")))
+      // "date" in {
+      //   import java.util.Date
+      //   val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
+      //   Formatting[JValue, JObject] { __ =>
+      //     (__ \ "n").format(Rules.date, Writes.date)
+      //   }.validate(JObject("n" -> JString("1985-09-10"))) shouldBe(Valid(f.parse("1985-09-10")))
 
-        Formatting[JValue, JObject] { __ =>
-          (__ \ "n").format(Rules.date, Writes.date)
-        }.validate(JObject("n" -> JString("foo"))) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.expected.date", "yyyy-MM-dd")))))
-      }
+      //   Formatting[JValue, JObject] { __ =>
+      //     (__ \ "n").format(Rules.date, Writes.date)
+      //   }.validate(JObject("n" -> JString("foo"))) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.expected.date", "yyyy-MM-dd")))))
+      // }
 
-      "iso date" in {
-        skipped("Can't test on CI")
-        import java.util.Date
-        val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
-        Formatting[JValue, JObject] { __ =>
-          (__ \ "n").format(Rules.isoDate, Writes.isoDate)
-        }.validate(JObject("n" -> JString("1985-09-10T00:00:00+02:00"))) shouldBe(Valid(f.parse("1985-09-10")))
+      // "iso date" in {
+      //   skipped("Can't test on CI")
+      //   import java.util.Date
+      //   val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
+      //   Formatting[JValue, JObject] { __ =>
+      //     (__ \ "n").format(Rules.isoDate, Writes.isoDate)
+      //   }.validate(JObject("n" -> JString("1985-09-10T00:00:00+02:00"))) shouldBe(Valid(f.parse("1985-09-10")))
 
-        Formatting[JValue, JObject] { __ =>
-          (__ \ "n").format(Rules.isoDate, Writes.isoDate)
-        }.validate(JObject("n" -> JString("foo"))) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.expected.date.isoformat")))))
-      }
+      //   Formatting[JValue, JObject] { __ =>
+      //     (__ \ "n").format(Rules.isoDate, Writes.isoDate)
+      //   }.validate(JObject("n" -> JString("foo"))) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.expected.date.isoformat")))))
+      // }
 
-      "joda" in {
-        import org.joda.time.DateTime
-        val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
-        val dd = f.parse("1985-09-10")
-        val jd = new DateTime(dd)
+      // "joda" in {
+      //   import org.joda.time.DateTime
+      //   val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
+      //   val dd = f.parse("1985-09-10")
+      //   val jd = new DateTime(dd)
 
-        "date" in {
-          Formatting[JValue, JObject] { __ =>
-            (__ \ "n").format(Rules.jodaDate, Writes.jodaDate)
-          }.validate(JObject("n" -> JString("1985-09-10"))) shouldBe(Valid(jd))
+      //   "date" in {
+      //     Formatting[JValue, JObject] { __ =>
+      //       (__ \ "n").format(Rules.jodaDate, Writes.jodaDate)
+      //     }.validate(JObject("n" -> JString("1985-09-10"))) shouldBe(Valid(jd))
 
-          Formatting[JValue, JObject] { __ =>
-            (__ \ "n").format(Rules.jodaDate, Writes.jodaDate)
-          }.validate(JObject("n" -> JString("foo"))) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.expected.jodadate.format", "yyyy-MM-dd")))))
-        }
+      //     Formatting[JValue, JObject] { __ =>
+      //       (__ \ "n").format(Rules.jodaDate, Writes.jodaDate)
+      //     }.validate(JObject("n" -> JString("foo"))) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.expected.jodadate.format", "yyyy-MM-dd")))))
+      //   }
 
-        "time" in {
-          Formatting[JValue, JObject] { __ =>
-            (__ \ "n").format(Rules.jodaTime, Writes.jodaTime)
-          }.validate(JObject("n" -> JInt(dd.getTime))) shouldBe(Valid(jd))
+      //   "time" in {
+      //     Formatting[JValue, JObject] { __ =>
+      //       (__ \ "n").format(Rules.jodaTime, Writes.jodaTime)
+      //     }.validate(JObject("n" -> JInt(dd.getTime))) shouldBe(Valid(jd))
 
-          Formatting[JValue, JObject] { __ =>
-            (__ \ "n").format(Rules.jodaDate, Writes.jodaTime)
-          }.validate(JObject("n" -> JString("foo"))) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.expected.jodadate.format", "yyyy-MM-dd")))))
-        }
+      //     Formatting[JValue, JObject] { __ =>
+      //       (__ \ "n").format(Rules.jodaDate, Writes.jodaTime)
+      //     }.validate(JObject("n" -> JString("foo"))) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.expected.jodadate.format", "yyyy-MM-dd")))))
+      //   }
 
-        "local date" in {
-          import org.joda.time.LocalDate
-          val ld = new LocalDate()
+      //   "local date" in {
+      //     import org.joda.time.LocalDate
+      //     val ld = new LocalDate()
 
-          Formatting[JValue, JObject] { __ =>
-            (__ \ "n").format(Rules.jodaLocalDate, Writes.jodaLocalDate)
-          }.validate(JObject("n" -> JString(ld.toString()))) shouldBe(Valid(ld))
+      //     Formatting[JValue, JObject] { __ =>
+      //       (__ \ "n").format(Rules.jodaLocalDate, Writes.jodaLocalDate)
+      //     }.validate(JObject("n" -> JString(ld.toString()))) shouldBe(Valid(ld))
 
-          Formatting[JValue, JObject] { __ =>
-            (__ \ "n").format(Rules.jodaLocalDate, Writes.jodaLocalDate)
-          }.validate(JObject("n" -> JString("foo"))) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.expected.jodadate.format", "")))))
-        }
-      }
+      //     Formatting[JValue, JObject] { __ =>
+      //       (__ \ "n").format(Rules.jodaLocalDate, Writes.jodaLocalDate)
+      //     }.validate(JObject("n" -> JString("foo"))) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.expected.jodadate.format", "")))))
+      //   }
+      // }
 
-      "sql date" in {
-        import java.util.Date
-        val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
-        val dd = f.parse("1985-09-10")
-        val ds = new java.sql.Date(dd.getTime())
+      // "sql date" in {
+      //   import java.util.Date
+      //   val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
+      //   val dd = f.parse("1985-09-10")
+      //   val ds = new java.sql.Date(dd.getTime())
 
-        Formatting[JValue, JObject] { __ =>
-          (__ \ "n").format(Rules.sqlDate, Writes.sqlDate)
-        }.validate(JObject("n" -> JString("1985-09-10"))) shouldBe(Valid(ds))
-      }
+      //   Formatting[JValue, JObject] { __ =>
+      //     (__ \ "n").format(Rules.sqlDate, Writes.sqlDate)
+      //   }.validate(JObject("n" -> JString("1985-09-10"))) shouldBe(Valid(ds))
+      // }
 
       "Boolean" in {
         Formatting[JValue, JObject] { __ => (__ \ "n").format[Boolean] }.validate(JObject("n" -> JBool(true))) shouldBe(Valid(true))

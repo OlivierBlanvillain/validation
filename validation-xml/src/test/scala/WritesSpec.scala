@@ -3,8 +3,8 @@ import jto.validation.xml._
 import jto.validation.xml.Writes._
 import java.text.NumberFormat
 import java.util.{Date, Locale}
-import org.joda.time.{DateTime, LocalDate}
 import org.scalatest._
+import scala.language.postfixOps
 
 class WritesSpec extends WordSpec with Matchers {
 
@@ -63,7 +63,7 @@ class WritesSpec extends WordSpec with Matchers {
       w.writes(s)(<root></root>) shouldBe <root><a>1</a><a>2</a><a>3</a></root>
     }
 
-    "support primitive types" in {
+    "support primitive types" when {
 
       "Int" in {
         Path.write[Int, XmlWriter].writes(4)(<a></a>) shouldBe(<a>4</a>)
@@ -101,33 +101,33 @@ class WritesSpec extends WordSpec with Matchers {
         (Path \ "n" \ "o" \ "p").write[BigDecimal, XmlWriter].writes(BigDecimal("4.0"))(<a></a>) shouldBe(<a><n><o><p>4.0</p></o></n></a>)
       }
 
-      "date" in {
-        val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
-        val d = f.parse("1985-09-10")
-        Path.write(date).writes(d)(<a></a>) shouldBe(<a>1985-09-10</a>)
-      }
+      // "date" in {
+      //   val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
+      //   val d = f.parse("1985-09-10")
+      //   Path.write(date).writes(d)(<a></a>) shouldBe(<a>1985-09-10</a>)
+      // }
 
-      "joda" in {
-        val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
-        val dd = f.parse("1985-09-10")
-        val jd = new DateTime(dd)
+      // "joda" in {
+      //   val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
+      //   val dd = f.parse("1985-09-10")
+      //   val jd = new DateTime(dd)
 
-        "date" in {
-          Path.write(jodaDate).writes(jd)(<a></a>) shouldBe(<a>1985-09-10</a>)
-        }
+      //   "date" in {
+      //     Path.write(jodaDate).writes(jd)(<a></a>) shouldBe(<a>1985-09-10</a>)
+      //   }
 
-        "local date" in {
-          val ld = new LocalDate()
-          Path.write(jodaLocalDate).writes(ld)(<a></a>) shouldBe(<a>{ld.toString}</a>)
-        }
-      }
+      //   "local date" in {
+      //     val ld = new LocalDate()
+      //     Path.write(jodaLocalDate).writes(ld)(<a></a>) shouldBe(<a>{ld.toString}</a>)
+      //   }
+      // }
 
-      "sql date" in {
-        val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
-        val dd = f.parse("1985-09-10")
-        val ds = new java.sql.Date(dd.getTime())
-        Path.write(sqlDate).writes(ds)(<a></a>) shouldBe(<a>1985-09-10</a>)
-      }
+      // "sql date" in {
+      //   val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
+      //   val dd = f.parse("1985-09-10")
+      //   val ds = new java.sql.Date(dd.getTime())
+      //   Path.write(sqlDate).writes(ds)(<a></a>) shouldBe(<a>1985-09-10</a>)
+      // }
 
       "Boolean" in {
         (Path \ "n").write[Boolean, XmlWriter].writes(true)(<a></a>) shouldBe(<a><n>true</n></a>)

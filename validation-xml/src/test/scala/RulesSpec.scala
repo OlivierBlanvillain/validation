@@ -3,9 +3,9 @@ import jto.validation.xml._
 import jto.validation.xml.Rules._
 import java.math.{BigDecimal => jBigDecimal}
 import java.util.Date
-import org.joda.time.{LocalDate, DateTime}
 import org.scalatest._
 import scala.xml.Node
+import scala.language.postfixOps
 
 class RulesSpec extends WordSpec with Matchers {
 
@@ -40,7 +40,7 @@ class RulesSpec extends WordSpec with Matchers {
       </person>
 
     "extract data" in {
-      (Path \ "firstname").read[Node, String].validate(valid) == Valid("Julien")
+      (Path \ "firstname").read[Node, String].validate(valid) shouldBe Valid("Julien")
       val errPath = Path \ "foo"
       val error = Invalid(Seq(errPath -> Seq(ValidationError("error.required"))))
       errPath.read[Node, String].validate(invalid) shouldBe(error)
@@ -48,116 +48,116 @@ class RulesSpec extends WordSpec with Matchers {
 
     "support attribute checked" in {
       val xml = <item checked="true">Item 1</item>
-      attributeR[Boolean]("checked").validate(xml) == Valid(true)
-      attributeR[Boolean]("checked").validate(<empty></empty>) == Invalid(Seq(Path -> Seq(ValidationError("error.required"))))
+      attributeR[Boolean]("checked").validate(xml) shouldBe Valid(true)
+      attributeR[Boolean]("checked").validate(<empty></empty>) shouldBe Invalid(Seq(Path -> Seq(ValidationError("error.required"))))
     }
 
-    "support primitive types" in {
+    "support primitive types" when {
 
       "Int" in {
-        Path.read[Node, Int].validate(<a>4</a>) == Valid(4)
-        attributeR[Int]("attr").validate(<a attr="4"></a>) == Valid(4)
-        Path.read[Node, Int].validate(<a>no</a>) == Invalid(Seq(Path -> Seq(ValidationError("error.number", "Int"))))
-        Path.read[Node, Int].validate(<a>4.8</a>) == Invalid(Seq(Path -> Seq(ValidationError("error.number", "Int"))))
-        (Path \ "b").read[Node, Int].validate(<a><b>4</b></a>) == Valid(4)
-        (Path \ "b").from[Node](attributeR[Int]("attr")).validate(<a><b attr="4"></b></a>) == Valid(4)
+        Path.read[Node, Int].validate(<a>4</a>) shouldBe Valid(4)
+        attributeR[Int]("attr").validate(<a attr="4"></a>) shouldBe Valid(4)
+        Path.read[Node, Int].validate(<a>no</a>) shouldBe Invalid(Seq(Path -> Seq(ValidationError("error.number", "Int"))))
+        Path.read[Node, Int].validate(<a>4.8</a>) shouldBe Invalid(Seq(Path -> Seq(ValidationError("error.number", "Int"))))
+        (Path \ "b").read[Node, Int].validate(<a><b>4</b></a>) shouldBe Valid(4)
+        (Path \ "b").from[Node](attributeR[Int]("attr")).validate(<a><b attr="4"></b></a>) shouldBe Valid(4)
         (Path \ "b").from[Node](attributeR[Int]("attr")).validate(<a><b attr="a"></b></a>) ==
           Invalid(Seq(Path \ "b" -> Seq(ValidationError("error.number", "Int"))))
 
         val errPath = Path \ "foo"
         val error = Invalid(Seq(errPath -> Seq(ValidationError("error.required"))))
-        errPath.read[Node, Int].validate(<a>4</a>) == error
+        errPath.read[Node, Int].validate(<a>4</a>) shouldBe error
       }
 
       "Short" in {
-        Path.read[Node, Short].validate(<a>4</a>) == Valid(4)
-        attributeR[Short]("attr").validate(<a attr="4"></a>) == Valid(4)
-        Path.read[Node, Short].validate(<a>4.8</a>) == Invalid(Seq(Path -> Seq(ValidationError("error.number", "Short"))))
-        Path.read[Node, Short].validate(<a>no</a>) == Invalid(Seq(Path -> Seq(ValidationError("error.number", "Short"))))
+        Path.read[Node, Short].validate(<a>4</a>) shouldBe Valid(4)
+        attributeR[Short]("attr").validate(<a attr="4"></a>) shouldBe Valid(4)
+        Path.read[Node, Short].validate(<a>4.8</a>) shouldBe Invalid(Seq(Path -> Seq(ValidationError("error.number", "Short"))))
+        Path.read[Node, Short].validate(<a>no</a>) shouldBe Invalid(Seq(Path -> Seq(ValidationError("error.number", "Short"))))
       }
 
       "Long" in {
-        Path.read[Node, Long].validate(<a>4</a>) == Valid(4)
-        attributeR[Long]("attr").validate(<a attr="4"></a>) == Valid(4)
-        Path.read[Node, Long].validate(<a>4.8</a>) == Invalid(Seq(Path -> Seq(ValidationError("error.number", "Long"))))
-        Path.read[Node, Long].validate(<a>no</a>) == Invalid(Seq(Path -> Seq(ValidationError("error.number", "Long"))))
+        Path.read[Node, Long].validate(<a>4</a>) shouldBe Valid(4)
+        attributeR[Long]("attr").validate(<a attr="4"></a>) shouldBe Valid(4)
+        Path.read[Node, Long].validate(<a>4.8</a>) shouldBe Invalid(Seq(Path -> Seq(ValidationError("error.number", "Long"))))
+        Path.read[Node, Long].validate(<a>no</a>) shouldBe Invalid(Seq(Path -> Seq(ValidationError("error.number", "Long"))))
       }
 
       "Float" in {
-        Path.read[Node, Float].validate(<a>4</a>) == Valid(4F)
-        attributeR[Float]("attr").validate(<a attr="4"></a>) == Valid(4F)
-        Path.read[Node, Float].validate(<a>4.8</a>) == Valid(4.8F)
-        Path.read[Node, Float].validate(<a>no</a>) == Invalid(Seq(Path -> Seq(ValidationError("error.number", "Float"))))
+        Path.read[Node, Float].validate(<a>4</a>) shouldBe Valid(4F)
+        attributeR[Float]("attr").validate(<a attr="4"></a>) shouldBe Valid(4F)
+        Path.read[Node, Float].validate(<a>4.8</a>) shouldBe Valid(4.8F)
+        Path.read[Node, Float].validate(<a>no</a>) shouldBe Invalid(Seq(Path -> Seq(ValidationError("error.number", "Float"))))
       }
 
-      "Float" in {
-        Path.read[Node, Double].validate(<a>4</a>) == Valid(4D)
-        attributeR[Double]("attr").validate(<a attr="4"></a>) == Valid(4D)
-        Path.read[Node, Double].validate(<a>4.8</a>) == Valid(4.8D)
-        Path.read[Node, Double].validate(<a>no</a>) == Invalid(Seq(Path -> Seq(ValidationError("error.number", "Double"))))
+      "Double" in {
+        Path.read[Node, Double].validate(<a>4</a>) shouldBe Valid(4D)
+        attributeR[Double]("attr").validate(<a attr="4"></a>) shouldBe Valid(4D)
+        Path.read[Node, Double].validate(<a>4.8</a>) shouldBe Valid(4.8D)
+        Path.read[Node, Double].validate(<a>no</a>) shouldBe Invalid(Seq(Path -> Seq(ValidationError("error.number", "Double"))))
       }
 
       "java BigDecimal" in {
-        Path.read[Node, jBigDecimal].validate(<a>4</a>) == Valid(new jBigDecimal("4"))
-        attributeR[jBigDecimal]("attr").validate(<a attr="4"></a>) == Valid(new jBigDecimal("4"))
-        Path.read[Node, jBigDecimal].validate(<a>no</a>) == Invalid(Seq(Path -> Seq(ValidationError("error.number", "BigDecimal"))))
+        Path.read[Node, jBigDecimal].validate(<a>4</a>) shouldBe Valid(new jBigDecimal("4"))
+        attributeR[jBigDecimal]("attr").validate(<a attr="4"></a>) shouldBe Valid(new jBigDecimal("4"))
+        Path.read[Node, jBigDecimal].validate(<a>no</a>) shouldBe Invalid(Seq(Path -> Seq(ValidationError("error.number", "BigDecimal"))))
       }
 
       "scala BigDecimal" in {
-        Path.read[Node, BigDecimal].validate(<a>4</a>) == Valid(BigDecimal("4"))
-        attributeR[BigDecimal]("attr").validate(<a attr="4"></a>) == Valid(BigDecimal("4"))
-        Path.read[Node, BigDecimal].validate(<a>no</a>) == Invalid(Seq(Path -> Seq(ValidationError("error.number", "BigDecimal"))))
+        Path.read[Node, BigDecimal].validate(<a>4</a>) shouldBe Valid(BigDecimal("4"))
+        attributeR[BigDecimal]("attr").validate(<a attr="4"></a>) shouldBe Valid(BigDecimal("4"))
+        Path.read[Node, BigDecimal].validate(<a>no</a>) shouldBe Invalid(Seq(Path -> Seq(ValidationError("error.number", "BigDecimal"))))
       }
 
-      "date" in {
-        val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
-        Path.from[Node](Rules.date).validate(<a>1985-09-10</a>) shouldBe(Valid(f.parse("1985-09-10")))
-        Path.from[Node](Rules.date).validate(<a>foo</a>) shouldBe(Invalid(Seq(Path -> Seq(ValidationError("error.expected.date", "yyyy-MM-dd")))))
-      }
+      // "date" in {
+      //   val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
+      //   Path.from[Node](Rules.date).validate(<a>1985-09-10</a>) shouldBe(Valid(f.parse("1985-09-10")))
+      //   Path.from[Node](Rules.date).validate(<a>foo</a>) shouldBe(Invalid(Seq(Path -> Seq(ValidationError("error.expected.date", "yyyy-MM-dd")))))
+      // }
 
-      "joda" in {
-        val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
-        val dd = f.parse("1985-09-10")
-        val jd = new DateTime(dd)
+      // "joda" in {
+      //   val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
+      //   val dd = f.parse("1985-09-10")
+      //   val jd = new DateTime(dd)
 
-        "date" in {
-          Path.from[Node](Rules.jodaDate).validate(<a>1985-09-10</a>) shouldBe(Valid(jd))
-          Path.from[Node](Rules.jodaDate).validate(<a>foo</a>) shouldBe(Invalid(Seq(Path -> Seq(ValidationError("error.expected.jodadate.format", "yyyy-MM-dd")))))
-        }
+      //   "date" in {
+      //     Path.from[Node](Rules.jodaDate).validate(<a>1985-09-10</a>) shouldBe(Valid(jd))
+      //     Path.from[Node](Rules.jodaDate).validate(<a>foo</a>) shouldBe(Invalid(Seq(Path -> Seq(ValidationError("error.expected.jodadate.format", "yyyy-MM-dd")))))
+      //   }
 
-        "time" in {
-          Path.from[Node](Rules.jodaTime).validate(<a>{dd.getTime}</a>) shouldBe(Valid(jd))
-          Path.from[Node](Rules.jodaDate).validate(<a>foo</a>) shouldBe(Invalid(Seq(Path -> Seq(ValidationError("error.expected.jodadate.format", "yyyy-MM-dd")))))
-        }
+      //   "time" in {
+      //     Path.from[Node](Rules.jodaTime).validate(<a>{dd.getTime}</a>) shouldBe(Valid(jd))
+      //     Path.from[Node](Rules.jodaDate).validate(<a>foo</a>) shouldBe(Invalid(Seq(Path -> Seq(ValidationError("error.expected.jodadate.format", "yyyy-MM-dd")))))
+      //   }
 
-        "local date" in {
-          val ld = new LocalDate()
-          Path.from[Node](Rules.jodaLocalDate).validate(<a>{ld.toString}</a>) shouldBe(Valid(ld))
-          Path.from[Node](Rules.jodaLocalDate).validate(<a>foo</a>) shouldBe(Invalid(Seq(Path -> Seq(ValidationError("error.expected.jodadate.format", "")))))
-        }
-      }
+      //   "local date" in {
+      //     val ld = new LocalDate()
+      //     Path.from[Node](Rules.jodaLocalDate).validate(<a>{ld.toString}</a>) shouldBe(Valid(ld))
+      //     Path.from[Node](Rules.jodaLocalDate).validate(<a>foo</a>) shouldBe(Invalid(Seq(Path -> Seq(ValidationError("error.expected.jodadate.format", "")))))
+      //   }
+      // }
 
-      "sql date" in {
-        val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
-        val dd = f.parse("1985-09-10")
-        val ds = new java.sql.Date(dd.getTime())
-        Path.from[Node](Rules.sqlDate).validate(<a>1985-09-10</a>) shouldBe(Valid(ds))
-      }
+      // "sql date" in {
+      //   val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
+      //   val dd = f.parse("1985-09-10")
+      //   val ds = new java.sql.Date(dd.getTime())
+      //   Path.from[Node](Rules.sqlDate).validate(<a>1985-09-10</a>) shouldBe(Valid(ds))
+      // }
 
       "Boolean" in {
-        Path.read[Node, Boolean].validate(<a>true</a>) == Valid(true)
-        attributeR[Boolean]("attr").validate(<a attr="true"></a>) == Valid(true)
-        Path.read[Node, Boolean].validate(<a>no</a>) == Invalid(Seq(Path -> Seq(ValidationError("error.invalid", "Boolean"))))
+        Path.read[Node, Boolean].validate(<a>true</a>) shouldBe Valid(true)
+        attributeR[Boolean]("attr").validate(<a attr="true"></a>) shouldBe Valid(true)
+        Path.read[Node, Boolean].validate(<a>no</a>) shouldBe Invalid(Seq(Path -> Seq(ValidationError("error.invalid", "Boolean"))))
       }
 
       "String" in {
-        Path.read[Node, String].validate(<a>foo</a>) == Valid("foo")
-        attributeR[String]("attr").validate(<a attr="foo"></a>) == Valid("foo")
-        Path.read[Node, Boolean].validate(<a><b>foo</b></a>) == Invalid(Seq(Path -> Seq(ValidationError("error.invalid", "a non-leaf node can not be validated to String"))))
+        Path.read[Node, String].validate(<a>foo</a>) shouldBe Valid("foo")
+        attributeR[String]("attr").validate(<a attr="foo"></a>) shouldBe Valid("foo")
+        Path.read[Node, Boolean].validate(<a><b>foo</b></a>) shouldBe Invalid(Seq(Path -> Seq(ValidationError("error.invalid", "a non-leaf node can not be validated to String"))))
       }
 
       "Node" in {
-        (Path \ "b").read[Node, Node].validate(<a><b>foo</b></a>) == Valid(<b>foo</b>)
+        (Path \ "b").read[Node, Node].validate(<a><b>foo</b></a>) shouldBe Valid(<b>foo</b>)
       }
 
       "Option" in {
@@ -167,10 +167,10 @@ class RulesSpec extends WordSpec with Matchers {
       }
 
       "Seq" in {
-        Path.read[Node, Seq[String]].validate(<a><b>foo</b></a>).toOption.get shouldBe(Seq("foo"): _*))
-        Path.read[Node, Seq[Int]].validate(<a><b>1</b><b>2</b></a>).toOption.get shouldBe(Seq(1, 2): _*))
-        Path.read[Node, Seq[String]].validate(<a></a>).toOption.get  shouldBe(Seq.empty[String]: _*))
-        Path.read[Node, Seq[String]].validate(<a>1</a>).toOption.get  shouldBe(Seq.empty[String]: _*))
+        Path.read[Node, Seq[String]].validate(<a><b>foo</b></a>).toOption.get shouldBe(Seq("foo"))
+        Path.read[Node, Seq[Int]].validate(<a><b>1</b><b>2</b></a>).toOption.get shouldBe(Seq(1, 2))
+        Path.read[Node, Seq[String]].validate(<a></a>).toOption.get shouldBe(Seq.empty[String])
+        Path.read[Node, Seq[String]].validate(<a>1</a>).toOption.get shouldBe(Seq.empty[String])
         Path.read[Node, Seq[Int]].validate(<a><b>1</b><b>foo</b></a>) shouldBe(Invalid(Seq(Path \ 1 -> Seq(ValidationError("error.number", "Int")))))
       }
 
@@ -192,12 +192,12 @@ class RulesSpec extends WordSpec with Matchers {
             tupled
           )
         }
-        reads.validate(valid) == Valid((Some("Julien"), Some(27), None, None))
+        reads.validate(valid) shouldBe Valid((Some("Julien"), Some(27), None, None))
 
         val readsInvalid = From[Node] { __ =>
           (__ \ "foo").read(optAttributeR[String]("foo"))
         }
-        readsInvalid.validate(valid) == Invalid(Seq(Path \ "foo" -> Seq(ValidationError("error.required"))))
+        readsInvalid.validate(valid) shouldBe Invalid(Seq(Path \ "foo" -> Seq(ValidationError("error.required"))))
       }
 
       "validate deep" in {
@@ -244,12 +244,12 @@ class RulesSpec extends WordSpec with Matchers {
 
       "lift validations to seq validations" in {
         Path.from[Node](seqR(notEmpty)).validate(<a><b>foo</b><b>bar</b></a>)
-          .toOption.get shouldBe(Seq("foo", "bar"): _*))
+          .toOption.get shouldBe(Seq("foo", "bar"))
 
         From[Node]{ __ =>
           (__ \ "b").read(seqR(notEmpty))
         }.validate(<a><b><c>foo</c><c>bar</c></b></a>)
-          .toOption.get shouldBe(Seq("foo", "bar"): _*))
+          .toOption.get shouldBe(Seq("foo", "bar"))
 
         Path.from[Node](seqR(notEmpty))
           .validate(<a><b>foo</b><b></b></a>) shouldBe(Invalid(Seq(Path \ 1 -> Seq(ValidationError("error.required")))))
@@ -339,15 +339,15 @@ class RulesSpec extends WordSpec with Matchers {
       "perform complex validation" in {
 
         case class Contact(
-                            firstname: String,
-                            lastname: String,
-                            company: Option[String],
-                            informations: ContactInformation)
+          firstname: String,
+          lastname: String,
+          company: Option[String],
+          informations: ContactInformation)
 
         case class ContactInformation(
-                                       label: String,
-                                       email: Option[String],
-                                       phones: Seq[String])
+          label: String,
+          email: Option[String],
+          phones: Seq[String])
 
         val infoValidated = From[Node] { __ =>
           (
@@ -484,7 +484,7 @@ class RulesSpec extends WordSpec with Matchers {
             <prop name="job" value="software engineer" type="fulltime"></prop>
           </entity>
 
-        reads.validate(invalidXml) == Invalid(Seq((Path, Seq(ValidationError("error.required", "child with attribute name = age not found")))))
+        reads.validate(invalidXml) shouldBe Invalid(Seq((Path, Seq(ValidationError("error.required", "child with attribute name = age not found")))))
       }
 
     }
