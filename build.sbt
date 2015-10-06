@@ -15,7 +15,6 @@ val scalacVersion = "2.11.7"
 val scalatestVersion = "3.0.0-M7"
 val scalaXmlVersion = "1.0.5"
 val shapelessVersion = "2.2.5"
-// val specs2Version = "2.4.9"
 
 val commonScalacOptions = Seq(
   "-deprecation",
@@ -38,20 +37,15 @@ val commonScalacOptions = Seq(
   "-Xfuture"
 )
 
-val resolver = Seq(
-  // Resolver.bintrayRepo("scalaz", "releases"),
-  Resolver.sonatypeRepo("releases")
-)
-
 lazy val commonSettings = Seq(
   scalaVersion := scalacVersion,
   organization := org,
   scalacOptions ++= commonScalacOptions,
-  resolvers ++= resolver,
+  resolvers += Resolver.sonatypeRepo("releases"),
   parallelExecution in Test := true
 )
 
-lazy val validationSettings = commonSettings ++ publishSettings ++ coreDependencies // ++  specsDependency
+lazy val validationSettings = commonSettings ++ publishSettings ++ coreDependencies
 
 lazy val commonJsSettings = Seq(
   scalaJSStage in Global := FastOptStage

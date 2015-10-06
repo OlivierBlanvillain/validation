@@ -1,7 +1,7 @@
 import jto.validation._
 import org.scalatest._
 
-object ExperimentalSpec extends WordSpec with Matchers {
+class ExperimentalSpec extends WordSpec with Matchers {
 
   object R extends GenericRules
   import R._
