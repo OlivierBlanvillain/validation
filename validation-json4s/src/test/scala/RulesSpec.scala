@@ -1,9 +1,9 @@
 import jto.validation._
 import jto.validation.json4s._
-import org.specs2.mutable._
+import org.scalatest._
 import org.json4s._
 
-object RulesSpec extends Specification {
+class RulesSpec extends WordSpec with Matchers {
 
   "Json Rules" should {
 
@@ -42,7 +42,7 @@ object RulesSpec extends Specification {
       p.from[JValue](checked).validate(JObject("issmth" -> JBool(false))) shouldBe(Invalid(Seq(Path \ "issmth" -> Seq(ValidationError("error.equals", true)))))
     }
 
-    "support all types of Json values" in {
+    "support all types of Json values" when {
 
       "null" in {
         (Path \ "n").read[JValue, JNull.type].validate(JObject("n" -> JNull)) shouldBe(Valid(JNull))
@@ -327,7 +327,7 @@ object RulesSpec extends Specification {
       rule.validate(i2).shouldBe(Invalid(Seq(Path \ "verify" -> Seq(ValidationError("error.equals", "s3cr3t")))))
     }
 
-    "validate subclasses (and parse the concrete class)" in {
+    "validate subclasses (and parse the concrete class)" when {
 
       trait A
       case class B(foo: Int) extends A
@@ -425,7 +425,7 @@ object RulesSpec extends Specification {
         (Path \ "informations" \ 0 \ "label") -> Seq(ValidationError("error.required")))))
     }
 
-    "read recursive" in {
+    "read recursive" when {
       case class RecUser(name: String, friends: Seq[RecUser] = Nil)
       val u = RecUser(
         "bob",

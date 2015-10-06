@@ -1,9 +1,9 @@
 import jto.validation._
 import jto.validation.json4s._
-import org.specs2.mutable._
+import org.scalatest._
 import org.json4s._
 
-object MacroSpec extends Specification {
+class MacroSpec extends WordSpec with Matchers {
 
   case class User(age: Int, name: String)
   case class Dog(name: String, master: User)
@@ -262,7 +262,6 @@ object MacroSpec extends Specification {
     "fail if missing " in {
       import Rules._
       implicit val userReads = Rule.gen[JValue, UserFail]
-      success
     }
     */
 
@@ -281,7 +280,6 @@ object MacroSpec extends Specification {
     "test inception with overriden object" in {
       import Rules._
       implicit val programFormat = Rule.gen[JValue, Program]
-      success
     }
 
     "test case class 1 field" in {

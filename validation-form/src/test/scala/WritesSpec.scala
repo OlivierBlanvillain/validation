@@ -301,21 +301,21 @@ class WritesSpec extends WordSpec with Matchers {
     }
   }
 
-  "support write of value class" in {
-    import TestValueClass._
+  // "support write of value class" in {
+  //   import TestValueClass._
 
-    val w = To[UrlFormEncoded] { __ =>
-      (__ \ "id").write[Id]
-    }
+  //   val w = To[UrlFormEncoded] { __ =>
+  //     (__ \ "id").write[Id]
+  //   }
 
-    w.writes(Id("1")) shouldBe Map("id" -> Seq("1"))
-  }
+  //   w.writes(Id("1")) shouldBe Map("id" -> Seq("1"))
+  // }
 }
 
-object TestValueClass {
-  case class Id(value: String) extends AnyVal
-  object Id {
-    implicit val writes: Write[Id, String] = Write(id => id.value)
-  }
-}
+// object TestValueClass {
+//   case class Id(value: String) extends AnyVal
+//   object Id {
+//     implicit val writes: Write[Id, String] = Write(id => id.value)
+//   }
+// }
 

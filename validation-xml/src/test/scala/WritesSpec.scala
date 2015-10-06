@@ -4,9 +4,9 @@ import jto.validation.xml.Writes._
 import java.text.NumberFormat
 import java.util.{Date, Locale}
 import org.joda.time.{DateTime, LocalDate}
-import org.specs2.mutable._
+import org.scalatest._
 
-class WritesSpec extends Specification {
+class WritesSpec extends WordSpec with Matchers {
 
   case class Contact(
     firstname: String,
@@ -201,7 +201,7 @@ class WritesSpec extends Specification {
       w.writes(None -> Nil)(<a></a>) shouldBe <a><phones></phones></a>
     }
 
-    "write recursive" in {
+    "write recursive" when {
       case class RecUser(name: String, friends: Seq[RecUser] = Nil)
       val u = RecUser(
         "bob",

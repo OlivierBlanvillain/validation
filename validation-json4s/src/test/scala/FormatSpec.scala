@@ -1,9 +1,9 @@
 import jto.validation._
 import jto.validation.json4s._
-import org.specs2.mutable._
+import org.scalatest._
 import org.json4s._
 
-object FormatSpec extends Specification {
+class FormatSpec extends WordSpec with Matchers {
   case class User(id: Long, name: String)
   val luigi = User(1, "Luigi")
 
@@ -64,7 +64,7 @@ object FormatSpec extends Specification {
       userF.validate(m) shouldBe(Valid(luigi))
     }
 
-    "support primitives types" in {
+    "support primitives types" when {
       import Rules._
       import Writes._
 
@@ -292,7 +292,7 @@ object FormatSpec extends Specification {
       Formatting[JValue, JObject] { __ => (__ \ "foobar").format(isNotEmpty[Seq[Int]]) }.validate(valid) shouldBe(Invalid(Seq(Path \ "foobar" -> Seq(ValidationError("error.notEmpty")))))
     }
 
-    "format recursive" in {
+    "format recursive" when {
       case class RecUser(name: String, friends: Seq[RecUser] = Nil)
       val u = RecUser(
         "bob",

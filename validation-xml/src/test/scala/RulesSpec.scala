@@ -4,10 +4,10 @@ import jto.validation.xml.Rules._
 import java.math.{BigDecimal => jBigDecimal}
 import java.util.Date
 import org.joda.time.{LocalDate, DateTime}
-import org.specs2.mutable._
+import org.scalatest._
 import scala.xml.Node
 
-object RulesSpec extends Specification {
+class RulesSpec extends WordSpec with Matchers {
 
   "Xml rules" should {
 
@@ -291,7 +291,7 @@ object RulesSpec extends Specification {
         rule.validate(i2).shouldBe(Invalid(Seq(Path \ "verify" -> Seq(ValidationError("error.equals", "s3cr3t")))))
       }
 
-      "validate subclasses (and parse the concrete class)" in {
+      "validate subclasses (and parse the concrete class)" when {
 
         trait A
         case class B(foo: Int) extends A
@@ -374,7 +374,7 @@ object RulesSpec extends Specification {
           Seq(ValidationError("error.email")))))
       }
 
-      "read recursive" in {
+      "read recursive" when {
         case class RecUser(name: String, friends: Seq[RecUser] = Nil)
         val u = RecUser(
           "bob",

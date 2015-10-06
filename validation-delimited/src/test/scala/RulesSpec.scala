@@ -2,9 +2,9 @@ import jto.validation._
 import jto.validation.delimited._
 import jto.validation.delimited.Rules._
 import org.joda.time.LocalDate
-import org.specs2.mutable._
+import org.scalatest._
 
-class RulesSpec extends Specification {
+class RulesSpec extends WordSpec with Matchers {
   "Rules" should {
     "demonstrate typical usage" in {
       case class Contact(name: String, email: String, birthday: Option[LocalDate])

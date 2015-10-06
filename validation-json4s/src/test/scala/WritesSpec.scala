@@ -1,9 +1,9 @@
 import jto.validation._
 import jto.validation.json4s.Writes._
-import org.specs2.mutable._
+import org.scalatest._
 import org.json4s._
 
-class WritesSpec extends Specification {
+class WritesSpec extends WordSpec with Matchers {
 
   case class Contact(
     firstname: String,
@@ -54,7 +54,7 @@ class WritesSpec extends Specification {
       w.writes(Nil) shouldBe JObject("phones" -> JArray(Nil))
     }
 
-    "support primitives types" in {
+    "support primitives types" when {
 
       "Int" in {
         (Path \ "n").write[Int, JObject].writes(4) shouldBe(JObject("n" -> JInt(4)))
@@ -265,7 +265,7 @@ class WritesSpec extends Specification {
       contactWrite.writes(contact) shouldBe contactJson
     }
 
-    "write recursive" in {
+    "write recursive" when {
       case class RecUser(name: String, friends: List[RecUser] = Nil)
       val u = RecUser(
         "bob",

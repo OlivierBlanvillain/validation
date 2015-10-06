@@ -279,7 +279,6 @@ class MacroSpec extends WordSpec with Matchers {
     "fail if missing " in {
       import Rules._
       implicit val userReads = Rule.gen[UrlFormEncoded, UserFail]
-      success
     }*/
 
     "test 21 fields" when {
