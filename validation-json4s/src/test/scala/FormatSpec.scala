@@ -8,11 +8,6 @@ object FormatSpec extends Specification {
   val luigi = User(1, "Luigi")
 
   "Format" should {
-
-
-
-
-
     "serialize and deserialize primitives" in {
       import Rules._
       import Writes._

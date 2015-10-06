@@ -62,9 +62,9 @@ lazy val commonJvmSettings = Seq(
 )
 
 lazy val root = project.in(file("."))
-  .aggregate(coreJVM, json, formJVM, delimited, xml, json4s, experimental)
-  .settings(validationSettings: _*)
-  .settings(noPublishSettings: _*)
+.aggregate(coreJVM, coreJS, formJVM, formJS, `validation-json`, `validation-delimited`, `validation-xml`, `validation-json4s`, `validation-experimental`)
+.settings(validationSettings: _*)
+.settings(noPublishSettings: _*)
 
 lazy val `validation-core` = crossProject.crossType(CrossType.Pure)
   .settings(validationSettings: _*)
@@ -82,47 +82,39 @@ lazy val `validation-form` = crossProject.crossType(CrossType.Pure)
 lazy val formJVM = `validation-form`.jvm
 lazy val formJS = `validation-form`.js
 
-lazy val delimited = project.in(file("validation-delimited"))
-  .settings(moduleName := "validation-delimited")
+lazy val `validation-delimited` = project
   .settings(validationSettings: _*)
   .dependsOn(coreJVM)
 
-lazy val experimental = project.in(file("validation-experimental"))
-  .settings(moduleName := "validation-experimental")
+lazy val `validation-experimental` = project
   .settings(validationSettings: _*)
   .dependsOn(coreJVM)
 
-lazy val json = project.in(file("validation-json"))
-  .settings(moduleName := "validation-json")
+lazy val `validation-json` = project
   .settings(validationSettings: _*)
   .settings(libraryDependencies +=
     "com.typesafe.play" %% "play-json" % playVersion)
   .dependsOn(coreJVM % "test->test;compile->compile")
 
-lazy val json4s = project.in(file("validation-json4s"))
-  .settings(moduleName := "validation-json4s")
+lazy val `validation-json4s` = project
   .settings(validationSettings: _*)
   .settings(libraryDependencies +=
     "org.json4s" %% "json4s-native" % json4sVersion)
   .dependsOn(coreJVM)
-lazy val xml = project.in(file("validation-xml"))
-  .settings(moduleName := "validation-xml")
+  
+lazy val `validation-xml` = project
   .settings(validationSettings: _*)
   .settings(libraryDependencies +=
     "org.scala-lang.modules" %% "scala-xml" % scalaXmlVersion)
   .dependsOn(coreJVM)
 
-lazy val docs = project.in(file("validation-docs"))
+lazy val `validation-docs` = project
   .settings(validationSettings: _*)
   .settings(noPublishSettings: _*)
   .settings(crossTarget := file(".") / "documentation")
   .settings(tutSettings: _*)
   .settings(scalacOptions -= "-Ywarn-unused-import")
-  .dependsOn(coreJVM, json, json4s, formJVM, xml, experimental)
-
-// lazy val specsDependency = libraryDependencies ++= Seq(
-//   "org.specs2" %% "specs2" % "2.4.9" % "test",
-//   "org.specs2" %% "specs2-junit" % "2.4.9" % "test")
+  .dependsOn(coreJVM, formJVM, `validation-json`, `validation-json4s`, `validation-xml`, `validation-experimental`)
 
 lazy val coreDependencies = Seq(
   libraryDependencies ++= Seq(
