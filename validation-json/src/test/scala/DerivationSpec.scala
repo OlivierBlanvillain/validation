@@ -32,9 +32,9 @@ object DerivationSpec extends Specification {
     """).as[JsObject]
     val dog = Dog("doge", 0)
 
-    derivedRuleJsObject.validate(dogJson) mustEqual macroRuleJsObejct.validate(dogJson)
-    derivedRuleJsValue.validate(dogJson) mustEqual macroRuleJsValue.validate(dogJson)
-    derivedWriteJsObject.writes(dog) mustEqual macroWriteJsObject.writes(dog)
+    derivedRuleJsObject.validate(dogJson) shouldBe macroRuleJsObejct.validate(dogJson)
+    derivedRuleJsValue.validate(dogJson) shouldBe macroRuleJsValue.validate(dogJson)
+    derivedWriteJsObject.writes(dog) shouldBe macroWriteJsObject.writes(dog)
   }
 
   "Recursive derivation handles nested case classes" in {
@@ -59,8 +59,8 @@ object DerivationSpec extends Specification {
       }
     """)
 
-    implicitly[WriteLike[Pets, JsObject]].writes(pets) mustEqual petsJson
-    implicitly[RuleLike[JsValue, Pets]].validate(petsJson) mustEqual Valid(pets)
+    implicitly[WriteLike[Pets, JsObject]].writes(pets) shouldBe petsJson
+    implicitly[RuleLike[JsValue, Pets]].validate(petsJson) shouldBe Valid(pets)
   }
 
   "Recursive derivation handles recursive case classes" in {
@@ -83,8 +83,8 @@ object DerivationSpec extends Specification {
       }
     """)
 
-    implicitly[WriteLike[Cat, JsObject]].writes(cat) mustEqual catJson
-    implicitly[RuleLike[JsValue, Cat]].validate(catJson) mustEqual Valid(cat)
+    implicitly[WriteLike[Cat, JsObject]].writes(cat) shouldBe catJson
+    implicitly[RuleLike[JsValue, Cat]].validate(catJson) shouldBe Valid(cat)
   }
 
   "Non-recursive derivation fails when macro generation fails" in {
@@ -120,8 +120,8 @@ object DerivationSpec extends Specification {
     val a = ADT1
     val aJson = Json.parse("""{"$type":"ADT1"}""")
 
-    implicitly[WriteLike[ADT, JsObject]].writes(a) mustEqual aJson
-    implicitly[RuleLike[JsValue, ADT]].validate(aJson) mustEqual Valid(a)
+    implicitly[WriteLike[ADT, JsObject]].writes(a) shouldBe aJson
+    implicitly[RuleLike[JsValue, ADT]].validate(aJson) shouldBe Valid(a)
   }
 
   case class WithOption(os: Option[String])
@@ -136,11 +136,11 @@ object DerivationSpec extends Specification {
     val woNone = WithOption(None)
     val woNoneJson = Json.parse("{}")
 
-    Write.gen[WithOption, JsObject].writes(woSome) mustEqual implicitly[WriteLike[WithOption, JsObject]].writes(woSome)
-    Write.gen[WithOption, JsObject].writes(woNone) mustEqual implicitly[WriteLike[WithOption, JsObject]].writes(woNone)
+    Write.gen[WithOption, JsObject].writes(woSome) shouldBe implicitly[WriteLike[WithOption, JsObject]].writes(woSome)
+    Write.gen[WithOption, JsObject].writes(woNone) shouldBe implicitly[WriteLike[WithOption, JsObject]].writes(woNone)
 
-    Rule.gen[JsValue, WithOption].validate(woSomeJson) mustEqual implicitly[RuleLike[JsValue, WithOption]].validate(woSomeJson)
-    Rule.gen[JsValue, WithOption].validate(woNoneJson) mustEqual implicitly[RuleLike[JsValue, WithOption]].validate(woNoneJson)
+    Rule.gen[JsValue, WithOption].validate(woSomeJson) shouldBe implicitly[RuleLike[JsValue, WithOption]].validate(woSomeJson)
+    Rule.gen[JsValue, WithOption].validate(woNoneJson) shouldBe implicitly[RuleLike[JsValue, WithOption]].validate(woNoneJson)
   }
 
   "Derivation degenerates (but still works!) with minimal imports" in {
@@ -167,8 +167,8 @@ object DerivationSpec extends Specification {
       }
     """)
 
-    implicitly[WriteLike[WithList, JsObject]].writes(withList) mustEqual withListJson
-    implicitly[RuleLike[JsValue, WithList]].validate(withListJson) mustEqual Valid(withList)
+    implicitly[WriteLike[WithList, JsObject]].writes(withList) shouldBe withListJson
+    implicitly[RuleLike[JsValue, WithList]].validate(withListJson) shouldBe Valid(withList)
   }
 
   "S'il vous plait... derive-moi un mouton !" in {

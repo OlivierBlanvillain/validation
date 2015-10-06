@@ -43,7 +43,7 @@ object RulesSpec extends Specification {
       (Path \ "firstname").read[Node, String].validate(valid) == Valid("Julien")
       val errPath = Path \ "foo"
       val error = Invalid(Seq(errPath -> Seq(ValidationError("error.required"))))
-      errPath.read[Node, String].validate(invalid) mustEqual(error)
+      errPath.read[Node, String].validate(invalid) shouldBe(error)
     }
 
     "support attribute checked" in {
@@ -111,8 +111,8 @@ object RulesSpec extends Specification {
 
       "date" in {
         val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
-        Path.from[Node](Rules.date).validate(<a>1985-09-10</a>) mustEqual(Valid(f.parse("1985-09-10")))
-        Path.from[Node](Rules.date).validate(<a>foo</a>) mustEqual(Invalid(Seq(Path -> Seq(ValidationError("error.expected.date", "yyyy-MM-dd")))))
+        Path.from[Node](Rules.date).validate(<a>1985-09-10</a>) shouldBe(Valid(f.parse("1985-09-10")))
+        Path.from[Node](Rules.date).validate(<a>foo</a>) shouldBe(Invalid(Seq(Path -> Seq(ValidationError("error.expected.date", "yyyy-MM-dd")))))
       }
 
       "joda" in {
@@ -121,19 +121,19 @@ object RulesSpec extends Specification {
         val jd = new DateTime(dd)
 
         "date" in {
-          Path.from[Node](Rules.jodaDate).validate(<a>1985-09-10</a>) mustEqual(Valid(jd))
-          Path.from[Node](Rules.jodaDate).validate(<a>foo</a>) mustEqual(Invalid(Seq(Path -> Seq(ValidationError("error.expected.jodadate.format", "yyyy-MM-dd")))))
+          Path.from[Node](Rules.jodaDate).validate(<a>1985-09-10</a>) shouldBe(Valid(jd))
+          Path.from[Node](Rules.jodaDate).validate(<a>foo</a>) shouldBe(Invalid(Seq(Path -> Seq(ValidationError("error.expected.jodadate.format", "yyyy-MM-dd")))))
         }
 
         "time" in {
-          Path.from[Node](Rules.jodaTime).validate(<a>{dd.getTime}</a>) mustEqual(Valid(jd))
-          Path.from[Node](Rules.jodaDate).validate(<a>foo</a>) mustEqual(Invalid(Seq(Path -> Seq(ValidationError("error.expected.jodadate.format", "yyyy-MM-dd")))))
+          Path.from[Node](Rules.jodaTime).validate(<a>{dd.getTime}</a>) shouldBe(Valid(jd))
+          Path.from[Node](Rules.jodaDate).validate(<a>foo</a>) shouldBe(Invalid(Seq(Path -> Seq(ValidationError("error.expected.jodadate.format", "yyyy-MM-dd")))))
         }
 
         "local date" in {
           val ld = new LocalDate()
-          Path.from[Node](Rules.jodaLocalDate).validate(<a>{ld.toString}</a>) mustEqual(Valid(ld))
-          Path.from[Node](Rules.jodaLocalDate).validate(<a>foo</a>) mustEqual(Invalid(Seq(Path -> Seq(ValidationError("error.expected.jodadate.format", "")))))
+          Path.from[Node](Rules.jodaLocalDate).validate(<a>{ld.toString}</a>) shouldBe(Valid(ld))
+          Path.from[Node](Rules.jodaLocalDate).validate(<a>foo</a>) shouldBe(Invalid(Seq(Path -> Seq(ValidationError("error.expected.jodadate.format", "")))))
         }
       }
 
@@ -141,7 +141,7 @@ object RulesSpec extends Specification {
         val f = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.FRANCE)
         val dd = f.parse("1985-09-10")
         val ds = new java.sql.Date(dd.getTime())
-        Path.from[Node](Rules.sqlDate).validate(<a>1985-09-10</a>) mustEqual(Valid(ds))
+        Path.from[Node](Rules.sqlDate).validate(<a>1985-09-10</a>) shouldBe(Valid(ds))
       }
 
       "Boolean" in {
@@ -161,25 +161,25 @@ object RulesSpec extends Specification {
       }
 
       "Option" in {
-        Path.read[Node, Option[Boolean]].validate(<a>true</a>) mustEqual(Valid(Some(true)))
-        (Path \ "b").read[Node, Option[Boolean]].validate(<a>hello</a>) mustEqual(Valid(None))
-        Path.read[Node, Option[Boolean]].validate(<a>foo</a>) mustEqual(Invalid(Seq(Path -> Seq(ValidationError("error.invalid", "Boolean")))))
+        Path.read[Node, Option[Boolean]].validate(<a>true</a>) shouldBe(Valid(Some(true)))
+        (Path \ "b").read[Node, Option[Boolean]].validate(<a>hello</a>) shouldBe(Valid(None))
+        Path.read[Node, Option[Boolean]].validate(<a>foo</a>) shouldBe(Invalid(Seq(Path -> Seq(ValidationError("error.invalid", "Boolean")))))
       }
 
       "Seq" in {
-        Path.read[Node, Seq[String]].validate(<a><b>foo</b></a>).toOption.get must contain(exactly(Seq("foo"): _*))
-        Path.read[Node, Seq[Int]].validate(<a><b>1</b><b>2</b></a>).toOption.get must contain(exactly(Seq(1, 2): _*))
-        Path.read[Node, Seq[String]].validate(<a></a>).toOption.get  must contain(exactly(Seq.empty[String]: _*))
-        Path.read[Node, Seq[String]].validate(<a>1</a>).toOption.get  must contain(exactly(Seq.empty[String]: _*))
-        Path.read[Node, Seq[Int]].validate(<a><b>1</b><b>foo</b></a>) mustEqual(Invalid(Seq(Path \ 1 -> Seq(ValidationError("error.number", "Int")))))
+        Path.read[Node, Seq[String]].validate(<a><b>foo</b></a>).toOption.get shouldBe(Seq("foo"): _*))
+        Path.read[Node, Seq[Int]].validate(<a><b>1</b><b>2</b></a>).toOption.get shouldBe(Seq(1, 2): _*))
+        Path.read[Node, Seq[String]].validate(<a></a>).toOption.get  shouldBe(Seq.empty[String]: _*))
+        Path.read[Node, Seq[String]].validate(<a>1</a>).toOption.get  shouldBe(Seq.empty[String]: _*))
+        Path.read[Node, Seq[Int]].validate(<a><b>1</b><b>foo</b></a>) shouldBe(Invalid(Seq(Path \ 1 -> Seq(ValidationError("error.number", "Int")))))
       }
 
       "validate data with composed contraints on attributes" in {
-        (Path \ "firstname").from[Node](notEmpty).validate(valid) mustEqual(Valid("Julien"))
+        (Path \ "firstname").from[Node](notEmpty).validate(valid) shouldBe(Valid("Julien"))
 
         val p = (Path \ "informations")
-        p.from[Node](attributeR[String]("label") compose notEmpty).validate(valid) mustEqual(Valid("Personal"))
-        p.from[Node](attributeR[String]("label") compose notEmpty).validate(invalid) mustEqual(Invalid(Seq(p -> Seq(ValidationError("error.required")))))
+        p.from[Node](attributeR[String]("label") compose notEmpty).validate(valid) shouldBe(Valid("Personal"))
+        p.from[Node](attributeR[String]("label") compose notEmpty).validate(invalid) shouldBe(Invalid(Seq(p -> Seq(ValidationError("error.required")))))
       }
 
       "validate optional fields and attributes" in {
@@ -206,53 +206,53 @@ object RulesSpec extends Specification {
         From[Node] { __ =>
           (__ \ "informations").read(
             (__ \ "email").read(email))
-        }.validate(valid) mustEqual(Valid("fakecontact@gmail.com"))
+        }.validate(valid) shouldBe(Valid("fakecontact@gmail.com"))
 
         From[Node] { __ =>
           (__ \ "informations").read(
             (__ \ "foo").read(email))
-        }.validate(invalid) mustEqual(Invalid(Seq((p \ "foo") -> Seq(ValidationError("error.required")))))
+        }.validate(invalid) shouldBe(Invalid(Seq((p \ "foo") -> Seq(ValidationError("error.required")))))
       }
 
       "validate deep optional" in {
         From[Node]{ __ =>
           (__ \ "first" \ "second").read[Option[String]]
-        }validate(invalid) mustEqual Valid(None)
+        }validate(invalid) shouldBe Valid(None)
       }
 
       "coerce type" in {
-        (Path \ "age").read[Node, Int].validate(valid) mustEqual(Valid(27))
-        (Path \ "age").from[Node](min(20)).validate(valid) mustEqual(Valid(27))
-        (Path \ "age").from[Node](max(50)).validate(valid) mustEqual(Valid(27))
-        (Path \ "age").from[Node](min(50)).validate(valid) mustEqual(Invalid(Seq((Path \ "age") -> Seq(ValidationError("error.min", 50)))))
-        (Path \ "age").from[Node](max(0)).validate(valid) mustEqual(Invalid(Seq((Path \ "age") -> Seq(ValidationError("error.max", 0)))))
-        (Path \ "firstname").read[Node, Int].validate(valid) mustEqual(Invalid(Seq((Path \ "firstname") -> Seq(ValidationError("error.number", "Int")))))
+        (Path \ "age").read[Node, Int].validate(valid) shouldBe(Valid(27))
+        (Path \ "age").from[Node](min(20)).validate(valid) shouldBe(Valid(27))
+        (Path \ "age").from[Node](max(50)).validate(valid) shouldBe(Valid(27))
+        (Path \ "age").from[Node](min(50)).validate(valid) shouldBe(Invalid(Seq((Path \ "age") -> Seq(ValidationError("error.min", 50)))))
+        (Path \ "age").from[Node](max(0)).validate(valid) shouldBe(Invalid(Seq((Path \ "age") -> Seq(ValidationError("error.max", 0)))))
+        (Path \ "firstname").read[Node, Int].validate(valid) shouldBe(Invalid(Seq((Path \ "firstname") -> Seq(ValidationError("error.number", "Int")))))
       }
 
       "compose validations" in {
         From[Node]{ __ =>
           ((__ \ "firstname").read(notEmpty) ~
             (__ \ "lastname").read(notEmpty)).tupled
-        }.validate(valid) mustEqual Valid("Julien" -> "Tournay")
+        }.validate(valid) shouldBe Valid("Julien" -> "Tournay")
 
         From[Node]{ __ =>
           ((__ \ "firstname").read(notEmpty) ~
             (__ \ "lastname").read(notEmpty) ~
             (__ \ "informations" \ "label").read(notEmpty)).tupled
-        }.validate(invalid) mustEqual Invalid(Seq((Path \ "informations" \ "label") -> Seq(ValidationError("error.required"))))
+        }.validate(invalid) shouldBe Invalid(Seq((Path \ "informations" \ "label") -> Seq(ValidationError("error.required"))))
       }
 
       "lift validations to seq validations" in {
         Path.from[Node](seqR(notEmpty)).validate(<a><b>foo</b><b>bar</b></a>)
-          .toOption.get must contain(exactly(Seq("foo", "bar"): _*))
+          .toOption.get shouldBe(Seq("foo", "bar"): _*))
 
         From[Node]{ __ =>
           (__ \ "b").read(seqR(notEmpty))
         }.validate(<a><b><c>foo</c><c>bar</c></b></a>)
-          .toOption.get must contain(exactly(Seq("foo", "bar"): _*))
+          .toOption.get shouldBe(Seq("foo", "bar"): _*))
 
         Path.from[Node](seqR(notEmpty))
-          .validate(<a><b>foo</b><b></b></a>) mustEqual(Invalid(Seq(Path \ 1 -> Seq(ValidationError("error.required")))))
+          .validate(<a><b>foo</b><b></b></a>) shouldBe(Invalid(Seq(Path \ 1 -> Seq(ValidationError("error.required")))))
       }
 
       "validate dependent fields" in {
@@ -286,9 +286,9 @@ object RulesSpec extends Specification {
           ((__ \ "login").read(notEmpty) ~ passRule).tupled
         }
 
-        rule.validate(v).mustEqual(Valid("Alice" -> "s3cr3t"))
-        rule.validate(i1).mustEqual(Invalid(Seq(Path \ "verify" -> Seq(ValidationError("error.required")))))
-        rule.validate(i2).mustEqual(Invalid(Seq(Path \ "verify" -> Seq(ValidationError("error.equals", "s3cr3t")))))
+        rule.validate(v).shouldBe(Valid("Alice" -> "s3cr3t"))
+        rule.validate(i1).shouldBe(Invalid(Seq(Path \ "verify" -> Seq(ValidationError("error.required")))))
+        rule.validate(i2).shouldBe(Invalid(Seq(Path \ "verify" -> Seq(ValidationError("error.equals", "s3cr3t")))))
       }
 
       "validate subclasses (and parse the concrete class)" in {
@@ -314,9 +314,9 @@ object RulesSpec extends Specification {
 
           val rule = rb orElse rc orElse Rule(_ => typeInvalid)
 
-          rule.validate(b) mustEqual(Valid(B(4)))
-          rule.validate(c) mustEqual(Valid(C(6)))
-          rule.validate(e) mustEqual(Invalid(Seq(Path -> Seq(ValidationError("validation.unknownType")))))
+          rule.validate(b) shouldBe(Valid(B(4)))
+          rule.validate(c) shouldBe(Valid(C(6)))
+          rule.validate(e) shouldBe(Invalid(Seq(Path -> Seq(ValidationError("validation.unknownType")))))
         }
 
         "by dicriminating on fields" in {
@@ -329,9 +329,9 @@ object RulesSpec extends Specification {
             }
           }
 
-          rule.validate(b) mustEqual(Valid(B(4)))
-          rule.validate(c) mustEqual(Valid(C(6)))
-          rule.validate(e) mustEqual(Invalid(Seq(Path -> Seq(ValidationError("validation.unknownType")))))
+          rule.validate(b) shouldBe(Valid(B(4)))
+          rule.validate(c) shouldBe(Valid(C(6)))
+          rule.validate(e) shouldBe(Invalid(Seq(Path -> Seq(ValidationError("validation.unknownType")))))
         }
 
       }
@@ -368,8 +368,8 @@ object RulesSpec extends Specification {
           Contact("Julien", "Tournay", None,
             ContactInformation("Personal", Some("fakecontact@gmail.com"), List("01.02", "02.03")))
 
-        contactValidated.validate(valid) mustEqual(Valid(expected))
-        contactValidated.validate(invalid) mustEqual(Invalid(Seq(
+        contactValidated.validate(valid) shouldBe(Valid(expected))
+        contactValidated.validate(invalid) shouldBe(Invalid(Seq(
           (Path \ "informations") -> Seq(ValidationError("error.required")), Path \ "informations" \ "email" ->
           Seq(ValidationError("error.email")))))
       }
@@ -408,18 +408,18 @@ object RulesSpec extends Specification {
              (__ \ "friends").read(seqR(w))
             )(RecUser.apply)
           }
-          w.validate(m) mustEqual Valid(u)
+          w.validate(m) shouldBe Valid(u)
 
           lazy val w2: Rule[Node, RecUser] =
             ((Path \ "name").read[Node, String] ~
               (Path \ "friends").from[Node](seqR(w2)))(RecUser.apply)
-          w2.validate(m) mustEqual Valid(u)
+          w2.validate(m) shouldBe Valid(u)
 
           lazy val w3: Rule[Node, User1] = From[Node]{ __ =>
             ((__ \ "name").read[String] ~
               (__ \ "friend").read(optionR(w3)))(User1.apply)
           }
-          w3.validate(m1) mustEqual Valid(u1)
+          w3.validate(m1) shouldBe Valid(u1)
         }
 
         "using implicit notation" in {
@@ -427,13 +427,13 @@ object RulesSpec extends Specification {
             ((__ \ "name").read[String] ~
               (__ \ "friends").read[Seq[RecUser]])(RecUser.apply)
           }
-          w.validate(m) mustEqual Valid(u)
+          w.validate(m) shouldBe Valid(u)
 
           implicit lazy val w3: Rule[Node, User1] = From[Node]{ __ =>
             ((__ \ "name").read[String] ~
               (__ \ "friend").read[Option[User1]])(User1.apply)
           }
-          w3.validate(m1) mustEqual Valid(u1)
+          w3.validate(m1) shouldBe Valid(u1)
         }
 
       }
@@ -452,8 +452,8 @@ object RulesSpec extends Specification {
         val validXml = <a><name>bob</name><color>blue</color></a>
         val invalidXml = <a><color>blue</color></a>
 
-        jsonR.validate(validXml) mustEqual Valid(("bob", Some("blue")))
-        jsonR.validate(invalidXml) mustEqual Invalid(Seq((Path \ "name", Seq(ValidationError("error.required")))))
+        jsonR.validate(validXml) shouldBe Valid(("bob", Some("blue")))
+        jsonR.validate(invalidXml) shouldBe Invalid(Seq((Path \ "name", Seq(ValidationError("error.required")))))
 
       }
 
