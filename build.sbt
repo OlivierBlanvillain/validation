@@ -19,17 +19,19 @@ val shapelessVersion = "2.2.5"
 lazy val validationSettings = commonSettings ++ publishSettings ++ coreDependencies
 
 lazy val root = project.in(file("."))
-  .aggregate(coreJVM, coreJS, formJVM, formJS, `validation-json`, `validation-delimited`, `validation-xml`, `validation-json4s`, `validation-experimental`)
+  .aggregate(coreJVM, coreJS, formJVM, formJS, delimitedJVM, delimitedJS, `validation-json`, `validation-xml`, `validation-json4s`, experimentalJS, experimentalJVM)
   .settings(validationSettings: _*)
   .settings(noPublishSettings: _*)
 
-lazy val `validation-core` = crossProject.crossType(CrossType.Pure)
+lazy val `validation-core` = crossProject
+  .crossType(CrossType.Pure)
   .settings(validationSettings: _*)
   .settings(generateBoilerplate: _*)
 lazy val coreJVM = `validation-core`.jvm
 lazy val coreJS = `validation-core`.js
 
-lazy val `validation-form` = crossProject.crossType(CrossType.Pure)
+lazy val `validation-form` = crossProject
+  .crossType(CrossType.Pure)
   .settings(validationSettings: _*)
   .dependsOn(`validation-core`)
   .jvmSettings(libraryDependencies +=
@@ -39,13 +41,19 @@ lazy val `validation-form` = crossProject.crossType(CrossType.Pure)
 lazy val formJVM = `validation-form`.jvm
 lazy val formJS = `validation-form`.js
 
-lazy val `validation-delimited` = project
+lazy val `validation-delimited` = crossProject
+  .crossType(CrossType.Pure)
   .settings(validationSettings: _*)
-  .dependsOn(coreJVM)
+  .dependsOn(`validation-core`)
+lazy val delimitedJVM = `validation-delimited`.jvm
+lazy val delimitedJS = `validation-delimited`.js
 
-lazy val `validation-experimental` = project
+lazy val `validation-experimental` = crossProject
+  .crossType(CrossType.Pure)
   .settings(validationSettings: _*)
-  .dependsOn(coreJVM)
+  .dependsOn(`validation-core`)
+lazy val experimentalJVM = `validation-experimental`.jvm
+lazy val experimentalJS = `validation-experimental`.js
 
 lazy val `validation-json` = project
   .settings(validationSettings: _*)
@@ -71,7 +79,7 @@ lazy val `validation-docs` = project
   .settings(crossTarget := file(".") / "documentation")
   .settings(tutSettings: _*)
   .settings(scalacOptions -= "-Ywarn-unused-import")
-  .dependsOn(coreJVM, formJVM, `validation-json`, `validation-json4s`, `validation-xml`, `validation-experimental`)
+  .dependsOn(coreJVM, formJVM, experimentalJVM, `validation-json4s`, `validation-json`, `validation-xml`)
 
 val commonScalacOptions = Seq(
   "-deprecation",
@@ -104,7 +112,7 @@ lazy val commonSettings = Seq(
 lazy val coreDependencies = Seq(
   libraryDependencies ++= Seq(
     "org.spire-math" %%% "cats" % catsVersion,
-    "com.chuusai" %% "shapeless" % shapelessVersion,
+    "com.chuusai" %%% "shapeless" % shapelessVersion,
     "org.scalatest" %%% "scalatest" % scalatestVersion % "test"
   ),
   addCompilerPlugin("org.spire-math" %% "kind-projector" % kindProjectorVersion),
