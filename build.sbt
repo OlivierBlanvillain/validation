@@ -65,17 +65,22 @@ lazy val json4sJVM = `validation-json4s`.jvm
 lazy val json4sJS = `validation-json4s`.js
 lazy val json4s = aggregate("validation-json4s", json4sJVM, json4sJS)
 
+lazy val `validation-xml` = project
+  .settings(validationSettings: _*)
+  .settings(libraryDependencies +=
+    "org.scala-lang.modules" %% "scala-xml" % scalaXmlVersion)
+  .dependsOn(coreJVM)
+
 lazy val `validation-playjson` = project
   .settings(validationSettings: _*)
   .settings(libraryDependencies +=
     "com.typesafe.play" %% "play-json" % playVersion)
   .dependsOn(coreJVM % "compile;test->test")
 
-lazy val `validation-xml` = project
+lazy val `validation-jsjson` = project
+  .enablePlugins(ScalaJSPlugin)
   .settings(validationSettings: _*)
-  .settings(libraryDependencies +=
-    "org.scala-lang.modules" %% "scala-xml" % scalaXmlVersion)
-  .dependsOn(coreJVM)
+  .dependsOn(coreJS)
 
 lazy val `validation-docs` = project
   .settings(validationSettings: _*)
