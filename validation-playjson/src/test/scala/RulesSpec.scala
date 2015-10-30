@@ -438,7 +438,6 @@ class RulesSpec extends WordSpec with Matchers {
         }
 
       val jsonR = {
-
         genR[JsValue](optionR(_))
       }
 

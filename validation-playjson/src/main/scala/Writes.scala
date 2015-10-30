@@ -1,7 +1,7 @@
 package jto.validation
-package jsjson
+package playjson
 
-import scala.scalajs.js
+import play.api.libs.json.{JsValue, JsObject, Json, JsString, JsNumber, JsBoolean, JsArray, JsNull}
 
 trait DefaultMonoids {
   import cats.Monoid

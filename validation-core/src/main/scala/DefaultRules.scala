@@ -351,6 +351,10 @@ trait DefaultRules[I] extends GenericRules with DateRules {
       (d: I) =>
         val isNone = not(noneValues.foldLeft(Rule.zero[I])(_ compose not(_))).map(_ => None)
         val v = (pick(path).validate(d).map(Some.apply) orElse Valid(None))
+        println(s"path: $path")
+        println(s"d: ${d.toString}")
+        println(s"isNone: $isNone")
+        println(s"v: $v")
         Validated.fromEither(
           v.toEither.right.flatMap {
             case None => Right(None)

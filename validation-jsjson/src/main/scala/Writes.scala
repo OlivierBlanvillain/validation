@@ -7,7 +7,7 @@ import scala.scalajs.js
 trait DefaultMonoids {
   implicit def jsonMonoid = new Monoid[js.Dictionary[js.Any]] {
     // TODO: Should this be a deepMerge?
-    def combine(a1: js.Dictionary[js.Any], a2: js.Dictionary[js.Any]) = js.Dictionary[js.Any]()
+    def combine(a1: js.Dictionary[js.Any], a2: js.Dictionary[js.Any]) = js.Dictionary((a1 ++ a2).toSeq: _*)
     def empty = js.Dictionary[js.Any]()
   }
 }

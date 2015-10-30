@@ -11,7 +11,7 @@ val kindProjectorVersion = "0.6.3"
 val parserCombinatorsVersion = "1.0.2"
 val playVersion = "2.4.3"
 val scalacVersion = "2.11.7"
-val scalatestVersion = "3.0.0-M7"
+val scalatestVersion = "3.0.0-M10"
 val scalaXmlVersion = "1.0.5"
 val shapelessVersion = "2.2.5"
 
@@ -130,6 +130,7 @@ val commonScalacOptions = Seq(
   "-Ywarn-numeric-widen",
   "-Ywarn-value-discard",
   "-Ywarn-unused-import",
+  // "-Xprint:typer",
   "-Xfuture"
 )
 

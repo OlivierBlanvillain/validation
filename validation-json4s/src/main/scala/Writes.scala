@@ -74,7 +74,7 @@ object Writes extends DefaultWrites with DefaultMonoids with GenericWrites[JValu
         val o = writeObj(w.writes(i), h)
         ps.tail.foldLeft(o)(writeObj).asInstanceOf[JObject]
       case Path(Nil) =>
-        w.writes(i).as[JObject]
+        w.writes(i).asInstanceOf[JObject]
       case _ => throw new RuntimeException(s"path $path is not a path of JsObject") // XXX: should be a compile time error
     }
   }

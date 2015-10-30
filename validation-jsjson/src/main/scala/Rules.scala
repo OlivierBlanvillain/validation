@@ -2,63 +2,54 @@ package jto.validation
 package jsjson
 
 import scala.scalajs.js
+import scala.util.Try
 
-object Rules extends DefaultRules[js.Any] {
-  private def jsonAs[T](f: PartialFunction[js.Any, Validated[Seq[ValidationError], T]])(msg: String, args: Any*) =
-    Rule.fromMapping[js.Any, T](
+object Rules extends DefaultRules[js.Dynamic] {
+  private def jsonAs[T](f: PartialFunction[js.Dynamic, Validated[Seq[ValidationError], T]])(msg: String, args: Any*) =
+    Rule.fromMapping[js.Dynamic, T](
       f.orElse {
         case j => Invalid(Seq(ValidationError(msg, args: _*)))
       })
 
-  // implicit def stringR = jsonAs[String] {
-  //   case JString(v) => Valid(v)
-  // }("error.invalid", "String")
+  implicit def stringR = jsonAs[String] {
+    case v if js.typeOf(v) == "string" => Valid(v.asInstanceOf[String])
+  }("error.invalid", "String")
 
-  // implicit def booleanR = jsonAs[Boolean] {
-  //   case v: Boolean => Valid(v)
-  // }("error.invalid", "Boolean")
+  implicit def booleanR = jsonAs[Boolean] {
+    case nope if {println(s"nope: ${nope.toSeq}"); println(s"nope.isInstanceOf[Boolean] ${nope.isInstanceOf[Boolean]}"); false} => ???
+    case v if v.isInstanceOf[Boolean] => Valid(v.asInstanceOf[Boolean])
+  }("error.invalid", "Boolean")
 
-  // // Note: Mappings of JsNumber to Number are validating that the JsNumber is indeed valid
-  // // in the target type. i.e: JsNumber(4.5) is not considered parseable as an Int.
-  // implicit def intR = jsonAs[Int] {
-  //   case JNumber(v) if v.isValidInt => Valid(v.toInt)
-  // }("error.number", "Int")
+  // Note: Mappings of JsNumber to Number are validating that the JsNumber is indeed valid
+  // in the target type. i.e: JsNumber(4.5) is not considered parseable as an Int.
+  implicit def intR = jsonAs[Int] {
+    case v if js.typeOf(v) == "number" && Try(v.toString.toInt).isSuccess => Valid(v.asInstanceOf[Int])
+  }("error.number", "Int")
 
-  // implicit def shortR = jsonAs[Short] {
-  //   case JNumber(v) if v.isValidShort => Valid(v.toShort)
-  // }("error.number", "Short")
+  implicit def shortR = jsonAs[Short] {
+    case v if js.typeOf(v) == "number" && Try(v.toString.toShort).isSuccess => Valid(v.asInstanceOf[Short])
+  }("error.number", "Short")
 
-  // implicit def longR = jsonAs[Long] {
-  //   case JNumber(v) if v.isValidLong => Valid(v.toLong)
-  // }("error.number", "Long")
+  implicit def longR = jsonAs[Long] {
+    // v.asInstanceOf[Long] fails with a scala.scalajs.runtime.UndefinedBehaviorError: An undefined behavior was detected: 4 is not an instance of scala.scalajs.runtime.RuntimeLong.
+    case v if js.typeOf(v) == "number" && Try(v.toString.toLong).isSuccess => Valid(v.toString.toLong)
+  }("error.number", "Long")
 
-  // implicit def jsNumber = jsonAs[JNumber] {
-  //   case v @ JNumber(_) => Valid(v)
-  // }("error.number", "Number")
+  implicit def jsObjectR = jsonAs[js.Dynamic] {
+    case v => Valid(v)
+  }("error.invalid", "Object")
 
-  // implicit def jsBooleanR = jsonAs[JBoolean] {
-  //   case v @ JBoolean(_) => Valid(v)
-  // }("error.invalid", "Boolean")
+  implicit def jsArrayR[A] = jsonAs[js.Array[A]] {
+    case v if js.Array.isArray(v) => Valid(v.asInstanceOf[js.Array[A]])
+  }("error.invalid", "Array")
 
-  // implicit def jsStringR = jsonAs[JString] {
-  //   case v @ JString(_) => Valid(v)
-  // }("error.invalid", "String")
+  implicit def floatR = jsonAs[Float] {
+    case v if js.typeOf(v) == "number" && Try(v.toString.toFloat).isSuccess => Valid(v.asInstanceOf[Float])
+  }("error.number", "Float")
 
-  // implicit def jsObjectR = jsonAs[JObject] {
-  //   case v @ JObject(_) => Valid(v)
-  // }("error.invalid", "Object")
-
-  // implicit def jsArrayR = jsonAs[JArray] {
-  //   case v @ JArray(_) => Valid(v)
-  // }("error.invalid", "Array")
-
-  // implicit def floatR = jsonAs[Float] {
-  //   case JNumber(v) if v.isDecimalFloat => Valid(v.toFloat)
-  // }("error.number", "Float")
-
-  // implicit def doubleR = jsonAs[Double] {
-  //   case JNumber(v) if v.isDecimalDouble => Valid(v.toDouble)
-  // }("error.number", "Double")
+  implicit def doubleR = jsonAs[Double] {
+    case v if js.typeOf(v) == "number" && Try(v.toString.toDouble).isSuccess => Valid(v.asInstanceOf[Double])
+  }("error.number", "Double")
 
   // implicit def bigDecimal = jsonAs[BigDecimal] {
   //   case JNumber(v) => Valid(v)
@@ -69,53 +60,55 @@ object Rules extends DefaultRules[js.Any] {
   //   case JNumber(v) => Valid(v.bigDecimal)
   // }("error.number", "BigDecimal")
 
-  // implicit val jsNullR = jsonAs[JNull.type] {
-  //   case JNull => Valid(JNull)
-  // }("error.invalid", "null")
+  implicit val jsNullR = jsonAs[Null] {
+    case v if v == null => Valid(null)
+  }("error.invalid", "null")
 
-  // implicit def ooo[O](p: Path)(implicit pick: Path => RuleLike[js.Any, js.Any], coerce: RuleLike[js.Any, O]): Rule[js.Any, Option[O]] =
-  //   optionR(Rule.zero[O])(pick, coerce)(p)
+  implicit def ooo[O](p: Path)(implicit pick: Path => RuleLike[js.Dynamic, js.Dynamic], coerce: RuleLike[js.Dynamic, O]): Rule[js.Dynamic, Option[O]] =
+    optionR(Rule.zero[O])(pick, coerce)(p)
 
-  // def optionR[J, O](r: => RuleLike[J, O], noneValues: RuleLike[js.Any, js.Any]*)(implicit pick: Path => RuleLike[js.Any, js.Any], coerce: RuleLike[js.Any, J]): Path => Rule[js.Any, Option[O]] =
-  //   super.opt[J, O](r, (jsNullR.map(n => n: js.Any) +: noneValues): _*)
+  def optionR[J, O](r: => RuleLike[J, O], noneValues: RuleLike[js.Dynamic, js.Dynamic]*)(implicit pick: Path => RuleLike[js.Dynamic, js.Dynamic], coerce: RuleLike[js.Dynamic, J]): Path => Rule[js.Dynamic, Option[O]] =
+    super.opt[J, O](r, (jsNullR.map(n => n: js.Dynamic) +: noneValues): _*)
 
-  // implicit def mapR[O](implicit r: RuleLike[js.Any, O]): Rule[js.Any, Map[String, O]] =
-  //   super.mapR[js.Any, O](r, jsObjectR.map { case JObject(fs) => fs.toSeq })
+  // implicit def mapR[O](implicit r: RuleLike[js.Dynamic, O]): Rule[js.Dynamic, Map[String, O]] =
+  //   super.mapR[js.Dynamic, O](r, jsObjectR.map(_.asInstanceOf[js.Dictionary[js.Dynamic]].toSeq))
 
-  // implicit def JsValue[O](implicit r: RuleLike[JObject, O]): Rule[js.Any, O] =
+  // implicit def JsValue[O](implicit r: RuleLike[JObject, O]): Rule[js.Dynamic, O] =
   //   jsObjectR.compose(r)
 
-  // implicit def pickInJson[II <: js.Any, O](p: Path)(implicit r: RuleLike[js.Any, O]): Rule[II, O] = {
+  implicit def pickInJson[II <: js.Dynamic, O](p: Path)(implicit r: RuleLike[js.Dynamic, O]): Rule[II, O] = {
+    def search(path: Path, json: js.Dynamic): Option[js.Dynamic] = path.path match {
+      case KeyPathNode(k) :: t =>
+        println("lol")
+        json match {
+          case v if js.typeOf(v) == "object" && !js.Array.isArray(v) =>
+            v.asInstanceOf[js.Dictionary[js.Dynamic]].find(_._1 == k).flatMap(kv => search(Path(t), kv._2))
+          case _ => None
+        }
+      
+      case IdxPathNode(i) :: t =>
+        json match {
+          case v if js.Array.isArray(v) => v.asInstanceOf[js.Array[js.Dynamic]].lift(i).flatMap(j => search(Path(t), j))
+          case _ => None
+        }
+      
+      case Nil => Some(json)
+    }
 
-  //   def search(path: Path, json: js.Any): Option[js.Any] = path.path match {
-  //     case KeyPathNode(k) :: t =>
-  //       json match {
-  //         case JObject(js) =>
-  //           js.find(_._1 == k).flatMap(kv => search(Path(t), kv._2))
-  //         case _ => None
-  //       }
-  //     case IdxPathNode(i) :: t =>
-  //       json match {
-  //         case JArray(js) => js.lift(i).flatMap(j => search(Path(t), j))
-  //         case _ => None
-  //       }
-  //     case Nil => Some(json)
-  //   }
+    Rule[II, js.Dynamic] { json =>
+      search(p, json) match {
+        case None => Invalid(Seq(Path -> Seq(ValidationError("error.required"))))
+        case Some(js) => Valid(js)
+      }
+    }.compose(r)
+  }
 
-  //   Rule[II, js.Any] { json =>
-  //     search(p, json) match {
-  //       case None => Invalid(Seq(Path -> Seq(ValidationError("error.required"))))
-  //       case Some(js) => Valid(js)
-  //     }
-  //   }.compose(r)
-  // }
-
-  // // // XXX: a bit of boilerplate
-  // private def pickInS[T](implicit r: RuleLike[Seq[js.Any], T]): Rule[js.Any, T] =
-  //   jsArrayR.map { case JArray(fs) => Seq(fs:_*) }.compose(r)
-  // implicit def pickSeq[O](implicit r: RuleLike[js.Any, O]) = pickInS(seqR[js.Any, O])
-  // implicit def pickSet[O](implicit r: RuleLike[js.Any, O]) = pickInS(setR[js.Any, O])
-  // implicit def pickList[O](implicit r: RuleLike[js.Any, O]) = pickInS(listR[js.Any, O])
-  // implicit def pickArray[O: scala.reflect.ClassTag](implicit r: RuleLike[js.Any, O]) = pickInS(arrayR[js.Any, O])
-  // implicit def pickTraversable[O](implicit r: RuleLike[js.Any, O]) = pickInS(traversableR[js.Any, O])
+  // XXX: a bit of boilerplate
+  private def pickInS[T](implicit r: RuleLike[Seq[js.Dynamic], T]): Rule[js.Dynamic, T] =
+    jsArrayR[js.Dynamic].map(fs => Seq(fs: _*)).compose(r)
+  implicit def pickSeq[O](implicit r: RuleLike[js.Dynamic, O]) = pickInS(seqR[js.Dynamic, O])
+  implicit def pickSet[O](implicit r: RuleLike[js.Dynamic, O]) = pickInS(setR[js.Dynamic, O])
+  implicit def pickList[O](implicit r: RuleLike[js.Dynamic, O]) = pickInS(listR[js.Dynamic, O])
+  implicit def pickArray[O: scala.reflect.ClassTag](implicit r: RuleLike[js.Dynamic, O]) = pickInS(arrayR[js.Dynamic, O])
+  implicit def pickTraversable[O](implicit r: RuleLike[js.Dynamic, O]) = pickInS(traversableR[js.Dynamic, O])
 }

@@ -110,7 +110,7 @@ object Rules extends DefaultRules[JValue] {
     }.compose(r)
   }
 
-  // // XXX: a bit of boilerplate
+  // XXX: a bit of boilerplate
   private def pickInS[T](implicit r: RuleLike[Seq[JValue], T]): Rule[JValue, T] =
     jsArrayR.map { case JArray(fs) => Seq(fs:_*) }.compose(r)
   implicit def pickSeq[O](implicit r: RuleLike[JValue, O]) = pickInS(seqR[JValue, O])
@@ -118,5 +118,4 @@ object Rules extends DefaultRules[JValue] {
   implicit def pickList[O](implicit r: RuleLike[JValue, O]) = pickInS(listR[JValue, O])
   implicit def pickArray[O: scala.reflect.ClassTag](implicit r: RuleLike[JValue, O]) = pickInS(arrayR[JValue, O])
   implicit def pickTraversable[O](implicit r: RuleLike[JValue, O]) = pickInS(traversableR[JValue, O])
-
 }

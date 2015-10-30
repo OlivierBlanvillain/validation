@@ -88,7 +88,7 @@ object Rules extends DefaultRules[JsValue] with LowPriorityImplicit {
   implicit def JsValue[O](implicit r: RuleLike[JsObject, O]): Rule[JsValue, O] =
     jsObjectR.compose(r)
 
-  // // XXX: a bit of boilerplate
+  // XXX: a bit of boilerplate
   private def pickInS[T](implicit r: RuleLike[Seq[JsValue], T]): Rule[JsValue, T] =
     jsArrayR.map { case JsArray(fs) => fs }.compose(r)
   implicit def pickSeq[O](implicit r: RuleLike[JsValue, O]) = pickInS(seqR[JsValue, O])

@@ -440,7 +440,6 @@ class RulesSpec extends WordSpec with Matchers {
         }
 
       val jsonR = {
-
         genR[JValue](optionR(_))
       }
 
@@ -450,9 +449,7 @@ class RulesSpec extends WordSpec with Matchers {
       jsonR.validate(json) shouldBe Valid(("bob", Some("blue")))
       jsonR.validate(invalidJson) shouldBe Invalid(Seq((Path \ "name", Seq(ValidationError("error.required")))))
 
-
       // val formR = {
-      //
       //   genR[UrlFormEncoded](optionR(_))
       // }
       // val form = Map("name" -> Seq("bob"), "color" -> Seq("blue"))
