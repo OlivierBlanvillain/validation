@@ -201,7 +201,6 @@ class RulesSpec extends WordSpec with Matchers {
     }
 
     "compose constraints" in {
-      // TODO: create MonoidOps
       val composed = notEmpty |+| minLength(3)
       From[UrlFormEncoded] { __ => (__ \ "firstname").read(composed) }.validate(valid) shouldBe(Valid("Julien"))
 

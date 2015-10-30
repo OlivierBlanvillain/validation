@@ -130,7 +130,6 @@ val commonScalacOptions = Seq(
   "-Ywarn-numeric-widen",
   "-Ywarn-value-discard",
   "-Ywarn-unused-import",
-  // "-Xprint:typer",
   "-Xfuture"
 )
 
