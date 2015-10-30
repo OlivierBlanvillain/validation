@@ -34,11 +34,12 @@ object Rules extends DefaultRules[js.Dynamic] {
   }("error.number", "Long")
 
   implicit def jsObjectR = jsonAs[js.Dictionary[js.Dynamic]] {
-    case v if js.typeOf(v) == "object" && !js.Array.isArray(v) => Valid(v.asInstanceOf[js.Dictionary[js.Dynamic]])
+    case v if v != null && js.typeOf(v) == "object" && !js.Array.isArray(v) =>
+      Valid(v.asInstanceOf[js.Dictionary[js.Dynamic]])
   }("error.invalid", "Object")
 
   implicit def jsArrayR[A] = jsonAs[js.Array[A]] {
-    case v if v.isInstanceOf[js.Array[_]] => Valid(v.asInstanceOf[js.Array[A]])
+    case v: js.Array[_] => Valid(v.asInstanceOf[js.Array[A]])
   }("error.invalid", "Array")
 
   implicit def floatR = jsonAs[Float] {
@@ -69,24 +70,21 @@ object Rules extends DefaultRules[js.Dynamic] {
     super.opt[J, O](r, (jsNullR.map(n => n: js.Dynamic) +: noneValues): _*)
 
   implicit def mapR[O](implicit r: RuleLike[js.Dynamic, O]): Rule[js.Dynamic, Map[String, O]] =
-    super.mapR[js.Dynamic, O](r, Rule.zero.map(_.asInstanceOf[js.Dictionary[js.Dynamic]].toSeq))
+    super.mapR[js.Dynamic, O](r, jsObjectR.map(_.toSeq))
 
-  // implicit def JsValue[O](implicit r: RuleLike[JObject, O]): Rule[js.Dynamic, O] =
-  //   jsObjectR.compose(r)
+  implicit def jsDictToDyn[O](implicit r: RuleLike[js.Dictionary[js.Dynamic], O]): Rule[js.Dynamic, O] =
+    jsObjectR.compose(r)
 
   implicit def pickInJson[II <: js.Dynamic, O](p: Path)(implicit r: RuleLike[js.Dynamic, O]): Rule[II, O] = {
     def search(path: Path, json: js.Dynamic): Option[js.Dynamic] = path.path match {
       case KeyPathNode(k) :: t =>
-        json match {
-          case v if js.typeOf(v) == "object" && !js.Array.isArray(v) =>
-            v.asInstanceOf[js.Dictionary[js.Dynamic]].find(_._1 == k).flatMap(kv => search(Path(t), kv._2))
-          case _ => None
+        jsObjectR.validate(json).toOption.flatMap { obj: js.Dictionary[js.Dynamic] =>
+          obj.find(_._1 == k).flatMap(kv => search(Path(t), kv._2))
         }
       
       case IdxPathNode(i) :: t =>
-        json match {
-          case v if js.Array.isArray(v) => v.asInstanceOf[js.Array[js.Dynamic]].lift(i).flatMap(j => search(Path(t), j))
-          case _ => None
+        jsArrayR.validate(json).toOption.flatMap { array: js.Array[js.Dynamic] =>
+          array.lift(i).flatMap(j => search(Path(t), j))
         }
       
       case Nil => Some(json)

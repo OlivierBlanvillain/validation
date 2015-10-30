@@ -94,11 +94,13 @@ object Rules extends DefaultRules[JValue] {
             js.find(_._1 == k).flatMap(kv => search(Path(t), kv._2))
           case _ => None
         }
+      
       case IdxPathNode(i) :: t =>
         json match {
           case JArray(js) => js.lift(i).flatMap(j => search(Path(t), j))
           case _ => None
         }
+      
       case Nil => Some(json)
     }
 

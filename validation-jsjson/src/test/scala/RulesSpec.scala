@@ -183,11 +183,11 @@ class RulesSpec extends WordSpec with Matchers {
       }.validate(invalid) shouldBe(Invalid(Seq(p -> Seq(ValidationError("error.required")))))
     }
 
-    // "validate deep optional" in {
-    //   From[js.Dynamic] { __ =>
-    //     (__ \ "first" \ "second").read[Option[String]]
-    //   }.validate(null) shouldBe Valid(None)
-    // }
+    "validate deep optional" in {
+      From[js.Dynamic] { __ =>
+        (__ \ "first" \ "second").read[Option[String]]
+      }.validate(null) shouldBe Valid(None)
+    }
 
     "coerce type" in {
       (Path \ "age").read[js.Dynamic, Int].validate(valid) shouldBe(Valid(27))
@@ -309,58 +309,58 @@ class RulesSpec extends WordSpec with Matchers {
 
     }
 
-    // "perform complex validation" in {
+    "perform complex validation" in {
 
-    //   case class Contact(
-    //     firstname: String,
-    //     lastname: String,
-    //     company: Option[String],
-    //     informations: Seq[ContactInformation])
+      case class Contact(
+        firstname: String,
+        lastname: String,
+        company: Option[String],
+        informations: Seq[ContactInformation])
 
-    //   case class ContactInformation(
-    //     label: String,
-    //     email: Option[String],
-    //     phones: Seq[String])
+      case class ContactInformation(
+        label: String,
+        email: Option[String],
+        phones: Seq[String])
 
-    //   val validJson = js.Dynamic.literal(
-    //     "firstname" -> "Julien",
-    //     "lastname" -> "Tournay",
-    //     "age" -> 27,
-    //     "informations" -> js.Array(js.Dynamic.literal(
-    //       "label" -> "Personal",
-    //       "email" -> "fakecontact@gmail.com",
-    //       "js.hones" -> js.Array("01.23.45.67.89", "98.76.54.32.10"))))
+      val validJson = js.Dynamic.literal(
+        "firstname" -> "Julien",
+        "lastname" -> "Tournay",
+        "age" -> 27,
+        "informations" -> js.Array(js.Dynamic.literal(
+          "label" -> "Personal",
+          "email" -> "fakecontact@gmail.com",
+          "phones" -> js.Array("01.23.45.67.89", "98.76.54.32.10"))))
 
-    //   val invalidJson = js.Dynamic.literal(
-    //     "firstname" -> "Julien",
-    //     "lastname" -> "Tournay",
-    //     "age" -> 27,
-    //     "informations" -> js.Array(js.Dynamic.literal(
-    //       "label" -> "",
-    //       "email" -> "fakecontact@gmail.com",
-    //       "js.hones" -> js.Array("01.23.45.67.89", "98.76.54.32.10"))))
+      val invalidJson = js.Dynamic.literal(
+        "firstname" -> "Julien",
+        "lastname" -> "Tournay",
+        "age" -> 27,
+        "informations" -> js.Array(js.Dynamic.literal(
+          "label" -> "",
+          "email" -> "fakecontact@gmail.com",
+          "phones" -> js.Array("01.23.45.67.89", "98.76.54.32.10"))))
 
-    //   val infoValidated = From[js.Dynamic] { __ =>
-    //      ((__ \ "label").read(notEmpty) ~
-    //       (__ \ "email").read(optionR(email)) ~
-    //       (__ \ "phones").read(seqR(notEmpty))) (ContactInformation.apply)
-    //   }
+      val infoValidated = From[js.Dynamic] { __ =>
+         ((__ \ "label").read(notEmpty) ~
+          (__ \ "email").read(optionR(email)) ~
+          (__ \ "phones").read(seqR(notEmpty))) (ContactInformation.apply)
+      }
 
-    //   val contactValidated = From[js.Dynamic] { __ =>
-    //     ((__ \ "firstname").read(notEmpty) ~
-    //      (__ \ "lastname").read(notEmpty) ~
-    //      (__ \ "company").read[Option[String]] ~
-    //      (__ \ "informations").read(seqR(infoValidated))) (Contact.apply)
-    //   }
+      val contactValidated = From[js.Dynamic] { __ =>
+        ((__ \ "firstname").read(notEmpty) ~
+         (__ \ "lastname").read(notEmpty) ~
+         (__ \ "company").read[Option[String]] ~
+         (__ \ "informations").read(seqR(infoValidated))) (Contact.apply)
+      }
 
-    //   val expected =
-    //     Contact("Julien", "Tournay", None, Seq(
-    //       ContactInformation("Personal", Some("fakecontact@gmail.com"), List("01.23.45.67.89", "98.76.54.32.10"))))
+      val expected =
+        Contact("Julien", "Tournay", None, Seq(
+          ContactInformation("Personal", Some("fakecontact@gmail.com"), List("01.23.45.67.89", "98.76.54.32.10"))))
 
-    //   contactValidated.validate(validJson) shouldBe(Valid(expected))
-    //   contactValidated.validate(invalidJson) shouldBe(Invalid(Seq(
-    //     (Path \ "informations" \ 0 \ "label") -> Seq(ValidationError("error.required")))))
-    // }
+      contactValidated.validate(validJson) shouldBe(Valid(expected))
+      contactValidated.validate(invalidJson) shouldBe(Invalid(Seq(
+        (Path \ "informations" \ 0 \ "label") -> Seq(ValidationError("error.required")))))
+    }
 
     "read recursive" when {
       case class RecUser(name: String, friends: Seq[RecUser] = Nil)
