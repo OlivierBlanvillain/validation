@@ -50,7 +50,7 @@ object Writes extends DefaultWrites with DefaultMonoids with GenericWrites[js.Dy
   implicit def booleanW = Write[Boolean, js.Dynamic](_.asInstanceOf[js.Dynamic])
 
   implicit def seqToJsArray[I](implicit w: WriteLike[I, js.Dynamic]): Write[Seq[I], js.Dynamic] =
-    Write(ss => js.Array(ss.map(w.writes _)).asInstanceOf[js.Dynamic])
+    Write(ss => js.Array(ss.map(w.writes _): _*).asInstanceOf[js.Dynamic])
 
   def optionW[I, J](r: => WriteLike[I, J])(implicit w: Path => WriteLike[J, js.Dictionary[js.Dynamic]]): Path => Write[Option[I], js.Dictionary[js.Dynamic]] =
     super.optionW[I, J, js.Dictionary[js.Dynamic]](r, js.Dictionary[js.Dynamic]())

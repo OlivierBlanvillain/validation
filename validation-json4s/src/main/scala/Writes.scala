@@ -41,7 +41,7 @@ object Writes extends DefaultWrites with DefaultMonoids with GenericWrites[JValu
   implicit val stringW: Write[String, JValue] =
     Write(s => JString(s))
 
-  private def tToJs[T] = Write[T, JValue](i =>  org.json4s.ast.fast.JNumber(i.toString).toSafe)
+  private def tToJs[T] = Write[T, JValue](i => org.json4s.ast.fast.JNumber(i.toString).toSafe)
 
   implicit val intW = tToJs[Int]
   implicit val shortW = tToJs[Short]

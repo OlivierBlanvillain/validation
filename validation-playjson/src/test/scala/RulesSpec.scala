@@ -1,12 +1,12 @@
 import jto.validation._
 import jto.validation.playjson._
+import jto.validation.playjson.Rules._
 import org.scalatest._
 import play.api.libs.json.{JsValue, JsObject, Json, JsString, JsNumber, JsBoolean, JsArray, JsNull}
 
 class RulesSpec extends WordSpec with Matchers {
 
   "Json Rules" should {
-    import Rules._
 
     val valid = Json.obj(
     "firstname" -> "Julien",

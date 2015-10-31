@@ -1,12 +1,12 @@
 import jto.validation._
 import jto.validation.forms._
+import jto.validation.forms.Rules._
 import org.scalatest._
 
 class RulesSpec extends WordSpec with Matchers {
 
   "Rules" should {
 
-    import Rules._
     val valid: UrlFormEncoded = Map(
       "firstname" -> Seq("Julien", "ignored"),
       "lastname" -> Seq("Tournay"),

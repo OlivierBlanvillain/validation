@@ -1,13 +1,12 @@
 import jto.validation._
 import jto.validation.json4s._
+import jto.validation.json4s.Rules._
 import org.scalatest._
 import org.json4s.ast.safe._
 
 class RulesSpec extends WordSpec with Matchers {
 
   "Json Rules" should {
-
-    import Rules._
 
     val valid = JObject(Map(
     "firstname" -> JString("Julien"),
