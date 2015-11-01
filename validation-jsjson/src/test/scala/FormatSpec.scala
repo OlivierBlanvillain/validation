@@ -1,303 +1,272 @@
-// import jto.validation._
-// import jto.validation.json4s._
-// import org.scalatest._
-// import org.json4s.ast.safe._
+import jto.validation._
+import jto.validation.jsjson.Rules._
+import jto.validation.jsjson.Writes._
+import org.scalatest._
+import scala.scalajs.js
 
-// class FormatSpec extends WordSpec with Matchers {
-//   case class User(id: Long, name: String)
-//   val luigi = User(1, "Luigi")
+class FormatSpec extends WordSpec with Matchers {
+  implicit class DynamicEquals(val dynamic: js.Any) {
+    def dynamicEquals(otherDynamic: js.Any): Assertion =
+      js.JSON.stringify(dynamic) shouldBe js.JSON.stringify(otherDynamic)
+  }
 
-//   "Format" should {
+  case class User(id: Long, name: String)
+  val luigi = User(1, "Luigi")
+
+  "Format" should {
     
-//     "serialize and deserialize primitives" in {
-//       import Rules._
-//       import Writes._
+    "serialize and deserialize primitives" in {
+      val f = Formatting[js.Dynamic, js.Dynamic] { __ =>
+        (__ \ "id").format[Long]
+      }
 
-//       val f = Formatting[JValue, JObject] { __ =>
-//         (__ \ "id").format[Long]
-//       }
+      val m = js.Dynamic.literal("id" -> 1L)
 
-//       val m = JObject(Map("id" -> JNumber(1L)))
+      f.writes(1L) dynamicEquals m 
+      f.validate(m) shouldBe(Valid(1L))
 
-//       f.writes(1L) shouldBe(m)
-//       f.validate(m) shouldBe(Valid(1L))
+      (Path \ "id").from[js.Dynamic](f).validate(js.Dynamic.literal()) shouldBe(Invalid(Seq(Path \ "id" -> Seq(ValidationError("error.required")))))
+    }
 
-//       (Path \ "id").from[JValue](f).validate(JObject(Map())) shouldBe(Invalid(Seq(Path \ "id" -> Seq(ValidationError("error.required")))))
-//     }
+    "serialize and deserialize String" in {
+      val f = Formatting[js.Dynamic, js.Dynamic] { __ =>
+        (__ \ "id").format[String]
+      }
 
-//     "serialize and deserialize String" in {
-//       import Rules._
-//       import Writes._
+      val m = js.Dynamic.literal("id" -> "CAFEBABE")
 
-//       val f = Formatting[JValue, JObject] { __ =>
-//         (__ \ "id").format[String]
-//       }
+      f.writes("CAFEBABE") dynamicEquals m
+      f.validate(m) shouldBe(Valid("CAFEBABE"))
 
-//       val m = JObject(Map("id" -> JString("CAFEBABE")))
+      (Path \ "id").from[js.Dynamic](f).validate(js.Dynamic.literal()) shouldBe(Invalid(Seq(Path \ "id" -> Seq(ValidationError("error.required")))))
+    }
 
-//       f.writes("CAFEBABE") shouldBe(m)
-//       f.validate(m) shouldBe(Valid("CAFEBABE"))
+    "serialize and deserialize Seq[String]" in {
+      val f = Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "ids").format[Seq[String]] }
+      val m = js.Dynamic.literal("ids" -> js.Array("CAFEBABE", "FOOBAR"))
 
-//       (Path \ "id").from[JValue](f).validate(JObject(Map())) shouldBe(Invalid(Seq(Path \ "id" -> Seq(ValidationError("error.required")))))
-//     }
+      f.validate(m) shouldBe(Valid(Seq("CAFEBABE", "FOOBAR")))
+      f.writes(Seq("CAFEBABE", "FOOBAR")) dynamicEquals m
+    }
 
-//     "serialize and deserialize Seq[String]" in {
-//       import Rules._
-//       import Writes._
+    "serialize and deserialize User case class" in {
+      implicit val userF = Formatting[js.Dynamic, js.Dynamic] { __ =>
+        ((__ \ "id").format[Long] ~
+         (__ \ "name").format[String])(User.apply, User.unapply)
+      }
 
-//       val f = Formatting[JValue, JObject] { __ => (__ \ "ids").format[Seq[String]] }
-//       val m = JObject(Map("ids" -> JArray(Vector(JString("CAFEBABE"), JString("FOOBAR")))))
+      val m = js.Dynamic.literal("id" -> 1L, "name" -> "Luigi")
+      userF.validate(m) shouldBe(Valid(luigi))
+    }
 
-//       f.validate(m) shouldBe(Valid(Seq("CAFEBABE", "FOOBAR")))
-//       f.writes(Seq("CAFEBABE", "FOOBAR")) shouldBe(m)
-//     }
+    "support primitives types" when {
+      "Int" in {
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Int] }.validate(js.Dynamic.literal("n" -> 4)) shouldBe(Valid(4))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Int] }.validate(js.Dynamic.literal("n" -> "foo")) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Int")))))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Int] }.validate(js.Dynamic.literal("n" -> 4.5)) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Int")))))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n" \ "o").format[Int] }.validate(js.Dynamic.literal("n" -> js.Dynamic.literal("o" -> 4))) shouldBe(Valid(4))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n" \ "o").format[Int] }.validate(js.Dynamic.literal("n" -> js.Dynamic.literal("o" -> "foo"))) shouldBe(Invalid(Seq(Path \ "n" \ "o" -> Seq(ValidationError("error.number", "Int")))))
 
-//     "serialize and deserialize User case class" in {
-//       import Rules._
-//       import Writes._
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n" \ "o" \ "p").format[Int] }.validate(js.Dynamic.literal("n" -> js.Dynamic.literal("o" -> js.Dynamic.literal("p" -> 4)))) shouldBe(Valid(4))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n" \ "o" \ "p").format[Int] }.validate(js.Dynamic.literal("n" -> js.Dynamic.literal("o" -> js.Dynamic.literal("p" -> "foo")))) shouldBe(Invalid(Seq(Path \ "n" \ "o" \ "p" -> Seq(ValidationError("error.number", "Int")))))
 
-//       implicit val userF = Formatting[JValue, JObject] { __ =>
-//         ((__ \ "id").format[Long] ~
-//          (__ \ "name").format[String])(User.apply, User.unapply)
-//       }
+        val errPath = Path \ "foo"
+        val error = Invalid(Seq(errPath -> Seq(ValidationError("error.required"))))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "foo").format[Int] }.validate(js.Dynamic.literal("n" -> 4)) shouldBe(error)
+      }
 
-//       val m = JObject(Map("id" -> JNumber(1L), "name" -> JString("Luigi")))
-//       userF.validate(m) shouldBe(Valid(luigi))
-//     }
+      "Short" in {
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Short] }.validate(js.Dynamic.literal("n" -> 4)) shouldBe(Valid(4))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Short] }.validate(js.Dynamic.literal("n" -> "foo")) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Short")))))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Short] }.validate(js.Dynamic.literal("n" -> 4.5)) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Short")))))
+      }
 
-//     "support primitives types" when {
-//       import Rules._
-//       import Writes._
+      "Long" in {
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Long] }.validate(js.Dynamic.literal("n" -> 4)) shouldBe(Valid(4))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Long] }.validate(js.Dynamic.literal("n" -> "foo")) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Long")))))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Long] }.validate(js.Dynamic.literal("n" -> 4.5)) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Long")))))
+      }
 
-//       "Int" in {
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Int] }.validate(JObject(Map("n" -> JNumber(4)))) shouldBe(Valid(4))
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Int] }.validate(JObject(Map("n" -> JString("foo")))) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Int")))))
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Int] }.validate(JObject(Map("n" -> JNumber(4.5)))) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Int")))))
-//         Formatting[JValue, JObject] { __ => (__ \ "n" \ "o").format[Int] }.validate(JObject(Map("n" -> JObject(Map("o" -> JNumber(4)))))) shouldBe(Valid(4))
-//         Formatting[JValue, JObject] { __ => (__ \ "n" \ "o").format[Int] }.validate(JObject(Map("n" -> JObject(Map("o" -> JString("foo")))))) shouldBe(Invalid(Seq(Path \ "n" \ "o" -> Seq(ValidationError("error.number", "Int")))))
+      "Float" in {
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Float] }.validate(js.Dynamic.literal("n" -> 4)) shouldBe(Valid(4))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Float] }.validate(js.Dynamic.literal("n" -> "foo")) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Float")))))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Float] }.validate(js.Dynamic.literal("n" -> 4.5)) shouldBe(Valid(4.5F))
+      }
 
-//         Formatting[JValue, JObject] { __ => (__ \ "n" \ "o" \ "p").format[Int] }.validate(JObject(Map("n" -> JObject(Map("o" -> JObject(Map("p" -> JNumber(4)))))))) shouldBe(Valid(4))
-//         Formatting[JValue, JObject] { __ => (__ \ "n" \ "o" \ "p").format[Int] }.validate(JObject(Map("n" -> JObject(Map("o" -> JObject(Map("p" -> JString("foo")))))))) shouldBe(Invalid(Seq(Path \ "n" \ "o" \ "p" -> Seq(ValidationError("error.number", "Int")))))
+      "Double" in {
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Double] }.validate(js.Dynamic.literal("n" -> 4)) shouldBe(Valid(4))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Double] }.validate(js.Dynamic.literal("n" -> "foo")) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Double")))))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Double] }.validate(js.Dynamic.literal("n" -> 4.5)) shouldBe(Valid(4.5))
+      }
 
-//         val errPath = Path \ "foo"
-//         val error = Invalid(Seq(errPath -> Seq(ValidationError("error.required"))))
-//         Formatting[JValue, JObject] { __ => (__ \ "foo").format[Int] }.validate(JObject(Map("n" -> JNumber(4)))) shouldBe(error)
-//       }
+      "scala BigDecimal" in {
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[BigDecimal] }.validate(js.Dynamic.literal("n" -> 4)) shouldBe(Valid(BigDecimal(4)))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[BigDecimal] }.validate(js.Dynamic.literal("n" -> "foo")) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "BigDecimal")))))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[BigDecimal] }.validate(js.Dynamic.literal("n" -> 4.5)) shouldBe(Valid(BigDecimal(4.5)))
+      }
 
-//       "Short" in {
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Short] }.validate(JObject(Map("n" -> JNumber(4)))) shouldBe(Valid(4))
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Short] }.validate(JObject(Map("n" -> JString("foo")))) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Short")))))
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Short] }.validate(JObject(Map("n" -> JNumber(4.5)))) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Short")))))
-//       }
+      "Boolean" in {
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Boolean] }.validate(js.Dynamic.literal("n" -> true)) shouldBe(Valid(true))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Boolean] }.validate(js.Dynamic.literal("n" -> "foo")) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.invalid", "Boolean")))))
+      }
 
-//       "Long" in {
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Long] }.validate(JObject(Map("n" -> JNumber(4)))) shouldBe(Valid(4))
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Long] }.validate(JObject(Map("n" -> JString("foo")))) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Long")))))
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Long] }.validate(JObject(Map("n" -> JNumber(4.5)))) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Long")))))
-//       }
+      "String" in {
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[String] }.validate(js.Dynamic.literal("n" -> "foo")) shouldBe(Valid("foo"))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "o").format[String] }.validate(js.Dynamic.literal("o.n" -> "foo")) shouldBe(Invalid(Seq(Path \ "o" -> Seq(ValidationError("error.required")))))
+      }
 
-//       "Float" in {
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Float] }.validate(JObject(Map("n" -> JNumber(4)))) shouldBe(Valid(4))
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Float] }.validate(JObject(Map("n" -> JString("foo")))) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Float")))))
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Float] }.validate(JObject(Map("n" -> JNumber(4.5)))) shouldBe(Valid(4.5F))
-//       }
+      "Option" in {
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Option[Boolean]] }.validate(js.Dynamic.literal("n" -> true)) shouldBe(Valid(Some(true)))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Option[Boolean]] }.validate(js.Dynamic.literal()) shouldBe(Valid(None))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Option[Boolean]] }.validate(js.Dynamic.literal("foo" -> "bar")) shouldBe(Valid(None))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Option[Boolean]] }.validate(js.Dynamic.literal("n" -> "bar")) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.invalid", "Boolean")))))
+      }
 
-//       "Double" in {
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Double] }.validate(JObject(Map("n" -> JNumber(4)))) shouldBe(Valid(4))
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Double] }.validate(JObject(Map("n" -> JString("foo")))) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Double")))))
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Double] }.validate(JObject(Map("n" -> JNumber(4.5)))) shouldBe(Valid(4.5))
-//       }
+      "Map[String, Seq[V]]" in {
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Map[String, Seq[String]]] }.validate(js.Dynamic.literal("n" -> js.Dynamic.literal("foo" -> js.Array("bar")))) shouldBe(Valid(Map("foo" -> Seq("bar"))))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Map[String, Seq[Int]]] }.validate(js.Dynamic.literal("n" -> js.Dynamic.literal("foo" -> js.Array(4), "bar" -> js.Array(5)))) shouldBe(Valid(Map("foo" -> Seq(4), "bar" -> Seq(5))))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "x").format[Map[String, Int]] }.validate(js.Dynamic.literal("n" -> js.Dynamic.literal("foo" -> 4, "bar" -> "frack"))) shouldBe(Invalid(Seq(Path \ "x" -> Seq(ValidationError("error.required")))))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Map[String, Seq[Int]]] }.validate(js.Dynamic.literal("n" -> js.Dynamic.literal("foo" -> js.Array(4), "bar" -> js.Array("frack")))) shouldBe(Invalid(Seq(Path \ "n" \ "bar" \ 0 -> Seq(ValidationError("error.number", "Int")))))
+      }
 
-//       "java BigDecimal" in {
-//         import java.math.{BigDecimal => jBigDecimal}
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[jBigDecimal] }.validate(JObject(Map("n" -> JNumber(4)))) shouldBe(Valid(new jBigDecimal("4")))
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[jBigDecimal] }.validate(JObject(Map("n" -> JString("foo")))) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "BigDecimal")))))
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[jBigDecimal] }.validate(JObject(Map("n" -> JNumber(4.5)))) shouldBe(Valid(new jBigDecimal("4.5")))
-//       }
+      "Traversable" in {
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Traversable[String]] }.validate(js.Dynamic.literal("n" -> js.Array("foo"))).toOption.get.toSeq shouldBe(Seq("foo"))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Traversable[Int]] }.validate(js.Dynamic.literal("n" -> js.Array(1, 2, 3))).toOption.get.toSeq shouldBe(Seq(1, 2, 3))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Traversable[Int]] }.validate(js.Dynamic.literal("n" -> js.Array("1", "paf"))) shouldBe(Invalid(Seq(
+          Path \ "n" \ 0 -> Seq(ValidationError("error.number", "Int")),
+          Path \ "n" \ 1 -> Seq(ValidationError("error.number", "Int"))
+        )))
+      }
 
-//       "scala BigDecimal" in {
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[BigDecimal] }.validate(JObject(Map("n" -> JNumber(4)))) shouldBe(Valid(BigDecimal(4)))
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[BigDecimal] }.validate(JObject(Map("n" -> JString("foo")))) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "BigDecimal")))))
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[BigDecimal] }.validate(JObject(Map("n" -> JNumber(4.5)))) shouldBe(Valid(BigDecimal(4.5)))
-//       }
+      "Array" in {
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Array[String]] }.validate(js.Dynamic.literal("n" -> js.Array("foo"))).toOption.get.toSeq shouldBe(Seq("foo"))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Array[Int]] }.validate(js.Dynamic.literal("n" -> js.Array(1, 2, 3))).toOption.get.toSeq shouldBe(Seq(1, 2, 3))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Array[Int]] }.validate(js.Dynamic.literal("n" -> js.Array("1", "paf"))) shouldBe(Invalid(Seq(
+          Path \ "n" \ 0 -> Seq(ValidationError("error.number", "Int")),
+          Path \ "n" \ 1 -> Seq(ValidationError("error.number", "Int"))
+        )))
+      }
 
-//       "Boolean" in {
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Boolean] }.validate(JObject(Map("n" -> JBoolean(true)))) shouldBe(Valid(true))
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Boolean] }.validate(JObject(Map("n" -> JString("foo")))) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.invalid", "Boolean")))))
-//       }
+      "Seq" in {
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Seq[String]] }.validate(js.Dynamic.literal("n" -> js.Array("foo"))).toOption.get shouldBe(Seq("foo"))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Seq[Int]] }.validate(js.Dynamic.literal("n" -> js.Array(1, 2, 3))).toOption.get shouldBe(Seq(1, 2, 3))
+        Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "n").format[Seq[Int]] }.validate(js.Dynamic.literal("n" -> js.Array("1", "paf"))) shouldBe(Invalid(Seq(
+          Path \ "n" \ 0 -> Seq(ValidationError("error.number", "Int")),
+          Path \ "n" \ 1 -> Seq(ValidationError("error.number", "Int"))
+        )))
+      }
+    }
 
-//       "String" in {
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[String] }.validate(JObject(Map("n" -> JString("foo")))) shouldBe(Valid("foo"))
-//         Formatting[JValue, JObject] { __ => (__ \ "o").format[String] }.validate(JObject(Map("o.n" -> JString("foo")))) shouldBe(Invalid(Seq(Path \ "o" -> Seq(ValidationError("error.required")))))
-//       }
+    "serialize and deserialize with validation" in {
+      val f = Formatting[js.Dynamic, js.Dynamic] { __ =>
+        ((__ \ "firstname").format(notEmpty) ~
+         (__ \ "lastname").format(notEmpty)).tupled
+      }
 
-//       "Option" in {
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Option[Boolean]] }.validate(JObject(Map("n" -> JBoolean(true)))) shouldBe(Valid(Some(true)))
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Option[Boolean]] }.validate(JObject(Map())) shouldBe(Valid(None))
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Option[Boolean]] }.validate(JObject(Map("foo" -> JString("bar")))) shouldBe(Valid(None))
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Option[Boolean]] }.validate(JObject(Map("n" -> JString("bar")))) shouldBe(Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.invalid", "Boolean")))))
-//       }
+      val valid = js.Dynamic.literal(
+        "firstname" -> "Julien",
+        "lastname" -> "Tournay")
 
-//       "Map[String, Seq[V]]" in {
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Map[String, Seq[String]]] }.validate(JObject(Map("n" -> JObject(Map("foo" -> JArray(Vector(JString("bar")))))))) shouldBe(Valid(Map("foo" -> Seq("bar"))))
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Map[String, Seq[Int]]] }.validate(JObject(Map("n" -> JObject(Map("foo" -> JArray(Vector(JNumber(4))), "bar" -> JArray(Vector(JNumber(5)))))))) shouldBe(Valid(Map("foo" -> Seq(4), "bar" -> Seq(5))))
-//         Formatting[JValue, JObject] { __ => (__ \ "x").format[Map[String, Int]] }.validate(JObject(Map("n" -> JObject(Map("foo" -> JNumber(4), "bar" -> JString("frack")))))) shouldBe(Invalid(Seq(Path \ "x" -> Seq(ValidationError("error.required")))))
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Map[String, Seq[Int]]] }.validate(JObject(Map("n" -> JObject(Map("foo" -> JArray(Vector(JNumber(4))), "bar" -> JArray(Vector(JString("frack")))))))) shouldBe(Invalid(Seq(Path \ "n" \ "bar" \ 0 -> Seq(ValidationError("error.number", "Int")))))
-//       }
+      val invalid = js.Dynamic.literal("lastname" -> "Tournay")
 
-//       "Traversable" in {
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Traversable[String]] }.validate(JObject(Map("n" -> JArray(Vector(JString("foo")))))).toOption.get.toSeq shouldBe(Seq("foo"))
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Traversable[Int]] }.validate(JObject(Map("n" -> JArray(Vector(JNumber(1), JNumber(2), JNumber(3)))))).toOption.get.toSeq shouldBe(Seq(1, 2, 3))
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Traversable[Int]] }.validate(JObject(Map("n" -> JArray(Vector(JString("1"), JString("paf")))))) shouldBe(Invalid(Seq(
-//           Path \ "n" \ 0 -> Seq(ValidationError("error.number", "Int")),
-//           Path \ "n" \ 1 -> Seq(ValidationError("error.number", "Int"))
-//         )))
-//       }
+      val result = ("Julien", "Tournay")
 
-//       "Array" in {
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Array[String]] }.validate(JObject(Map("n" -> JArray(Vector(JString("foo")))))).toOption.get.toSeq shouldBe(Seq("foo"))
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Array[Int]] }.validate(JObject(Map("n" -> JArray(Vector(JNumber(1), JNumber(2), JNumber(3)))))).toOption.get.toSeq shouldBe(Seq(1, 2, 3))
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Array[Int]] }.validate(JObject(Map("n" -> JArray(Vector(JString("1"), JString("paf")))))) shouldBe(Invalid(Seq(
-//           Path \ "n" \ 0 -> Seq(ValidationError("error.number", "Int")),
-//           Path \ "n" \ 1 -> Seq(ValidationError("error.number", "Int"))
-//         )))
-//       }
+      f.writes(result) dynamicEquals(valid)
+      f.validate(valid) shouldBe(Valid(result))
 
-//       "Seq" in {
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Seq[String]] }.validate(JObject(Map("n" -> JArray(Vector(JString("foo")))))).toOption.get shouldBe(Seq("foo"))
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Seq[Int]] }.validate(JObject(Map("n" -> JArray(Vector(JNumber(1), JNumber(2), JNumber(3)))))).toOption.get shouldBe(Seq(1, 2, 3))
-//         Formatting[JValue, JObject] { __ => (__ \ "n").format[Seq[Int]] }.validate(JObject(Map("n" -> JArray(Vector(JString("1"), JString("paf")))))) shouldBe(Invalid(Seq(
-//           Path \ "n" \ 0 -> Seq(ValidationError("error.number", "Int")),
-//           Path \ "n" \ 1 -> Seq(ValidationError("error.number", "Int"))
-//         )))
-//       }
-//     }
+      f.validate(invalid) shouldBe(Invalid(Seq((Path \ "firstname", Seq(ValidationError("error.required"))))))
+    }
 
-//     "serialize and deserialize with validation" in {
-//       import Rules._
-//       import Writes._
+    "format seq" in {
+      val valid = js.Dynamic.literal(
+      "firstname" -> js.Array("Julien"),
+      "foobar" -> js.Array(),
+      "lastname" -> "Tournay",
+      "age" -> 27,
+      "information" -> js.Dynamic.literal(
+        "label" -> "Personal",
+        "email" -> "fakecontact@gmail.com",
+        "phones" -> js.Array("01.23.45.67.89", "98.76.54.32.10")))
 
-//       val f = Formatting[JValue, JObject] { __ =>
-//         ((__ \ "firstname").format(notEmpty) ~
-//          (__ \ "lastname").format(notEmpty)).tupled
-//       }
+      def isNotEmpty[T <: Traversable[_]] = validateWith[T]("error.notEmpty"){ !_.isEmpty }
 
-//       val valid = JObject(Map(
-//         "firstname" -> JString("Julien"),
-//         "lastname" -> JString("Tournay")))
+      Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "firstname").format[Seq[String]] }.validate(valid) shouldBe(Valid(Seq("Julien")))
+      Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "foobar").format[Seq[String]] }.validate(valid) shouldBe(Valid(Seq()))
+      Formatting[js.Dynamic, js.Dynamic] { __ => (__ \ "foobar").format(isNotEmpty[Seq[Int]]) }.validate(valid) shouldBe(Invalid(Seq(Path \ "foobar" -> Seq(ValidationError("error.notEmpty")))))
+    }
 
-//       val invalid = JObject(Map("lastname" -> JString("Tournay")))
+    "format recursive" when {
+      case class RecUser(name: String, friends: Seq[RecUser] = Nil)
+      val u = RecUser(
+        "bob",
+        Seq(RecUser("tom")))
 
-//       val result = ("Julien", "Tournay")
+      val m = js.Dynamic.literal(
+        "name" -> "bob",
+        "friends" -> js.Array(js.Dynamic.literal("name" -> "tom", "friends" -> js.Array())))
 
-//       f.writes(result) shouldBe(valid)
-//       f.validate(valid) shouldBe(Valid(result))
+      case class User1(name: String, friend: Option[User1] = None)
+      val u1 = User1("bob", Some(User1("tom")))
+      val m1 = js.Dynamic.literal(
+        "name" -> "bob",
+        "friend" -> js.Dynamic.literal("name" -> "tom"))
 
-//       f.validate(invalid) shouldBe(Invalid(Seq((Path \ "firstname", Seq(ValidationError("error.required"))))))
-//     }
+      "using explicit notation" in {
+        lazy val w: Format[js.Dynamic, js.Dynamic, RecUser] = Formatting[js.Dynamic, js.Dynamic]{ __ =>
+          ((__ \ "name").format[String] ~
+           (__ \ "friends").format(seqR(w), seqW(w)))(RecUser.apply, RecUser.unapply)
+        }
+        w.validate(m) shouldBe Valid(u)
+        w.writes(u) dynamicEquals m
 
-//     "format seq" in {
-//       import Rules._
-//       import Writes._
+        lazy val w3: Format[js.Dynamic, js.Dynamic, User1] = Formatting[js.Dynamic, js.Dynamic]{ __ =>
+          ((__ \ "name").format[String] ~
+           (__ \ "friend").format(optionR(w3), optionW(w3)))(User1.apply, User1.unapply)
+        }
+        w3.validate(m1) shouldBe Valid(u1)
+        w3.writes(u1) dynamicEquals m1
+      }
 
-//       val valid = JObject(Map(
-//       "firstname" -> JArray(Vector(JString("Julien"))),
-//       "foobar" -> JArray(Vector()),
-//       "lastname" -> JString("Tournay"),
-//       "age" -> JNumber(27),
-//       "information" -> JObject(Map(
-//         "label" -> JString("Personal"),
-//         "email" -> JString("fakecontact@gmail.com"),
-//         "phones" -> JArray(Vector(JString("01.23.45.67.89"), JString("98.76.54.32.10")))))))
+      "using implicit notation" in {
+        implicit lazy val w: Format[js.Dynamic, js.Dynamic, RecUser] = Formatting[js.Dynamic, js.Dynamic] { __ =>
+          ((__ \ "name").format[String] ~
+           (__ \ "friends").format[Seq[RecUser]])(RecUser.apply, RecUser.unapply)
+        }
+        w.validate(m) shouldBe Valid(u)
+        w.writes(u) dynamicEquals m
 
-//       def isNotEmpty[T <: Traversable[_]] = validateWith[T]("error.notEmpty"){ !_.isEmpty }
+        implicit lazy val w3: Format[js.Dynamic, js.Dynamic, User1] = Formatting[js.Dynamic, js.Dynamic] { __ =>
+          ((__ \ "name").format[String] ~
+           (__ \ "friend").format[Option[User1]])(User1.apply, User1.unapply)
+        }
+        w3.validate(m1) shouldBe Valid(u1)
+        w3.writes(u1) dynamicEquals m1
+      }
+    }
 
-//       Formatting[JValue, JObject] { __ => (__ \ "firstname").format[Seq[String]] }.validate(valid) shouldBe(Valid(Seq("Julien")))
-//       Formatting[JValue, JObject] { __ => (__ \ "foobar").format[Seq[String]] }.validate(valid) shouldBe(Valid(Seq()))
-//       Formatting[JValue, JObject] { __ => (__ \ "foobar").format(isNotEmpty[Seq[Int]]) }.validate(valid) shouldBe(Invalid(Seq(Path \ "foobar" -> Seq(ValidationError("error.notEmpty")))))
-//     }
+    "work with Rule ans Write seamlessly" in {
+      implicit val userF = Formatting[js.Dynamic, js.Dynamic] { __ =>
+        ((__ \ "id").format[Long] ~
+         (__ \ "name").format[String])(User.apply, User.unapply)
+      }
 
-//     "format recursive" when {
-//       case class RecUser(name: String, friends: Seq[RecUser] = Nil)
-//       val u = RecUser(
-//         "bob",
-//         Seq(RecUser("tom")))
+      val  userJs = js.Dynamic.literal("id" -> 1L, "name" -> "Luigi")
+      userF.validate(userJs) shouldBe(Valid(luigi))
+      userF.writes(luigi) dynamicEquals(userJs)
 
-//       val m = JObject(Map(
-//         "name" -> JString("bob"),
-//         "friends" -> JArray(Vector(JObject(Map("name" -> JString("tom"), "friends" -> JArray(Vector())))))))
+      val fin = From[js.Dynamic] { __ =>
+        (__ \ "user").read[User]
+      }
 
-//       case class User1(name: String, friend: Option[User1] = None)
-//       val u1 = User1("bob", Some(User1("tom")))
-//       val m1 = JObject(Map(
-//         "name" -> JString("bob"),
-//         "friend" -> JObject(Map("name" -> JString("tom")))))
+      val m2 = js.Dynamic.literal("user" -> userJs)
+      fin.validate(m2) shouldBe(Valid(luigi))
 
-//       "using explicit notation" in {
-//         import Rules._
-//         import Writes._
+      val win = To[js.Dynamic] { __ =>
+        (__ \ "user").write[User]
+      }
+      win.writes(luigi) dynamicEquals(m2)
+    }
 
-//         lazy val w: Format[JValue, JObject, RecUser] = Formatting[JValue, JObject]{ __ =>
-//           ((__ \ "name").format[String] ~
-//            (__ \ "friends").format(seqR(w), seqW(w)))(RecUser.apply, RecUser.unapply)
-//         }
-//         w.validate(m) shouldBe Valid(u)
-//         w.writes(u) shouldBe m
+  }
 
-//         lazy val w3: Format[JValue, JObject, User1] = Formatting[JValue, JObject]{ __ =>
-//           ((__ \ "name").format[String] ~
-//            (__ \ "friend").format(optionR(w3), optionW(w3)))(User1.apply, User1.unapply)
-//         }
-//         w3.validate(m1) shouldBe Valid(u1)
-//         w3.writes(u1) shouldBe m1
-//       }
-
-//       "using implicit notation" in {
-//         import Rules._
-//         import Writes._
-
-//         implicit lazy val w: Format[JValue, JObject, RecUser] = Formatting[JValue, JObject]{ __ =>
-//           ((__ \ "name").format[String] ~
-//            (__ \ "friends").format[Seq[RecUser]])(RecUser.apply, RecUser.unapply)
-//         }
-//         w.validate(m) shouldBe Valid(u)
-//         w.writes(u) shouldBe m
-
-//         implicit lazy val w3: Format[JValue, JObject, User1] = Formatting[JValue, JObject]{ __ =>
-//           ((__ \ "name").format[String] ~
-//            (__ \ "friend").format[Option[User1]])(User1.apply, User1.unapply)
-//         }
-//         w3.validate(m1) shouldBe Valid(u1)
-//         w3.writes(u1) shouldBe m1
-//       }
-//     }
-
-//     "work with Rule ans Write seamlessly" in {
-//       import Rules._
-//       import Writes._
-
-//       implicit val userF = Formatting[JValue, JObject] { __ =>
-//         ((__ \ "id").format[Long] ~
-//          (__ \ "name").format[String])(User.apply, User.unapply)
-//       }
-
-//       val  userJs = JObject(Map("id" -> JNumber(1L), "name" -> JString("Luigi")))
-//       userF.validate(userJs) shouldBe(Valid(luigi))
-//       userF.writes(luigi) shouldBe(userJs)
-
-//       val fin = From[JObject] { __ =>
-//         (__ \ "user").read[User]
-//       }
-
-//       val m2 = JObject(Map("user" -> userJs))
-//       fin.validate(m2) shouldBe(Valid(luigi))
-
-//       val win = To[JValue] { __ =>
-//         (__ \ "user").write[User]
-//       }
-//       win.writes(luigi) shouldBe(m2)
-//     }
-
-//   }
-
-// }
+}

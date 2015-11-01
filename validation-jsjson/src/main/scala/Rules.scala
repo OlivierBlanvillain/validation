@@ -28,8 +28,7 @@ object Rules extends DefaultRules[js.Dynamic] {
   }("error.number", "Short")
 
   implicit def longR = jsonAs[Long] {
-    // v.asInstanceOf[Long] fails with a scala.scalajs.runtime.UndefinedBehaviorError:
-    // An undefined behavior was detected: 4 is not an instance of scala.scalajs.runtime.RuntimeLong.
+    // Long are *opaque*, see http://www.scala-js.org/doc/semantics.html
     case v if js.typeOf(v) == "number" && Try(v.toString.toLong).isSuccess => Valid(v.toString.toLong)
   }("error.number", "Long")
 
