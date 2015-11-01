@@ -68,7 +68,7 @@ object Writes extends DefaultWrites with DefaultMonoids with GenericWrites[js.Dy
     optionW(Write.zero[I])
 
   implicit def mapW[I](implicit w: WriteLike[I, js.Dynamic]) = Write[Map[String, I], js.Dynamic] { m =>
-    // We can't use js.Dynamic.literal here because of SI-9308.
+    // Can't use js.Dynamic.literal here because of SI-9308.
     js.Dictionary[js.Dynamic](m.mapValues(w.writes).toSeq: _*).asInstanceOf[js.Dynamic]
   }
 
