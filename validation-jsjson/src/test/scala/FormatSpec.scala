@@ -4,11 +4,7 @@ import jto.validation.jsjson.Writes._
 import org.scalatest._
 import scala.scalajs.js
 
-class FormatSpec extends WordSpec with Matchers {
-  implicit class DynamicEquals(val dynamic: js.Any) {
-    def dynamicEquals(otherDynamic: js.Any): Assertion =
-      js.JSON.stringify(dynamic) shouldBe js.JSON.stringify(otherDynamic)
-  }
+class FormatSpec extends WordSpec with Matchers with JsAnyEquality {
 
   case class User(id: Long, name: String)
   val luigi = User(1, "Luigi")
@@ -22,7 +18,7 @@ class FormatSpec extends WordSpec with Matchers {
 
       val m = js.Dynamic.literal("id" -> 1L)
 
-      f.writes(1L) dynamicEquals m 
+      f.writes(1L) shouldBe m 
       f.validate(m) shouldBe(Valid(1L))
 
       (Path \ "id").from[js.Dynamic](f).validate(js.Dynamic.literal()) shouldBe(Invalid(Seq(Path \ "id" -> Seq(ValidationError("error.required")))))
@@ -35,7 +31,7 @@ class FormatSpec extends WordSpec with Matchers {
 
       val m = js.Dynamic.literal("id" -> "CAFEBABE")
 
-      f.writes("CAFEBABE") dynamicEquals m
+      f.writes("CAFEBABE") shouldBe m
       f.validate(m) shouldBe(Valid("CAFEBABE"))
 
       (Path \ "id").from[js.Dynamic](f).validate(js.Dynamic.literal()) shouldBe(Invalid(Seq(Path \ "id" -> Seq(ValidationError("error.required")))))
@@ -46,7 +42,7 @@ class FormatSpec extends WordSpec with Matchers {
       val m = js.Dynamic.literal("ids" -> js.Array("CAFEBABE", "FOOBAR"))
 
       f.validate(m) shouldBe(Valid(Seq("CAFEBABE", "FOOBAR")))
-      f.writes(Seq("CAFEBABE", "FOOBAR")) dynamicEquals m
+      f.writes(Seq("CAFEBABE", "FOOBAR")) shouldBe m
     }
 
     "serialize and deserialize User case class" in {
@@ -171,7 +167,7 @@ class FormatSpec extends WordSpec with Matchers {
 
       val result = ("Julien", "Tournay")
 
-      f.writes(result) dynamicEquals(valid)
+      f.writes(result) shouldBe(valid)
       f.validate(valid) shouldBe(Valid(result))
 
       f.validate(invalid) shouldBe(Invalid(Seq((Path \ "firstname", Seq(ValidationError("error.required"))))))
@@ -217,14 +213,14 @@ class FormatSpec extends WordSpec with Matchers {
            (__ \ "friends").format(seqR(w), seqW(w)))(RecUser.apply, RecUser.unapply)
         }
         w.validate(m) shouldBe Valid(u)
-        w.writes(u) dynamicEquals m
+        w.writes(u) shouldBe m
 
         lazy val w3: Format[js.Dynamic, js.Dynamic, User1] = Formatting[js.Dynamic, js.Dynamic]{ __ =>
           ((__ \ "name").format[String] ~
            (__ \ "friend").format(optionR(w3), optionW(w3)))(User1.apply, User1.unapply)
         }
         w3.validate(m1) shouldBe Valid(u1)
-        w3.writes(u1) dynamicEquals m1
+        w3.writes(u1) shouldBe m1
       }
 
       "using implicit notation" in {
@@ -233,14 +229,14 @@ class FormatSpec extends WordSpec with Matchers {
            (__ \ "friends").format[Seq[RecUser]])(RecUser.apply, RecUser.unapply)
         }
         w.validate(m) shouldBe Valid(u)
-        w.writes(u) dynamicEquals m
+        w.writes(u) shouldBe m
 
         implicit lazy val w3: Format[js.Dynamic, js.Dynamic, User1] = Formatting[js.Dynamic, js.Dynamic] { __ =>
           ((__ \ "name").format[String] ~
            (__ \ "friend").format[Option[User1]])(User1.apply, User1.unapply)
         }
         w3.validate(m1) shouldBe Valid(u1)
-        w3.writes(u1) dynamicEquals m1
+        w3.writes(u1) shouldBe m1
       }
     }
 
@@ -252,7 +248,7 @@ class FormatSpec extends WordSpec with Matchers {
 
       val  userJs = js.Dynamic.literal("id" -> 1L, "name" -> "Luigi")
       userF.validate(userJs) shouldBe(Valid(luigi))
-      userF.writes(luigi) dynamicEquals(userJs)
+      userF.writes(luigi) shouldBe(userJs)
 
       val fin = From[js.Dynamic] { __ =>
         (__ \ "user").read[User]
@@ -264,9 +260,7 @@ class FormatSpec extends WordSpec with Matchers {
       val win = To[js.Dynamic] { __ =>
         (__ \ "user").write[User]
       }
-      win.writes(luigi) dynamicEquals(m2)
+      win.writes(luigi) shouldBe(m2)
     }
-
   }
-
 }

@@ -9,22 +9,22 @@ class RulesSpec extends WordSpec with Matchers {
   "Json Rules" should {
 
     val valid = js.Dynamic.literal(
-    "firstname" -> "Julien",
-    "lastname" -> "Tournay",
-    "age" -> 27,
-    "informations" -> js.Dynamic.literal(
-      "label" -> "Personal",
-      "email" -> "fakecontact@gmail.com",
-      "phones" -> js.Array("01.23.45.67.89", "98.76.54.32.10")))
+      "firstname" -> "Julien",
+      "lastname" -> "Tournay",
+      "age" -> 27,
+      "informations" -> js.Dynamic.literal(
+        "label" -> "Personal",
+        "email" -> "fakecontact@gmail.com",
+        "phones" -> js.Array("01.23.45.67.89", "98.76.54.32.10")))
 
     val invalid = js.Dynamic.literal(
-    "firstname" -> "Julien",
-    "lastname" -> "Tournay",
-    "age" -> 27,
-    "informations" -> js.Dynamic.literal(
-      "label" -> "",
-      "email" -> "fakecontact@gmail.com",
-      "phones" -> js.Array("01.23.45.67.89", "98.76.54.32.10")))
+      "firstname" -> "Julien",
+      "lastname" -> "Tournay",
+      "age" -> 27,
+      "informations" -> js.Dynamic.literal(
+        "label" -> "",
+        "email" -> "fakecontact@gmail.com",
+        "phones" -> js.Array("01.23.45.67.89", "98.76.54.32.10")))
 
     "extract data" in {
       (Path \ "firstname").read[js.Dynamic, String].validate(valid) shouldBe(Valid("Julien"))
