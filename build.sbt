@@ -171,3 +171,8 @@ val dontPublish = Seq(
   publishLocal := (),
   publishArtifact := false
 )
+
+// These aliases serialise the build for the benefit of Travis-CI.
+addCommandAlias("ciJVM", ";validation-coreJVM/compile;validation-formJVM/compile;validation-delimitedJVM/compile;validation-json4sJVM/compile;validation-playjson/compile;validation-xml/compile;validation-coreJVM/test;validation-formJVM/test;validation-delimitedJVM/test;validation-json4sJVM/test;validation-playjson/test;validation-xml/test")
+addCommandAlias("ciJS", ";validation-coreJS/compile;validation-formJS/compile;validation-delimitedJS/compile;validation-json4sJS/compile;validation-jsjson/compile;validation-coreJS/test;validation-formJS/test;validation-delimitedJS/test;validation-json4sJS/test;validation-jsjson/test")
+addCommandAlias("ci", ";clean;ciJS;ciJVM;docs/tut")
