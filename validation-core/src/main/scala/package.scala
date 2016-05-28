@@ -1,6 +1,7 @@
 package jto
 
 import cats.{Monoid, Unapply}
+import cats.functor.Invariant
 import cats.syntax.{CartesianOps, CartesianSyntax1}
 import cats.Cartesian
 
@@ -46,4 +47,57 @@ package object validation {
       def empty: Seq[A] = Seq.empty[A]
       def combine(x: Seq[A], y: Seq[A]): Seq[A] = x ++ y
     }
+
+  // http://goo.gl/YpwIam
+  // ----------------------------------------------------------------------------------------
+  implicit def mixInvariants[F1[_], F2[_]]
+    (implicit I1: Invariant[F1], I2: Invariant[F2], M: Mixer[F1, F2]) =
+      new Invariant[Lambda[O => F1[O] with F2[O]]] {
+        def imap[A, B](fa: F1[A] with F2[A])(f: A => B)(g: B => A): F1[B] with F2[B] =
+          M.mix(I1.imap(fa)(f)(g), I2.imap(fa)(f)(g))
+      }
+
+  implicit def mixSyntaxCombine[F1[_], F2[_]]
+    (implicit S1: SyntaxCombine[F1], S2: SyntaxCombine[F2], M: Mixer[F1, F2]) =
+      new SyntaxCombine[Lambda[I => F1[I] with F2[I]]] {
+        def apply[A, B](ma: F1[A] with F2[A], mb: F1[B] with F2[B]): F1[A ~ B] with F2[A ~ B] =
+          M.mix(S1(ma, mb), S2(ma, mb))
+      }
+
+  def mixFunctorSyntaxObs[F1[_], F2[_], A](ff: F1[A] with F2[A])
+    (implicit S: SyntaxCombine[Lambda[I => F1[I] with F2[I]]]) =
+      new InvariantSyntaxObs[Lambda[I => F1[I] with F2[I]], A](ff)
+
+  // Guides scalac implicit resolution for mixing Rule[IR, ?] & Write[?, OW]
+  // ----------------------------------------------------------------------------------------
+  type Format[IR, OW, A] = Rule[IR, A] with Write[A, OW]
+
+  implicit def formatMixSyntaxCombine[IR, OW: Monoid]: SyntaxCombine[Format[IR, OW, ?]] =
+    mixSyntaxCombine[Rule[IR, ?], Write[?, OW]]
+
+  implicit def formatMixInvariants[IR, OW]: Invariant[Format[IR, OW, ?]] =
+    mixInvariants[Rule[IR, ?], Write[?, OW]]
+
+  implicit def formatMixFunctorSyntaxObs[IR, OW: Monoid, A]
+    (f: Format[IR, OW, A]): InvariantSyntaxObs[Format[IR, OW, ?], A] =
+      mixFunctorSyntaxObs[Rule[IR, ?], Write[?, OW], A](f)
+
+  // Format sugar (backward source compatible)
+  // ----------------------------------------------------------------------------------------
+  def Format[IR, OW, A](r: Rule[IR, A], w: Write[A, OW]): Format[IR, OW, A] =
+    Mixer.mixRuleLikeWriteLike.mix(r, w)
+
+  def Formatting[IR, OW] = new FormattingCurried[IR, OW] {}
+}
+
+class FormattingCurried[IR, OW] {
+  import jto.validation._
+
+  def apply[A](as: As2[Rule[IR, ?], Write[?, OW]] => Format[IR, OW, A])
+    (implicit
+      a1: At[Rule[IR, ?]],
+      a2: At[Write[?, OW]],
+      M: Mixer[Rule[IR, ?], Write[?, OW]]
+    ): Format[IR, OW, A] =
+      Build[Rule[IR, ?], Write[?, OW], A](as)
 }

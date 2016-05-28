@@ -100,4 +100,9 @@ object Writes
         throw new RuntimeException(s"path $path is not a path of JsObject") // XXX: should be a compile time error
     }
   }
+
+  implicit val writeAtJson: At[Write[?, JsObject]] = new At[Write[?, JsObject]] {
+    def at[A](path: Path, f: Write[A, JsObject]): Write[A, JsObject] =
+      writeJson(path)(f)
+  }
 }

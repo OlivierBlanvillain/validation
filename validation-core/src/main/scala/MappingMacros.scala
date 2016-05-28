@@ -174,12 +174,12 @@ object MappingMacros {
         q"""{ _root_.jto.validation.From[${typeI}] { __ => $body } }""")
   }
 
-  def format[IR: c.WeakTypeTag, IW: c.WeakTypeTag, O: c.WeakTypeTag](
-      c: Context): c.Expr[Format[IR, IW, O]] = {
-    import c.universe._
+  // def format[IR: c.WeakTypeTag, IW: c.WeakTypeTag, O: c.WeakTypeTag](
+  //     c: Context): c.Expr[Format[IR, IW, O]] = {
+  //   import c.universe._
 
-    val r = rule[IR, O](c)
-    val w = write[O, IW](c)
-    c.Expr[Format[IR, IW, O]](q"""_root_.jto.validation.Format($r, $w)""")
-  }
+  //   val r = rule[IR, O](c)
+  //   val w = write[O, IW](c)
+  //   c.Expr[Format[IR, IW, O]](q"""_root_.jto.validation.Format($r, $w)""")
+  // }
 }

@@ -13,12 +13,18 @@ val playVersion = "2.5.3"
 val scalacVersion = "2.11.8"
 val scalatestVersion = "3.0.0-M16-SNAP6"
 val scalaXmlVersion = "1.0.5"
+val simulacrumVersion = "0.7.0"
+val si2712fixVersion = "1.2.0"
+val paradiseVersion = "2.1.0"
+
+libraryDependencies += "com.github.mpilquist" %% "simulacrum" % "0.7.0"
 
 val json4sAST = libraryDependencies += "org.json4s" %%% "json4s-ast" % json4sAstVersion
 
 lazy val root = aggregate("validation", validationJVM, validationJS, docs).in(file("."))
 lazy val validationJVM = aggregate("validationJVM", coreJVM, formJVM, delimitedJVM, json4sJVM, `validation-playjson`, `validation-xml`, `date-tests`)
 lazy val validationJS = aggregate("validationJS", coreJS, formJS, delimitedJS, json4sJS, `validation-jsjson`)
+lazy val play = aggregate("play", coreJVM, `validation-playjson`)
 
 lazy val `validation-core` = crossProject
   .crossType(CrossType.Pure)
@@ -104,7 +110,7 @@ lazy val settings = Seq(
   testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
   scalaJSStage in Global := FastOptStage,
   parallelExecution := false
-) ++ reformatOnCompileSettings
+)
 
 val commonScalacOptions = Seq(
   "-deprecation",
@@ -116,7 +122,7 @@ val commonScalacOptions = Seq(
   "-language:experimental.macros",
   "-language:postfixOps",
   "-unchecked",
-  "-Xfatal-warnings",
+  // "-Xfatal-warnings",
   "-Xlint",
   "-Yinline-warnings",
   "-Yno-adapted-args",
@@ -132,15 +138,16 @@ val commonResolvers = Seq(
   Resolver.sonatypeRepo("releases")
 )
 
-val dependencies = Seq(
-  libraryDependencies ++= Seq(
-    "org.typelevel" %%% "cats" % catsVersion,
-    "org.scalatest" %%% "scalatest" % scalatestVersion % "test",
-    "joda-time" % "joda-time" % jodaTimeVersion,
-    "org.joda" % "joda-convert" % jodaConvertVersion
-  ),
-  addCompilerPlugin("org.spire-math" %% "kind-projector" % kindProjectorVersion)
-)
+val dependencies = Seq(libraryDependencies ++= Seq(
+  "org.typelevel" %%% "cats" % catsVersion,
+  "org.scalatest" %%% "scalatest" % scalatestVersion % "test",
+  "com.github.mpilquist" %% "simulacrum" % simulacrumVersion,
+  "joda-time" % "joda-time" % jodaTimeVersion,
+  "org.joda" % "joda-convert" % jodaConvertVersion,
+  compilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full),
+  compilerPlugin("org.spire-math" %% "kind-projector" % kindProjectorVersion),
+  compilerPlugin("com.milessabin" % "si2712fix-plugin" % si2712fixVersion cross CrossVersion.full)
+))
 
 val generateBoilerplate = Seq(
   sourceGenerators in Compile <+= (sourceManaged in Compile).map(Boilerplate.gen)
