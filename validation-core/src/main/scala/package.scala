@@ -30,12 +30,6 @@ package object validation {
   type Invalid[+E] = cats.data.Validated.Invalid[E]
   val Invalid = cats.data.Validated.Invalid
 
-  implicit def validatedBackcompat[E, A](
-      va: Validated[Seq[E], A]): VABackCompat[E, A] =
-    new VABackCompat[E, A] {
-      val v = va
-    }
-
   implicit def cartesianSyntaxU[FA](fa: FA)(
       implicit U: Unapply[Cartesian, FA]): CartesianOps[U.M, U.A] = {
     object As extends CartesianSyntax1
@@ -51,14 +45,14 @@ package object validation {
   // http://goo.gl/YpwIam
   // ----------------------------------------------------------------------------------------
   implicit def mixInvariants[F1[_], F2[_]]
-    (implicit I1: Invariant[F1], I2: Invariant[F2], M: Mixer[F1, F2]) =
+    (implicit I1: Invariant[F1], I2: Invariant[F2], M: Mixer2[F1, F2]) =
       new Invariant[Lambda[O => F1[O] with F2[O]]] {
         def imap[A, B](fa: F1[A] with F2[A])(f: A => B)(g: B => A): F1[B] with F2[B] =
           M.mix(I1.imap(fa)(f)(g), I2.imap(fa)(f)(g))
       }
 
   implicit def mixSyntaxCombine[F1[_], F2[_]]
-    (implicit S1: SyntaxCombine[F1], S2: SyntaxCombine[F2], M: Mixer[F1, F2]) =
+    (implicit S1: SyntaxCombine[F1], S2: SyntaxCombine[F2], M: Mixer2[F1, F2]) =
       new SyntaxCombine[Lambda[I => F1[I] with F2[I]]] {
         def apply[A, B](ma: F1[A] with F2[A], mb: F1[B] with F2[B]): F1[A ~ B] with F2[A ~ B] =
           M.mix(S1(ma, mb), S2(ma, mb))
@@ -85,7 +79,7 @@ package object validation {
   // Format sugar (backward source compatible)
   // ----------------------------------------------------------------------------------------
   def Format[IR, OW, A](r: Rule[IR, A], w: Write[A, OW]): Format[IR, OW, A] =
-    Mixer.mixRuleLikeWriteLike.mix(r, w)
+    Mixer2.mixRuleWrite.mix(r, w)
 
   def Formatting[IR, OW] = new FormattingCurried[IR, OW] {}
 }
@@ -97,7 +91,7 @@ class FormattingCurried[IR, OW] {
     (implicit
       a1: At[Rule[IR, ?]],
       a2: At[Write[?, OW]],
-      M: Mixer[Rule[IR, ?], Write[?, OW]]
+      M: Mixer2[Rule[IR, ?], Write[?, OW]]
     ): Format[IR, OW, A] =
       Build[Rule[IR, ?], Write[?, OW], A](as)
 }
