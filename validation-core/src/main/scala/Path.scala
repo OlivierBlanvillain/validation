@@ -40,18 +40,18 @@ class Path(val path: List[PathNode]) {
   def ++(other: Path) = this compose other
 
   class Deferred[I] private[Path](reader: Reader[I]) {
-    def apply[J, O](sub: => RuleLike[J, O])(
-        implicit r: Path => RuleLike[I, J]): Rule[I, O] =
+    def apply[J, O](sub: => Rule[J, O])(
+        implicit r: Path => Rule[I, J]): Rule[I, O] =
       reader.read(sub)
   }
 
   def from[I] = new Deferred(Reader[I](this))
 
-  def read[I, J, O](sub: => RuleLike[J, O])(
-      implicit r: Path => RuleLike[I, J]): Rule[I, O] =
+  def read[I, J, O](sub: => Rule[J, O])(
+      implicit r: Path => Rule[I, J]): Rule[I, O] =
     Reader[I](this).read(sub)
 
-  def read[I, O](implicit r: Path => RuleLike[I, O]): Rule[I, O] =
+  def read[I, O](implicit r: Path => Rule[I, O]): Rule[I, O] =
     Reader[I](this).read[O]
 
   /**

@@ -86,253 +86,256 @@ class FormatSpec extends WordSpec with Matchers {
           (Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Int")))))
         )
 
-        // Formatting[JsValue, JsObject] { __ =>
-        //   (__ \ "n").format[Int]
-        // }.validate(Json.obj("n" -> 4.5)) shouldBe
-        // (Invalid(Seq(Path \ "n" -> Seq(
-        //                 ValidationError("error.number", "Int")))))
-        // Formatting[JsValue, JsObject] { __ =>
-        //   (__ \ "n" \ "o").format[Int]
-        // }.validate(Json.obj("n" -> Json.obj("o" -> 4))) shouldBe (Valid(4))
-        // Formatting[JsValue, JsObject] { __ =>
-        //   (__ \ "n" \ "o").format[Int]
-        // }.validate(Json.obj("n" -> Json.obj("o" -> "foo"))) shouldBe
-        // (Invalid(Seq(Path \ "n" \ "o" -> Seq(
-        //                 ValidationError("error.number", "Int")))))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Int]
+        }.validate(Json.obj("n" -> 4.5)) shouldBe
+        (Invalid(Seq(Path \ "n" -> Seq(
+                        ValidationError("error.number", "Int")))))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n" \ "o").format[Int]
+        }.validate(Json.obj("n" -> Json.obj("o" -> 4))) shouldBe (Valid(4))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n" \ "o").format[Int]
+        }.validate(Json.obj("n" -> Json.obj("o" -> "foo"))) shouldBe
+        (Invalid(Seq(Path \ "n" \ "o" -> Seq(
+                        ValidationError("error.number", "Int")))))
 
-        // Formatting[JsValue, JsObject] { __ =>
-        //   (__ \ "n" \ "o" \ "p").format[Int]
-        // }.validate(Json.obj("n" -> Json.obj("o" -> Json.obj("p" -> 4)))) shouldBe
-        // (Valid(4))
-        // Formatting[JsValue, JsObject] { __ =>
-        //   (__ \ "n" \ "o" \ "p").format[Int]
-        // }.validate(Json.obj("n" -> Json.obj("o" -> Json.obj("p" -> "foo")))) shouldBe
-        // (Invalid(Seq(Path \ "n" \ "o" \ "p" -> Seq(
-        //                 ValidationError("error.number", "Int")))))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n" \ "o" \ "p").format[Int]
+        }.validate(Json.obj("n" -> Json.obj("o" -> Json.obj("p" -> 4)))) shouldBe
+        (Valid(4))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n" \ "o" \ "p").format[Int]
+        }.validate(Json.obj("n" -> Json.obj("o" -> Json.obj("p" -> "foo")))) shouldBe
+        (Invalid(Seq(Path \ "n" \ "o" \ "p" -> Seq(
+                        ValidationError("error.number", "Int")))))
 
-        // val errPath = Path \ "foo"
-        // val error =
-        //   Invalid(Seq(errPath -> Seq(ValidationError("error.required"))))
-        // Formatting[JsValue, JsObject] { __ =>
-        //   (__ \ "foo").format[Int]
-        // }.validate(Json.obj("n" -> 4)) shouldBe (error)
+        val errPath = Path \ "foo"
+        val error =
+          Invalid(Seq(errPath -> Seq(ValidationError("error.required"))))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "foo").format[Int]
+        }.validate(Json.obj("n" -> 4)) shouldBe (error)
       }
 
-      // "Short" in {
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Short]
-      //   }.validate(Json.obj("n" -> 4)) shouldBe (Valid(4))
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Short]
-      //   }.validate(Json.obj("n" -> "foo")) shouldBe
-      //   (Invalid(Seq(Path \ "n" -> Seq(
-      //                   ValidationError("error.number", "Short")))))
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Short]
-      //   }.validate(Json.obj("n" -> 4.5)) shouldBe
-      //   (Invalid(Seq(Path \ "n" -> Seq(
-      //                   ValidationError("error.number", "Short")))))
-      // }
+      "Short" in {
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Short]
+        }.validate(Json.obj("n" -> 4)) shouldBe (Valid(4))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Short]
+        }.validate(Json.obj("n" -> "foo")) shouldBe
+        (Invalid(Seq(Path \ "n" -> Seq(
+                        ValidationError("error.number", "Short")))))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Short]
+        }.validate(Json.obj("n" -> 4.5)) shouldBe
+        (Invalid(Seq(Path \ "n" -> Seq(
+                        ValidationError("error.number", "Short")))))
+      }
 
-      // "Long" in {
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Long]
-      //   }.validate(Json.obj("n" -> 4)) shouldBe (Valid(4))
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Long]
-      //   }.validate(Json.obj("n" -> "foo")) shouldBe
-      //   (Invalid(Seq(Path \ "n" -> Seq(
-      //                   ValidationError("error.number", "Long")))))
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Long]
-      //   }.validate(Json.obj("n" -> 4.5)) shouldBe
-      //   (Invalid(Seq(Path \ "n" -> Seq(
-      //                   ValidationError("error.number", "Long")))))
-      // }
+      "Long" in {
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Long]
+        }.validate(Json.obj("n" -> 4)) shouldBe (Valid(4))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Long]
+        }.validate(Json.obj("n" -> "foo")) shouldBe
+        (Invalid(Seq(Path \ "n" -> Seq(
+                        ValidationError("error.number", "Long")))))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Long]
+        }.validate(Json.obj("n" -> 4.5)) shouldBe
+        (Invalid(Seq(Path \ "n" -> Seq(
+                        ValidationError("error.number", "Long")))))
+      }
 
-      // "Float" in {
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Float]
-      //   }.validate(Json.obj("n" -> 4)) shouldBe (Valid(4))
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Float]
-      //   }.validate(Json.obj("n" -> "foo")) shouldBe
-      //   (Invalid(Seq(Path \ "n" -> Seq(
-      //                   ValidationError("error.number", "Float")))))
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Float]
-      //   }.validate(Json.obj("n" -> 4.5)) shouldBe (Valid(4.5F))
-      // }
+      "Float" in {
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Float]
+        }.validate(Json.obj("n" -> 4)) shouldBe (Valid(4))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Float]
+        }.validate(Json.obj("n" -> "foo")) shouldBe
+        (Invalid(Seq(Path \ "n" -> Seq(
+                        ValidationError("error.number", "Float")))))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Float]
+        }.validate(Json.obj("n" -> 4.5)) shouldBe (Valid(4.5F))
+      }
 
-      // "Double" in {
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Double]
-      //   }.validate(Json.obj("n" -> 4)) shouldBe (Valid(4))
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Double]
-      //   }.validate(Json.obj("n" -> "foo")) shouldBe
-      //   (Invalid(Seq(Path \ "n" -> Seq(
-      //                   ValidationError("error.number", "Double")))))
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Double]
-      //   }.validate(Json.obj("n" -> 4.5)) shouldBe (Valid(4.5))
-      // }
+      "Double" in {
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Double]
+        }.validate(Json.obj("n" -> 4)) shouldBe (Valid(4))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Double]
+        }.validate(Json.obj("n" -> "foo")) shouldBe
+        (Invalid(Seq(Path \ "n" -> Seq(
+                        ValidationError("error.number", "Double")))))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Double]
+        }.validate(Json.obj("n" -> 4.5)) shouldBe (Valid(4.5))
+      }
 
-      // "java BigDecimal" in {
-      //   import java.math.{BigDecimal => jBigDecimal}
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[jBigDecimal]
-      //   }.validate(Json.obj("n" -> 4)) shouldBe (Valid(new jBigDecimal("4")))
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[jBigDecimal]
-      //   }.validate(Json.obj("n" -> "foo")) shouldBe
-      //   (Invalid(Seq(Path \ "n" -> Seq(
-      //                   ValidationError("error.number", "BigDecimal")))))
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[jBigDecimal]
-      //   }.validate(Json.obj("n" -> 4.5)) shouldBe
-      //   (Valid(new jBigDecimal("4.5")))
-      // }
+      "java BigDecimal" in {
+        import java.math.{BigDecimal => jBigDecimal}
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[jBigDecimal]
+        }.validate(Json.obj("n" -> 4)) shouldBe (Valid(new jBigDecimal("4")))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[jBigDecimal]
+        }.validate(Json.obj("n" -> "foo")) shouldBe
+        (Invalid(Seq(Path \ "n" -> Seq(
+                        ValidationError("error.number", "BigDecimal")))))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[jBigDecimal]
+        }.validate(Json.obj("n" -> 4.5)) shouldBe
+        (Valid(new jBigDecimal("4.5")))
+      }
 
-      // "scala BigDecimal" in {
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[BigDecimal]
-      //   }.validate(Json.obj("n" -> 4)) shouldBe (Valid(BigDecimal(4)))
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[BigDecimal]
-      //   }.validate(Json.obj("n" -> "foo")) shouldBe
-      //   (Invalid(Seq(Path \ "n" -> Seq(
-      //                   ValidationError("error.number", "BigDecimal")))))
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[BigDecimal]
-      //   }.validate(Json.obj("n" -> 4.5)) shouldBe (Valid(BigDecimal(4.5)))
-      // }
+      "scala BigDecimal" in {
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[BigDecimal]
+        }.validate(Json.obj("n" -> 4)) shouldBe (Valid(BigDecimal(4)))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[BigDecimal]
+        }.validate(Json.obj("n" -> "foo")) shouldBe
+        (Invalid(Seq(Path \ "n" -> Seq(
+                        ValidationError("error.number", "BigDecimal")))))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[BigDecimal]
+        }.validate(Json.obj("n" -> 4.5)) shouldBe (Valid(BigDecimal(4.5)))
+      }
 
-      // "Boolean" in {
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Boolean]
-      //   }.validate(Json.obj("n" -> true)) shouldBe (Valid(true))
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Boolean]
-      //   }.validate(Json.obj("n" -> "foo")) shouldBe
-      //   (Invalid(Seq(Path \ "n" -> Seq(
-      //                   ValidationError("error.invalid", "Boolean")))))
-      // }
+      "Boolean" in {
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Boolean]
+        }.validate(Json.obj("n" -> true)) shouldBe (Valid(true))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Boolean]
+        }.validate(Json.obj("n" -> "foo")) shouldBe
+        (Invalid(Seq(Path \ "n" -> Seq(
+                        ValidationError("error.invalid", "Boolean")))))
+      }
 
-      // "String" in {
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[String]
-      //   }.validate(Json.obj("n" -> "foo")) shouldBe (Valid("foo"))
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "o").format[String]
-      //   }.validate(Json.obj("o.n" -> "foo")) shouldBe
-      //   (Invalid(Seq(Path \ "o" -> Seq(ValidationError("error.required")))))
-      // }
+      "String" in {
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[String]
+        }.validate(Json.obj("n" -> "foo")) shouldBe (Valid("foo"))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "o").format[String]
+        }.validate(Json.obj("o.n" -> "foo")) shouldBe
+        (Invalid(Seq(Path \ "o" -> Seq(ValidationError("error.required")))))
+      }
 
-      // "Option" in {
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Option[Boolean]]
-      //   }.validate(Json.obj("n" -> true)) shouldBe (Valid(Some(true)))
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Option[Boolean]]
-      //   }.validate(Json.obj()) shouldBe (Valid(None))
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Option[Boolean]]
-      //   }.validate(Json.obj("foo" -> "bar")) shouldBe (Valid(None))
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Option[Boolean]]
-      //   }.validate(Json.obj("n" -> "bar")) shouldBe
-      //   (Invalid(Seq(Path \ "n" -> Seq(
-      //                   ValidationError("error.invalid", "Boolean")))))
-      // }
+      "Option" in {
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Option[Boolean]]
+        }.validate(Json.obj("n" -> true)) shouldBe (Valid(Some(true)))
 
-      // "Map[String, Seq[V]]" in {
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Map[String, Seq[String]]]
-      //   }.validate(Json.obj("n" -> Json.obj("foo" -> Seq("bar")))) shouldBe
-      //   (Valid(Map("foo" -> Seq("bar"))))
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Map[String, Seq[Int]]]
-      //   }.validate(Json.obj("n" -> Json.obj("foo" -> Seq(4), "bar" -> Seq(5)))) shouldBe
-      //   (Valid(Map("foo" -> Seq(4), "bar" -> Seq(5))))
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "x").format[Map[String, Int]]
-      //   }.validate(Json.obj("n" -> Json.obj("foo" -> 4, "bar" -> "frack"))) shouldBe
-      //   (Invalid(Seq(Path \ "x" -> Seq(ValidationError("error.required")))))
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Map[String, Seq[Int]]]
-      //   }.validate(Json.obj("n" -> Json.obj("foo" -> Seq(4),
-      //                                       "bar" -> Seq("frack")))) shouldBe
-      //   (Invalid(Seq(Path \ "n" \ "bar" \ 0 -> Seq(
-      //                   ValidationError("error.number", "Int")))))
-      // }
+        // Formatting[JsValue, JsObject] { __ =>
+        //   (__ \ "n").format[Option[Boolean]]
+        // }.validate(Json.obj()) shouldBe (Valid(None))
 
-      // "Traversable" in {
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Traversable[String]]
-      //   }.validate(Json.obj("n" -> Seq("foo"))).toOption.get.toSeq shouldBe
-      //   (Seq("foo"))
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Traversable[Int]]
-      //   }.validate(Json.obj("n" -> Seq(1, 2, 3))).toOption.get.toSeq shouldBe
-      //   (Seq(1, 2, 3))
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Traversable[Int]]
-      //   }.validate(Json.obj("n" -> Seq("1", "paf"))) shouldBe
-      //   (Invalid(Seq(
-      //               Path \ "n" \ 0 -> Seq(
-      //                   ValidationError("error.number", "Int")),
-      //               Path \ "n" \ 1 -> Seq(
-      //                   ValidationError("error.number", "Int"))
-      //           )))
-      // }
+        // Formatting[JsValue, JsObject] { __ =>
+        //   (__ \ "n").format[Option[Boolean]]
+        // }.validate(Json.obj("foo" -> "bar")) shouldBe (Valid(None))
 
-      // "Array" in {
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Array[String]]
-      //   }.validate(Json.obj("n" -> Seq("foo"))).toOption.get.toSeq shouldBe
-      //   (Seq("foo"))
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Array[Int]]
-      //   }.validate(Json.obj("n" -> Seq(1, 2, 3))).toOption.get.toSeq shouldBe
-      //   (Seq(1, 2, 3))
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Array[Int]]
-      //   }.validate(Json.obj("n" -> Seq("1", "paf"))) shouldBe
-      //   (Invalid(Seq(
-      //               Path \ "n" \ 0 -> Seq(
-      //                   ValidationError("error.number", "Int")),
-      //               Path \ "n" \ 1 -> Seq(
-      //                   ValidationError("error.number", "Int"))
-      //           )))
-      // }
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Option[Boolean]]
+        }.validate(Json.obj("n" -> "bar")) shouldBe
+        (Invalid(Seq(Path \ "n" -> Seq(
+                        ValidationError("error.invalid", "Boolean")))))
+      }
 
-      // "Seq" in {
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Seq[String]]
-      //   }.validate(Json.obj("n" -> Seq("foo"))).toOption.get shouldBe
-      //   (Seq("foo"))
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Seq[Int]]
-      //   }.validate(Json.obj("n" -> Seq(1, 2, 3))).toOption.get shouldBe
-      //   (Seq(1, 2, 3))
-      //   Formatting[JsValue, JsObject] { __ =>
-      //     (__ \ "n").format[Seq[Int]]
-      //   }.validate(Json.obj("n" -> Seq("1", "paf"))) shouldBe
-      //   (Invalid(Seq(
-      //               Path \ "n" \ 0 -> Seq(
-      //                   ValidationError("error.number", "Int")),
-      //               Path \ "n" \ 1 -> Seq(
-      //                   ValidationError("error.number", "Int"))
-      //           )))
-      // }
+      "Map[String, Seq[V]]" in {
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Map[String, Seq[String]]]
+        }.validate(Json.obj("n" -> Json.obj("foo" -> Seq("bar")))) shouldBe
+        (Valid(Map("foo" -> Seq("bar"))))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Map[String, Seq[Int]]]
+        }.validate(Json.obj("n" -> Json.obj("foo" -> Seq(4), "bar" -> Seq(5)))) shouldBe
+        (Valid(Map("foo" -> Seq(4), "bar" -> Seq(5))))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "x").format[Map[String, Int]]
+        }.validate(Json.obj("n" -> Json.obj("foo" -> 4, "bar" -> "frack"))) shouldBe
+        (Invalid(Seq(Path \ "x" -> Seq(ValidationError("error.required")))))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Map[String, Seq[Int]]]
+        }.validate(Json.obj("n" -> Json.obj("foo" -> Seq(4),
+                                            "bar" -> Seq("frack")))) shouldBe
+        (Invalid(Seq(Path \ "n" \ "bar" \ 0 -> Seq(
+                        ValidationError("error.number", "Int")))))
+      }
+
+      "Traversable" in {
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Traversable[String]]
+        }.validate(Json.obj("n" -> Seq("foo"))).toOption.get.toSeq shouldBe
+        (Seq("foo"))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Traversable[Int]]
+        }.validate(Json.obj("n" -> Seq(1, 2, 3))).toOption.get.toSeq shouldBe
+        (Seq(1, 2, 3))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Traversable[Int]]
+        }.validate(Json.obj("n" -> Seq("1", "paf"))) shouldBe
+        (Invalid(Seq(
+                    Path \ "n" \ 0 -> Seq(
+                        ValidationError("error.number", "Int")),
+                    Path \ "n" \ 1 -> Seq(
+                        ValidationError("error.number", "Int"))
+                )))
+      }
+
+      "Array" in {
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Array[String]]
+        }.validate(Json.obj("n" -> Seq("foo"))).toOption.get.toSeq shouldBe
+        (Seq("foo"))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Array[Int]]
+        }.validate(Json.obj("n" -> Seq(1, 2, 3))).toOption.get.toSeq shouldBe
+        (Seq(1, 2, 3))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Array[Int]]
+        }.validate(Json.obj("n" -> Seq("1", "paf"))) shouldBe
+        (Invalid(Seq(
+                    Path \ "n" \ 0 -> Seq(
+                        ValidationError("error.number", "Int")),
+                    Path \ "n" \ 1 -> Seq(
+                        ValidationError("error.number", "Int"))
+                )))
+      }
+
+      "Seq" in {
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Seq[String]]
+        }.validate(Json.obj("n" -> Seq("foo"))).toOption.get shouldBe
+        (Seq("foo"))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Seq[Int]]
+        }.validate(Json.obj("n" -> Seq(1, 2, 3))).toOption.get shouldBe
+        (Seq(1, 2, 3))
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Seq[Int]]
+        }.validate(Json.obj("n" -> Seq("1", "paf"))) shouldBe
+        (Invalid(Seq(
+                    Path \ "n" \ 0 -> Seq(
+                        ValidationError("error.number", "Int")),
+                    Path \ "n" \ 1 -> Seq(
+                        ValidationError("error.number", "Int"))
+                )))
+      }
     }
 
     // "serialize and deserialize with validation" in {
     //   import Rules._
     //   import Writes._
 
-    //   val f: Format[JsValue, JsValue, (String, String)] = Formatting[JsValue, JsValue] { __ =>
+    //   val f: Format[JsValue, JsObject, (String, String)] = Formatting[JsValue, JsObject] { __ =>
     //     (
     //       (__ \ "firstname").format[String](stringR andThen notEmpty, stringW) ~
     //       (__ \ "lastname").format[String](stringR andThen notEmpty, stringW)
@@ -430,13 +433,13 @@ class FormatSpec extends WordSpec with Matchers {
       //   w.validate(m) shouldBe Valid(u)
       //   w.writes(u) shouldBe m
 
-        // implicit lazy val w3: Format[JsValue, JsObject, User1] =
-        //   Formatting[JsValue, JsObject] { __ =>
-        //     ((__ \ "name").format[String] ~ (__ \ "friend")
-        //           .format[Option[User1]]).unlifted(User1.apply, User1.unapply)
-        //   }
-        // w3.validate(m1) shouldBe Valid(u1)
-        // w3.writes(u1) shouldBe m1
+      //   implicit lazy val w3: Format[JsValue, JsObject, User1] =
+      //     Formatting[JsValue, JsObject] { __ =>
+      //       ((__ \ "name").format[String] ~ (__ \ "friend")
+      //             .format[Option[User1]]).unlifted(User1.apply, User1.unapply)
+      //     }
+      //   w3.validate(m1) shouldBe Valid(u1)
+      //   w3.writes(u1) shouldBe m1
       // }
     }
 

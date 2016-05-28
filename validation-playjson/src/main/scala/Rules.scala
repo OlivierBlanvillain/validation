@@ -149,9 +149,8 @@ object Rules extends DefaultRules[JsValue] {
   implicit def pickTraversable[O](implicit r: RuleLike[JsValue, O]) =
     pickInS(traversableR[JsValue, O])
 
-
   implicit val ruleAtJson: At[Rule[JsValue, ?]] = new At[Rule[JsValue, ?]] {
     def at[A](path: Path, f: Rule[JsValue, A]): Rule[JsValue, A] =
-      pickInJson(path)(f)
+      pickInJson(path)(f).repath(path ++ _)
   }
 }
