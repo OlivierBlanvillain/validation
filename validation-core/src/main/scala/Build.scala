@@ -186,6 +186,21 @@ case class As2[F1[_]: At, F2[_]: At](path: Path = Path(Nil))(implicit M: Mixer[F
   def format[O](implicit m1: Path => F1[O], m2: Path => F2[O]): F1[O] with F2[O] =
     M.mix(m1(path), m2(path))
 
+
+  // def format[O]
+  //   (implicit
+  //     r: Path => RuleLike[IR, O],
+  //     w: Path => WriteLike[O, IW]
+  //   ): Format[IR, IW, O] =
+  //     Format[IR, IW, O](Reader(path).read(Rule.zero[O]), Writer(path).write(Write.zero[O]))
+
+  // def format[JJ, J, O](subR: => RuleLike[J, O], subW: => WriteLike[O, JJ])
+  //   (implicit
+  //     r: Path => RuleLike[IR, J],
+  //     w: Path => WriteLike[JJ, IW]
+  //   ): Format[IR, IW, O] =
+  //     Format[IR, IW, O](Reader(path).read(subR), Writer(path).write(subW))
+
   def \(key: String): As2[F1, F2] = As2(path \ key)
   def \(idx: Int): As2[F1, F2] = As2(path \ idx)
   def \(child: PathNode): As2[F1, F2] = As2(path \ child)

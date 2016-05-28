@@ -80,11 +80,11 @@ class FormatSpec extends WordSpec with Matchers {
           (__ \ "n").format[Int]
         }.validate(Json.obj("n" -> 4)) shouldBe (Valid(4))
 
-        // Formatting[JsValue, JsObject] { __ =>
-        //   (__ \ "n").format[Int]
-        // }.validate(Json.obj("n" -> "foo")).shouldBe(
-        //   (Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Int")))))
-        // )
+        Formatting[JsValue, JsObject] { __ =>
+          (__ \ "n").format[Int]
+        }.validate(Json.obj("n" -> "foo")).shouldBe(
+          (Invalid(Seq(Path \ "n" -> Seq(ValidationError("error.number", "Int")))))
+        )
 
         // Formatting[JsValue, JsObject] { __ =>
         //   (__ \ "n").format[Int]
@@ -328,157 +328,159 @@ class FormatSpec extends WordSpec with Matchers {
       // }
     }
 
-    // // "serialize and deserialize with validation" in {
-    // //   import Rules._
-    // //   import Writes._
-
-    // //   val f = Formatting[JsValue, JsObject] { __ =>
-    // //     ((__ \ "firstname").format(notEmpty) ~ (__ \ "lastname").format(
-    // //             notEmpty)).tupled
-    // //   }
-
-    // //   val valid = Json.obj("firstname" -> "Julien", "lastname" -> "Tournay")
-
-    // //   val invalid = Json.obj("lastname" -> "Tournay")
-
-    // //   val result = ("Julien", "Tournay")
-
-    // //   f.writes(result) shouldBe (valid)
-    // //   f.validate(valid) shouldBe (Valid(result))
-
-    // //   f.validate(invalid) shouldBe
-    // //   (Invalid(Seq((Path \ "firstname",
-    // //                 Seq(ValidationError("error.required"))))))
-    // // }
-
-    // "format seq" in {
+    // "serialize and deserialize with validation" in {
     //   import Rules._
     //   import Writes._
 
-    //   val valid =
-    //     Json.obj("firstname" -> Seq("Julien"),
-    //              "foobar" -> JsArray(),
-    //              "lastname" -> "Tournay",
-    //              "age" -> 27,
-    //              "information" -> Json.obj("label" -> "Personal",
-    //                                        "email" -> "fakecontact@gmail.com",
-    //                                        "phones" -> Seq("01.23.45.67.89",
-    //                                                        "98.76.54.32.10")))
-
-    //   def isNotEmpty[T <: Traversable[_]] = validateWith[T]("error.notEmpty") {
-    //     !_.isEmpty
+    //   val f: Format[JsValue, JsValue, (String, String)] = Formatting[JsValue, JsValue] { __ =>
+    //     (
+    //       (__ \ "firstname").format[String](stringR andThen notEmpty, stringW) ~
+    //       (__ \ "lastname").format[String](stringR andThen notEmpty, stringW)
+    //     ).tupled
     //   }
 
-    //   Formatting[JsValue, JsObject] { __ =>
-    //     (__ \ "firstname").format[Seq[String]]
-    //   }.validate(valid) shouldBe (Valid(Seq("Julien")))
-    //   Formatting[JsValue, JsObject] { __ =>
-    //     (__ \ "foobar").format[Seq[String]]
-    //   }.validate(valid) shouldBe (Valid(Seq()))
-    //   // Formatting[JsValue, JsObject] { __ =>
-    //   //   (__ \ "foobar").format(isNotEmpty[Seq[Int]])
-    //   // }.validate(valid) shouldBe
-    //   // (Invalid(Seq(Path \ "foobar" -> Seq(ValidationError("error.notEmpty")))))
+    //   val valid = Json.obj("firstname" -> "Julien", "lastname" -> "Tournay")
+
+    //   val invalid = Json.obj("lastname" -> "Tournay")
+
+    //   val result = ("Julien", "Tournay")
+
+    //   f.writes(result) shouldBe (valid)
+    //   f.validate(valid) shouldBe (Valid(result))
+
+    //   f.validate(invalid) shouldBe
+    //   (Invalid(Seq((Path \ "firstname",
+    //                 Seq(ValidationError("error.required"))))))
     // }
 
-    // "format recursive" when {
-    //   case class RecUser(name: String, friends: Seq[RecUser] = Nil)
-    //   val u = RecUser("bob", Seq(RecUser("tom")))
+    "format seq" in {
+      import Rules._
+      import Writes._
 
-    //   val m = Json.obj(
-    //       "name" -> "bob",
-    //       "friends" -> Seq(Json.obj("name" -> "tom", "friends" -> Json.arr())))
+      val valid =
+        Json.obj("firstname" -> Seq("Julien"),
+                 "foobar" -> JsArray(),
+                 "lastname" -> "Tournay",
+                 "age" -> 27,
+                 "information" -> Json.obj("label" -> "Personal",
+                                           "email" -> "fakecontact@gmail.com",
+                                           "phones" -> Seq("01.23.45.67.89",
+                                                           "98.76.54.32.10")))
 
-    //   case class User1(name: String, friend: Option[User1] = None)
-    //   val u1 = User1("bob", Some(User1("tom")))
-    //   val m1 = Json.obj("name" -> "bob", "friend" -> Json.obj("name" -> "tom"))
+      def isNotEmpty[T <: Traversable[_]] = validateWith[T]("error.notEmpty") {
+        !_.isEmpty
+      }
 
-    //   // "using explicit notation" in {
-    //   //   import Rules._
-    //   //   import Writes._
+      Formatting[JsValue, JsObject] { __ =>
+        (__ \ "firstname").format[Seq[String]]
+      }.validate(valid) shouldBe (Valid(Seq("Julien")))
+      Formatting[JsValue, JsObject] { __ =>
+        (__ \ "foobar").format[Seq[String]]
+      }.validate(valid) shouldBe (Valid(Seq()))
+      // Formatting[JsValue, JsObject] { __ =>
+      //   (__ \ "foobar").format(isNotEmpty[Seq[Int]])
+      // }.validate(valid) shouldBe
+      // (Invalid(Seq(Path \ "foobar" -> Seq(ValidationError("error.notEmpty")))))
+    }
 
-    //   //   lazy val w: Format[JsValue, JsObject, RecUser] =
-    //   //     Formatting[JsValue, JsObject] { __ =>
-    //   //       ((__ \ "name").format[String] ~ (__ \ "friends").format[Seq[RecUser]](
-    //   //               seqR(w), seqW(w))).unlifted(RecUser.apply, RecUser.unapply)
-    //   //     }
-    //   //   w.validate(m) shouldBe Valid(u)
-    //   //   w.writes(u) shouldBe m
+    "format recursive" when {
+      case class RecUser(name: String, friends: Seq[RecUser] = Nil)
+      val u = RecUser("bob", Seq(RecUser("tom")))
 
-    //   //   lazy val w3: Format[JsValue, JsObject, User1] =
-    //   //     Formatting[JsValue, JsObject] { __ =>
-    //   //       ((__ \ "name").format[String] ~ (__ \ "friend").format(
-    //   //               optionR(w3),
-    //   //               optionW(w3))).unlifted(User1.apply, User1.unapply)
-    //   //     }
-    //   //   w3.validate(m1) shouldBe Valid(u1)
-    //   //   w3.writes(u1) shouldBe m1
-    //   // }
+      val m = Json.obj(
+          "name" -> "bob",
+          "friends" -> Seq(Json.obj("name" -> "tom", "friends" -> Json.arr())))
 
-    //   "using implicit notation" in {
-    //     import Rules._
-    //     import Writes._
+      case class User1(name: String, friend: Option[User1] = None)
+      val u1 = User1("bob", Some(User1("tom")))
+      val m1 = Json.obj("name" -> "bob", "friend" -> Json.obj("name" -> "tom"))
 
-    //     implicit lazy val w: Format[JsValue, JsObject, RecUser] =
-    //       Formatting[JsValue, JsObject] { __ =>
-    //         ((__ \ "name").format[String] ~ (__ \ "friends")
-    //               .format[Seq[RecUser]])
-    //           .unlifted(RecUser.apply, RecUser.unapply)
-    //       }
-    //     w.validate(m) shouldBe Valid(u)
-    //     w.writes(u) shouldBe m
+      // "using explicit notation" in {
+      //   import Rules._
+      //   import Writes._
 
-    //     implicit lazy val w3: Format[JsValue, JsObject, User1] =
-    //       Formatting[JsValue, JsObject] { __ =>
-    //         ((__ \ "name").format[String] ~ (__ \ "friend")
-    //               .format[Option[User1]]).unlifted(User1.apply, User1.unapply)
-    //       }
-    //     w3.validate(m1) shouldBe Valid(u1)
-    //     w3.writes(u1) shouldBe m1
-    //   }
-    // }
+      //   lazy val w: Format[JsValue, JsObject, RecUser] =
+      //     Formatting[JsValue, JsObject] { __ =>
+      //       ((__ \ "name").format[String] ~ (__ \ "friends").format[Seq[RecUser]](
+      //               seqR(w), seqW(w))).unlifted(RecUser.apply, RecUser.unapply)
+      //     }
+      //   w.validate(m) shouldBe Valid(u)
+      //   w.writes(u) shouldBe m
 
-    // "work with Rule ans Write seamlessly" in {
-    //   import Rules._
-    //   import Writes._
+      //   lazy val w3: Format[JsValue, JsObject, User1] =
+      //     Formatting[JsValue, JsObject] { __ =>
+      //       ((__ \ "name").format[String] ~ (__ \ "friend").format(
+      //               optionR(w3),
+      //               optionW(w3))).unlifted(User1.apply, User1.unapply)
+      //     }
+      //   w3.validate(m1) shouldBe Valid(u1)
+      //   w3.writes(u1) shouldBe m1
+      // }
 
-    //   implicit val userF = Formatting[JsValue, JsObject] { __ =>
-    //     ((__ \ "id").format[Long] ~ (__ \ "name").format[String])
-    //       .unlifted(User.apply, User.unapply)
-    //   }
+      // "using implicit notation" in {
+      //   import Rules._
+      //   import Writes._
 
-    //   val userJs = Json.obj("id" -> 1L, "name" -> "Luigi")
-    //   userF.validate(userJs) shouldBe (Valid(luigi))
-    //   userF.writes(luigi) shouldBe (userJs)
+      //   implicit lazy val w: Format[JsValue, JsObject, RecUser] =
+      //     Formatting[JsValue, JsObject] { __ =>
+      //       ((__ \ "name").format[String] ~ (__ \ "friends")
+      //             .format[Seq[RecUser]])
+      //         .unlifted(RecUser.apply, RecUser.unapply)
+      //     }
+      //   w.validate(m) shouldBe Valid(u)
+      //   w.writes(u) shouldBe m
 
-    //   val fin = From[JsObject] { __ =>
-    //     (__ \ "user").read[User]
-    //   }
+        // implicit lazy val w3: Format[JsValue, JsObject, User1] =
+        //   Formatting[JsValue, JsObject] { __ =>
+        //     ((__ \ "name").format[String] ~ (__ \ "friend")
+        //           .format[Option[User1]]).unlifted(User1.apply, User1.unapply)
+        //   }
+        // w3.validate(m1) shouldBe Valid(u1)
+        // w3.writes(u1) shouldBe m1
+      // }
+    }
 
-    //   val m2 = Json.obj("user" -> userJs)
-    //   fin.validate(m2) shouldBe (Valid(luigi))
+    "work with Rule ans Write seamlessly" in {
+      import Rules._
+      import Writes._
 
-    //   val win = To[JsValue] { __ =>
-    //     (__ \ "user").write[User]
-    //   }
-    //   win.writes(luigi) shouldBe (m2)
-    // }
+      implicit val userF = Formatting[JsValue, JsObject] { __ =>
+        ((__ \ "id").format[Long] ~ (__ \ "name").format[String])
+          .unlifted(User.apply, User.unapply)
+      }
 
-    // "be covarianace in the write type" in {
-    //   trait Animal
-    //   trait Chat extends Animal
-    //   case object MyChat extends Chat
+      val userJs = Json.obj("id" -> 1L, "name" -> "Luigi")
+      userF.validate(userJs) shouldBe (Valid(luigi))
+      userF.writes(luigi) shouldBe (userJs)
 
-    //   val f1: Format[Animal, Chat, Unit] =
-    //     Format(Rule(_ => Valid(())), Write(_ => MyChat))
-    //   val f2: Format[Animal, Animal, Unit] = f1
+      val fin = From[JsObject] { __ =>
+        (__ \ "user").read[User]
+      }
 
-    //   // Note that we can achieve the above without covarianace on Format IW as follows:
-    //   val f3: Format[Animal, Animal, Unit] =
-    //     Format(Rule.toRule(f1), Write(f1.writes))
+      val m2 = Json.obj("user" -> userJs)
+      fin.validate(m2) shouldBe (Valid(luigi))
 
-    //   f1.writes(()) shouldBe f2.writes(())
-    //   f1.validate(MyChat) shouldBe f2.validate(MyChat)
-    // }
+      val win = To[JsValue] { __ =>
+        (__ \ "user").write[User]
+      }
+      win.writes(luigi) shouldBe (m2)
+    }
+
+    "be covarianace in the write type" in {
+      trait Animal
+      trait Chat extends Animal
+      case object MyChat extends Chat
+
+      val f1: Format[Animal, Chat, Unit] =
+        Format(Rule(_ => Valid(())), Write(_ => MyChat))
+      val f2: Format[Animal, Animal, Unit] = f1
+
+      // Note that we can achieve the above without covarianace on Format IW as follows:
+      val f3: Format[Animal, Animal, Unit] =
+        Format(Rule.toRule(f1), Write(f1.writes))
+
+      f1.writes(()) shouldBe f2.writes(())
+      f1.validate(MyChat) shouldBe f2.validate(MyChat)
+    }
   }
 }

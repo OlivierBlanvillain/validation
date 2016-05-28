@@ -54,7 +54,7 @@ object Writes
         errs.map(w.writes).reduce(_ ++ _)
     }
 
-  implicit val string: Write[String, JsValue] = Write(s => JsString(s))
+  implicit val stringW: Write[String, JsValue] = Write(s => JsString(s))
 
   private def tToJs[T] =
     Write[T, JsValue]((i: T) => JsNumber(BigDecimal(i.toString)))
@@ -101,8 +101,13 @@ object Writes
     }
   }
 
-  implicit val writeAtJson: At[Write[?, JsObject]] = new At[Write[?, JsObject]] {
+  implicit val writeAtJsObject: At[Write[?, JsObject]] = new At[Write[?, JsObject]] {
     def at[A](path: Path, f: Write[A, JsObject]): Write[A, JsObject] =
+      writeJson(path)(f)
+  }
+
+  implicit val writeAtJsValue: At[Write[?, JsValue]] = new At[Write[?, JsValue]] {
+    def at[A](path: Path, f: Write[A, JsValue]): Write[A, JsValue] =
       writeJson(path)(f)
   }
 }
