@@ -13,18 +13,13 @@ val playVersion = "2.5.3"
 val scalacVersion = "2.11.8"
 val scalatestVersion = "3.0.0-M16-SNAP6"
 val scalaXmlVersion = "1.0.5"
-val simulacrumVersion = "0.7.0"
 val si2712fixVersion = "1.2.0"
-val paradiseVersion = "2.1.0"
-
-libraryDependencies += "com.github.mpilquist" %% "simulacrum" % "0.7.0"
 
 val json4sAST = libraryDependencies += "org.json4s" %%% "json4s-ast" % json4sAstVersion
 
 lazy val root = aggregate("validation", validationJVM, validationJS, docs).in(file("."))
 lazy val validationJVM = aggregate("validationJVM", coreJVM, formJVM, delimitedJVM, json4sJVM, `validation-playjson`, `validation-xml`, `date-tests`)
 lazy val validationJS = aggregate("validationJS", coreJS, formJS, delimitedJS, json4sJS, `validation-jsjson`)
-lazy val play = aggregate("play", coreJVM, `validation-playjson`)
 
 lazy val `validation-core` = crossProject
   .crossType(CrossType.Pure)
@@ -110,7 +105,7 @@ lazy val settings = Seq(
   testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
   scalaJSStage in Global := FastOptStage,
   parallelExecution := false
-)
+) // ++ reformatOnCompileSettings
 
 val commonScalacOptions = Seq(
   "-deprecation",
