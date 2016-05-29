@@ -174,6 +174,7 @@ object MappingMacros {
         q"""{ _root_.jto.validation.From[${typeI}] { __ => $body } }""")
   }
 
+  // TODO: we need to come up with a generic way to combine these macros
   // def format[IR: c.WeakTypeTag, IW: c.WeakTypeTag, O: c.WeakTypeTag](
   //     c: Context): c.Expr[Format[IR, IW, O]] = {
   //   import c.universe._

@@ -328,61 +328,6 @@ trait GenericRules[II] {
     equalTo(true)(b)
 }
 
-// trait ParsingRules[I] { self: GenericRules[I] =>
-//   private def stringAs[T](f: PartialFunction[BigDecimal, Validated[Seq[ValidationError], T]])(args: Any*) =
-//     Rule.fromMapping[String, T] {
-//       val toB: PartialFunction[String, BigDecimal] = {
-//         case s if s.matches("""[-+]?[0-9]*\.?[0-9]+""") => BigDecimal(s)
-//       }
-//       toB
-//         .lift(_)
-//         .flatMap(f.lift)
-//         .getOrElse(Invalid(Seq(ValidationError("error.number", args: _*))))
-//     }
-
-//   implicit def intR =
-//     stringAs {
-//       case s if s.isValidInt => Valid(s.toInt)
-//     }("Int")
-
-//   implicit def shortR =
-//     stringAs {
-//       case s if s.isValidShort => Valid(s.toShort)
-//     }("Short")
-
-//   implicit def booleanR = Rule.fromMapping[String, Boolean] {
-//     pattern("""(?iu)true|false""".r)
-//       .validate(_: String)
-//       .map(java.lang.Boolean.parseBoolean)
-//       .bimap(_ => Seq(ValidationError("error.invalid", "Boolean")), identity)
-//   }
-
-//   implicit def longR =
-//     stringAs {
-//       case s if s.isValidLong => Valid(s.toLong)
-//     }("Long")
-
-//   implicit def floatR =
-//     stringAs {
-//       case s if s.isDecimalFloat => Valid(s.toFloat)
-//     }("Float")
-
-//   implicit def doubleR =
-//     stringAs {
-//       case s if s.isDecimalDouble => Valid(s.toDouble)
-//     }("Double")
-
-//   implicit def javaBigDecimalR =
-//     stringAs {
-//       case s => Valid(s.bigDecimal)
-//     }("BigDecimal")
-
-//   implicit def bigDecimal =
-//     stringAs {
-//       case s => Valid(s)
-//     }("BigDecimal")
-// }
-
 /**
   * DefaultRules provides basic rules implementations for inputs of type `I`
   * Extends this trait if your implementing a new set of Rules for `I`.

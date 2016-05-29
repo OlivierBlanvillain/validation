@@ -7,14 +7,12 @@ trait Mixer1[F1[_]] {
 object Mixer1 {
   implicit def mixRule[I]: Mixer1[Rule[I, ?]] =
     new Mixer1[Rule[I, ?]] {
-      def mix[A](m1: Rule[I, A]): Rule[I, A] =
-        Rule(i => m1.validate(i)) // Meh
+      def mix[A](m1: Rule[I, A]): Rule[I, A] = m1
     }
 
   implicit def mixWrite[I]: Mixer1[Write[?, I]] =
     new Mixer1[Write[?, I]] {
-      def mix[A](m1: Write[A, I]): Write[A, I] =
-        Write(i => m1.writes(i)) // Meh
+      def mix[A](m1: Write[A, I]): Write[A, I] = m1
     }
 }
 
