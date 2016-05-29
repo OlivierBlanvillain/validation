@@ -31,6 +31,12 @@ package object validation {
   type Invalid[+E] = cats.data.Validated.Invalid[E]
   val Invalid = cats.data.Validated.Invalid
 
+  implicit def validatedBackcompat[E, A](
+      va: Validated[Seq[E], A]): VABackCompat[E, A] =
+    new VABackCompat[E, A] {
+      val v = va
+    }
+
   implicit def cartesianSyntaxU[FA](fa: FA)(
       implicit U: Unapply[Cartesian, FA]): CartesianOps[U.M, U.A] = {
     object As extends CartesianSyntax1
@@ -43,7 +49,7 @@ package object validation {
       def combine(x: Seq[A], y: Seq[A]): Seq[A] = x ++ y
     }
 
-  // http://goo.gl/YpwIam
+  // Typeclasses derivable given a Mixer2 instance
   // ----------------------------------------------------------------------------------------
   implicit def mixInvariants[F1[_], F2[_]]
     (implicit I1: Invariant[F1], I2: Invariant[F2], M: Mixer2[F1, F2]) =
