@@ -1,6 +1,7 @@
 package jto.validation
 
 import cats.Applicative
+import scala.language.implicitConversions
 
 trait Rule[I, O] {
   /**
@@ -22,7 +23,7 @@ trait Rule[I, O] {
     * @param sub the second Rule to apply
     * @return The combination of the two Rules
     */
-  def andThen[P](path: Path)(sub: => Rule[O, P]): Rule[I, P] =
+  def andThen[P](path: Path)(sub: Rule[O, P]): Rule[I, P] =
     this.flatMap { o =>
       Rule(_ => sub.validate(o))
     }.repath(path ++ _)
@@ -47,10 +48,10 @@ trait Rule[I, O] {
     * @param t an alternative Rule
     * @return a Rule
     */
-  def orElse[OO >: O](t: => Rule[I, OO]): Rule[I, OO] =
+  def orElse[OO >: O](t: Rule[I, OO]): Rule[I, OO] =
     Rule(d => this.validate(d) orElse t.validate(d))
 
-  def andThen[P](sub: => Rule[O, P]): Rule[I, P] = andThen(Path())(sub)
+  def andThen[P](sub: Rule[O, P]): Rule[I, P] = andThen(Path())(sub)
 
   def andThen[P](m: Mapping[ValidationError, O, P]): Rule[I, P] =
     andThen(Rule.fromMapping(m))
@@ -147,8 +148,7 @@ object Rule {
         b.ap(a.map(a => c => new ~(a, c)))
     }
 
-  implicit def ruleFunctorSyntaxObs[I, O](
-      r: Rule[I, O])(implicit fcb: SyntaxCombine[Rule[I, ?]])
-    : FunctorSyntaxObs[Rule[I, ?], O] =
+  implicit def ruleFunctorSyntaxObs[I, O](r: Rule[I, O])(implicit fcb: SyntaxCombine[Rule[I, ?]])
+      : FunctorSyntaxObs[Rule[I, ?], O] =
     new FunctorSyntaxObs[Rule[I, ?], O](r)(fcb)
 }

@@ -39,16 +39,22 @@ class Path(val path: List[PathNode]) { self =>
   def ++(other: Path) = this compose other
 
   class FromCurried[I] {
-    def apply[O](r: => Rule[I, O])(implicit a: At[Rule[I, ?]]): Rule[I, O] =
+    def apply[O](r: Rule[I, O])(implicit a: At[Rule[I, ?]]): Rule[I, O] =
       As1[Rule[I, ?]](self).as(r)
   }
 
   def from[I] = new FromCurried[I]()
 
-  def read[I, O](implicit r: Rule[I, O], a: At[Rule[I, ?]]): Rule[I, O] =
+  def read[I, O](implicit a: At[Rule[I, ?]], r: Rule[I, O]): Rule[I, O] =
     As1[Rule[I, ?]](this).as(r)
 
-  def write[I, O](implicit w: Write[I, O], a: At[Write[?, O]]): Write[I, O] =
+  def read[I, O](r: Rule[I, O])(implicit a: At[Rule[I, ?]]): Rule[I, O] =
+    As1[Rule[I, ?]](this).as(r)
+
+  def write[I, O](implicit a: At[Write[?, O]], w: Write[I, O]): Write[I, O] =
+    As1[Write[?, O]](this).as(w)
+
+  def write[I, O](w: Write[I, O])(implicit a: At[Write[?, O]]): Write[I, O] =
     As1[Write[?, O]](this).as(w)
 
   override def toString = this.path match {

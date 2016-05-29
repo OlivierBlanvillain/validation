@@ -4,6 +4,7 @@ import cats.{Monoid, Unapply}
 import cats.functor.Invariant
 import cats.syntax.{CartesianOps, CartesianSyntax1}
 import cats.Cartesian
+import scala.language.implicitConversions
 
 /**
   * Contains the validation API used by `Form`.

@@ -118,7 +118,6 @@ val commonScalacOptions = Seq(
   "-feature",
   "-language:existentials",
   "-language:higherKinds",
-  "-language:implicitConversions",
   "-language:experimental.macros",
   "-language:postfixOps",
   "-unchecked",
