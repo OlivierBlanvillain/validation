@@ -1,5 +1,7 @@
 package jto.validation
 
+import scala.reflect.ClassTag
+
 sealed trait PathNode
 case class KeyPathNode(key: String) extends PathNode {
   override def toString = key
@@ -39,23 +41,20 @@ class Path(val path: List[PathNode]) { self =>
   def ++(other: Path) = this compose other
 
   class FromCurried[I] {
-    def apply[O](r: Rule[I, O])(implicit a: At[Rule[I, ?]]): Rule[I, O] =
-      As1[Rule[I, ?]](self).as(r)
+    def apply[O](r: Rule[I, O])(implicit a: At[Rule[I, ?]], t: ClassTag[O]): Rule[I, O] =
+      As1[Rule[I, ?]](self).as(t, r)
   }
 
   def from[I] = new FromCurried[I]()
 
-  def read[I, O](implicit a: At[Rule[I, ?]], r: Rule[I, O]): Rule[I, O] =
-    As1[Rule[I, ?]](this).as(r)
+  def read[I, O](implicit a: At[Rule[I, ?]], r: Rule[I, O], t: ClassTag[O]): Rule[I, O] =
+    As1[Rule[I, ?]](this).as(t, r)
 
-  def read[I, O](r: Rule[I, O])(implicit a: At[Rule[I, ?]]): Rule[I, O] =
-    As1[Rule[I, ?]](this).as(r)
+  def write[I, O](implicit a: At[Write[?, O]], w: Write[I, O], t: ClassTag[I]): Write[I, O] =
+    As1[Write[?, O]](this).as[I]
 
-  def write[I, O](implicit a: At[Write[?, O]], w: Write[I, O]): Write[I, O] =
-    As1[Write[?, O]](this).as(w)
-
-  def write[I, O](w: Write[I, O])(implicit a: At[Write[?, O]]): Write[I, O] =
-    As1[Write[?, O]](this).as(w)
+  def write[I, O](w: Write[I, O])(implicit a: At[Write[?, O]], t: ClassTag[I]): Write[I, O] =
+    As1[Write[?, O]](this).as(t, w)
 
   override def toString = this.path match {
     case Nil => "/"

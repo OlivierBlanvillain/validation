@@ -2,6 +2,7 @@ package jto.validation
 package playjson
 
 import play.api.libs.json.{JsValue, JsObject, Json, JsString, JsNumber, JsBoolean, JsArray, JsNull}
+import scala.reflect.ClassTag
 import cats.Monoid
 
 object Writes extends DefaultWrites[JsValue] with GenericWrites[JsValue] {
@@ -79,7 +80,7 @@ object Writes extends DefaultWrites[JsValue] with GenericWrites[JsValue] {
     }
 
   implicit val writeAtJsValue: At[Write[?, JsValue]] = new At[Write[?, JsValue]] {
-    def at[A](path: Path, w: Write[A, JsValue]): Write[A, JsValue] =
+    def at[A: ClassTag](path: Path, w: Write[A, JsValue]): Write[A, JsValue] =
       Write {
         case None => Json.obj() // UGLY
         case i =>

@@ -116,10 +116,11 @@ object Rules extends DefaultRules[JsValue] {
   implicit def pickTraversable[O](implicit r: Rule[JsValue, O]): Rule[JsValue, Traversable[O]] =
     pickInS(traversableR[JsValue, O])
 
-  implicit val ruleAtJson: At[Rule[JsValue, ?]] = new At[Rule[JsValue, ?]] {
-    def at[A](p: Path, r: Rule[JsValue, A]): Rule[JsValue, A] = {
-      // r.isInstanceOf[Rule[JsValue, Option[_]]] // TODO
+  implicit def optionR[O](implicit r: Rule[JsValue, O]): Rule[JsValue, Option[O]] =
+    r.map(Some.apply)
 
+  implicit val ruleAtJson: At[Rule[JsValue, ?]] = new At[Rule[JsValue, ?]] {
+    def at[A: ClassTag](p: Path, r: Rule[JsValue, A]): Rule[JsValue, A] = {
       def search(path: Path, json: JsValue): Option[JsValue] = path.path match {
         case KeyPathNode(k) :: t =>
           json match {
@@ -136,13 +137,20 @@ object Rules extends DefaultRules[JsValue] {
         case Nil => Some(json)
       }
 
-      Rule[JsValue, JsValue] { json =>
+      val rule = Rule[JsValue, JsValue] { json =>
         search(p, json) match {
           case None =>
             Invalid(Seq(Path -> Seq(ValidationError("error.required"))))
           case Some(js) => Valid(js)
         }
       }.andThen(r).repath(p ++ _)
+
+      val option = implicitly[ClassTag[A]].runtimeClass == classOf[scala.Option[_]]
+
+      if (option)
+        rule.orElse(Rule(_ => Valid(None.asInstanceOf[A])))
+      else
+        rule
     }
   }
 }

@@ -229,25 +229,26 @@ class FormatSpec extends WordSpec with Matchers {
         (Invalid(Seq(Path \ "o" -> Seq(ValidationError("error.required")))))
       }
 
-      // "Option" in {
-      //   Formatting[JsValue, JsValue] { __ =>
-      //     (__ \ "n").as[Option[Boolean]]
-      //   }.validate(Json.obj("n" -> true)) shouldBe (Valid(Some(true)))
+      "Option" in {
+        Formatting[JsValue, JsValue] { __ =>
+          (__ \ "n").as[Option[Boolean]]
+        }.validate(Json.obj("n" -> true)) shouldBe (Valid(Some(true)))
 
-      //   // Formatting[JsValue, JsValue] { __ =>
-      //   //   (__ \ "n").as[Option[Boolean]]
-      //   // }.validate(Json.obj()) shouldBe (Valid(None))
+        Formatting[JsValue, JsValue] { __ =>
+          (__ \ "n").as[Option[Boolean]]
+        }.validate(Json.obj()) shouldBe (Valid(None))
 
-      //   // Formatting[JsValue, JsValue] { __ =>
-      //   //   (__ \ "n").as[Option[Boolean]]
-      //   // }.validate(Json.obj("foo" -> "bar")) shouldBe (Valid(None))
+        Formatting[JsValue, JsValue] { __ =>
+          (__ \ "n").as[Option[Boolean]]
+        }.validate(Json.obj("foo" -> "bar")) shouldBe (Valid(None))
 
-      //   Formatting[JsValue, JsValue] { __ =>
-      //     (__ \ "n").as[Option[Boolean]]
-      //   }.validate(Json.obj("n" -> "bar")) shouldBe
-      //   (Invalid(Seq(Path \ "n" -> Seq(
-      //                   ValidationError("error.invalid", "Boolean")))))
-      // }
+        // Behavior changed and on this one :/, gotta revert to something like https://github.com/jto/validation/blob/8555087ea935e8ba3a077e78dc541474d5bf82e8/validation-core/src/main/scala/play/api/data/mapping/DefaultRules.scala#L355-L366)
+        // Formatting[JsValue, JsValue] { __ =>
+        //   (__ \ "n").as[Option[Boolean]]
+        // }.validate(Json.obj("n" -> "bar")) shouldBe
+        // (Invalid(Seq(Path \ "n" -> Seq(
+        //                 ValidationError("error.invalid", "Boolean")))))
+      }
 
       "Map[String, Seq[V]]" in {
         Formatting[JsValue, JsValue] { __ =>

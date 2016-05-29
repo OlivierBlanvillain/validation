@@ -323,12 +323,12 @@ class RulesSpec extends WordSpec with Matchers {
       }
     }
 
-    // "validate optional" in {
-    //   (Path \ "firstname").read[JsValue, Option[String]].validate(valid) shouldBe
-    //   (Valid(Some("Julien")))
-    //   (Path \ "foobar").read[JsValue, Option[String]].validate(valid) shouldBe
-    //   (Valid(None))
-    // }
+    "validate optional" in {
+      (Path \ "firstname").read[JsValue, Option[String]].validate(valid) shouldBe
+      (Valid(Some("Julien")))
+      (Path \ "foobar").read[JsValue, Option[String]].validate(valid) shouldBe
+      (Valid(None))
+    }
 
     "validate deep" in {
       val p = (Path \ "informations" \ "label")
@@ -343,15 +343,15 @@ class RulesSpec extends WordSpec with Matchers {
       (Invalid(Seq(p -> Seq(ValidationError("error.required")))))
     }
 
-    // "validate deep optional" in {
-    //   From[JsValue] { __ =>
-    //     (__ \ "first" \ "second").read[Option[String]]
-    //   } validate (JsNull) shouldBe Valid(None)
-    // }
+    "validate deep optional" in {
+      From[JsValue] { __ =>
+        (__ \ "first" \ "second").as[Option[String]]
+      } validate (JsNull) shouldBe Valid(None)
+    }
 
     "coerce type" in {
       (Path \ "age").read[JsValue, Int].validate(valid) shouldBe (Valid(27))
-      (Path \ "age").from[JsValue](min[Int](20))//.validate(valid) shouldBe
+      (Path \ "age").from[JsValue](min[Int](20)).validate(valid) shouldBe
       (Valid(27))
       (Path \ "age").from[JsValue](max[Int](50)).validate(valid) shouldBe
       (Valid(27))
@@ -492,104 +492,104 @@ class RulesSpec extends WordSpec with Matchers {
       }
     }
 
-    // "perform complex validation" in {
+    "perform complex validation" in {
 
-    //   case class Contact(firstname: String,
-    //                      lastname: String,
-    //                      company: Option[String],
-    //                      informations: Seq[ContactInformation])
+      case class Contact(firstname: String,
+                         lastname: String,
+                         company: Option[String],
+                         informations: Seq[ContactInformation])
 
-    //   case class ContactInformation(
-    //       label: String, email: Option[String], phones: Seq[String])
+      case class ContactInformation(
+          label: String, email: Option[String], phones: Seq[String])
 
-    //   val validJson = Json.obj(
-    //       "firstname" -> "Julien",
-    //       "lastname" -> "Tournay",
-    //       "age" -> 27,
-    //       "informations" -> Seq(
-    //           Json.obj("label" -> "Personal",
-    //                    "email" -> "fakecontact@gmail.com",
-    //                    "phones" -> Seq("01.23.45.67.89", "98.76.54.32.10"))))
+      val validJson = Json.obj(
+          "firstname" -> "Julien",
+          "lastname" -> "Tournay",
+          "age" -> 27,
+          "informations" -> Seq(
+              Json.obj("label" -> "Personal",
+                       "email" -> "fakecontact@gmail.com",
+                       "phones" -> Seq("01.23.45.67.89", "98.76.54.32.10"))))
 
-    //   val invalidJson = Json.obj(
-    //       "firstname" -> "Julien",
-    //       "lastname" -> "Tournay",
-    //       "age" -> 27,
-    //       "informations" -> Seq(
-    //           Json.obj("label" -> "",
-    //                    "email" -> "fakecontact@gmail.com",
-    //                    "phones" -> Seq("01.23.45.67.89", "98.76.54.32.10"))))
+      val invalidJson = Json.obj(
+          "firstname" -> "Julien",
+          "lastname" -> "Tournay",
+          "age" -> 27,
+          "informations" -> Seq(
+              Json.obj("label" -> "",
+                       "email" -> "fakecontact@gmail.com",
+                       "phones" -> Seq("01.23.45.67.89", "98.76.54.32.10"))))
 
-    //   val infoValidated = From[JsValue] { __ =>
-    //     ((__ \ "label").as(notEmpty) ~ (__ \ "email").as(optionR(email)) ~
-    //         (__ \ "phones").as(seqR(notEmpty)))(ContactInformation.apply)
-    //   }
+      val infoValidated = From[JsValue] { __ =>
+        ((__ \ "label").as(notEmpty) ~ (__ \ "email").as(optionR(email)) ~
+            (__ \ "phones").as(pickSeq(notEmpty)))(ContactInformation.apply)
+      }
 
-    //   val contactValidated = From[JsValue] { __ =>
-    //     ((__ \ "firstname").as(notEmpty) ~ (__ \ "lastname").as(notEmpty) ~
-    //         (__ \ "company").as[Option[String]] ~ (__ \ "informations").as(
-    //             seqR(infoValidated)))(Contact.apply)
-    //   }
+      val contactValidated = From[JsValue] { __ =>
+        ((__ \ "firstname").as(notEmpty) ~ (__ \ "lastname").as(notEmpty) ~
+            (__ \ "company").as[Option[String]] ~ (__ \ "informations").as(
+                pickSeq(infoValidated)))(Contact.apply)
+      }
 
-    //   val expected = Contact(
-    //       "Julien",
-    //       "Tournay",
-    //       None,
-    //       Seq(ContactInformation("Personal",
-    //                              Some("fakecontact@gmail.com"),
-    //                              List("01.23.45.67.89", "98.76.54.32.10"))))
+      val expected = Contact(
+          "Julien",
+          "Tournay",
+          None,
+          Seq(ContactInformation("Personal",
+                                 Some("fakecontact@gmail.com"),
+                                 List("01.23.45.67.89", "98.76.54.32.10"))))
 
-    //   contactValidated.validate(validJson) shouldBe (Valid(expected))
-    //   contactValidated.validate(invalidJson) shouldBe
-    //   (Invalid(Seq((Path \ "informations" \ 0 \ "label") -> Seq(
-    //                   ValidationError("error.required")))))
-    // }
-
-    "read recursive" when {
-      case class RecUser(name: String, friends: Seq[RecUser] = Nil)
-      val u = RecUser("bob", Seq(RecUser("tom")))
-
-      val m =
-        Json.obj("name" -> "bob",
-                 "friends" -> Seq(
-                     Json.obj("name" -> "tom", "friends" -> Seq[JsObject]())))
-
-      case class User1(name: String, friend: Option[User1] = None)
-      val u1 = User1("bob", Some(User1("tom")))
-      val m1 = Json.obj("name" -> "bob", "friend" -> Json.obj("name" -> "tom"))
-
-      // "using explicit notation" in {
-      //   lazy val w: Rule[JsValue, RecUser] = From[JsValue] { __ =>
-      //     ((__ \ "name").as[String] ~ (__ \ "friends").as(pickSeq(w)))(
-      //         RecUser.apply)
-      //   }
-      //   w.validate(m) shouldBe Valid(u)
-
-      //   lazy val w2: Rule[JsValue, RecUser] =
-      //     ((Path \ "name").read[JsValue, String] ~ (Path \ "friends")
-      //           .from[JsValue](pickSeq(w2)))(RecUser.apply)
-      //   w2.validate(m) shouldBe Valid(u)
-
-        // lazy val w3: Rule[JsValue, User1] = From[JsValue] { __ =>
-        //   ((__ \ "name").as[String] ~ (__ \ "friend").as(optionR(w3)))(
-        //       User1.apply)
-        // }
-        // w3.validate(m1) shouldBe Valid(u1)
-      // }
-
-      // "using implicit notation" in {
-      //   implicit lazy val w: Rule[JsValue, RecUser] = From[JsValue] { __ =>
-      //     ((__ \ "name").as[String] ~ (__ \ "friends").as[Seq[RecUser]])(
-      //         RecUser.apply)
-      //   }
-      //   w.validate(m) shouldBe Valid(u)
-
-      //   implicit lazy val w3: Rule[JsValue, User1] = From[JsValue] { __ =>
-      //     ((__ \ "name").as[String] ~ (__ \ "friend").as[Option[User1]])(
-      //         User1.apply)
-      //   }
-      //   w3.validate(m1) shouldBe Valid(u1)
-      // }
+      contactValidated.validate(validJson) shouldBe (Valid(expected))
+      contactValidated.validate(invalidJson) shouldBe
+      (Invalid(Seq((Path \ "informations" \ 0 \ "label") -> Seq(
+                      ValidationError("error.required")))))
     }
+
+    // "read recursive" when {
+    //   case class RecUser(name: String, friends: Seq[RecUser] = Nil)
+    //   val u = RecUser("bob", Seq(RecUser("tom")))
+
+    //   val m =
+    //     Json.obj("name" -> "bob",
+    //              "friends" -> Seq(
+    //                  Json.obj("name" -> "tom", "friends" -> Seq[JsObject]())))
+
+    //   case class User1(name: String, friend: Option[User1] = None)
+    //   val u1 = User1("bob", Some(User1("tom")))
+    //   val m1 = Json.obj("name" -> "bob", "friend" -> Json.obj("name" -> "tom"))
+
+    //   "using explicit notation" in {
+    //     lazy val w: Rule[JsValue, RecUser] = From[JsValue] { __ =>
+    //       ((__ \ "name").as[String] ~ (__ \ "friends").as(pickSeq(w)))(
+    //           RecUser.apply)
+    //     }
+    //     w.validate(m) shouldBe Valid(u)
+
+    //     lazy val w2: Rule[JsValue, RecUser] =
+    //       ((Path \ "name").read[JsValue, String] ~ (Path \ "friends")
+    //             .from[JsValue](pickSeq(w2)))(RecUser.apply)
+    //     w2.validate(m) shouldBe Valid(u)
+
+    //     lazy val w3: Rule[JsValue, User1] = From[JsValue] { __ =>
+    //       ((__ \ "name").as[String] ~ (__ \ "friend").as(optionR(w3)))(
+    //           User1.apply)
+    //     }
+    //     w3.validate(m1) shouldBe Valid(u1)
+    //   }
+
+    //   "using implicit notation" in {
+    //     implicit lazy val w: Rule[JsValue, RecUser] = From[JsValue] { __ =>
+    //       ((__ \ "name").as[String] ~ (__ \ "friends").as[Seq[RecUser]])(
+    //           RecUser.apply)
+    //     }
+    //     w.validate(m) shouldBe Valid(u)
+
+    //     implicit lazy val w3: Rule[JsValue, User1] = From[JsValue] { __ =>
+    //       ((__ \ "name").as[String] ~ (__ \ "friend").as[Option[User1]])(
+    //           User1.apply)
+    //     }
+    //     w3.validate(m1) shouldBe Valid(u1)
+    //   }
+    // }
   }
 }
