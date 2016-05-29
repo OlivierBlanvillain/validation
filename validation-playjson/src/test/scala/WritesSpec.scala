@@ -47,12 +47,12 @@ class WritesSpec extends WordSpec with Matchers {
       (Path \ "n").write(optionW(intW)).writes(None) shouldBe Json.obj()
     }
 
-    // "write seq" in {
-    //   val w = (Path \ "phones").write[Seq[String], JsValue]
-    //   w.writes(Seq("01.23.45.67.89", "98.76.54.32.10")) shouldBe Json.obj(
-    //       "phones" -> Seq("01.23.45.67.89", "98.76.54.32.10"))
-    //   w.writes(Nil) shouldBe Json.obj("phones" -> Seq[String]())
-    // }
+    "write seq" in {
+      val w = (Path \ "phones").write[Seq[String], JsValue]
+      w.writes(Seq("01.23.45.67.89", "98.76.54.32.10")) shouldBe Json.obj(
+          "phones" -> Seq("01.23.45.67.89", "98.76.54.32.10"))
+      w.writes(Nil) shouldBe Json.obj("phones" -> Seq[String]())
+    }
 
     "support primitives types" when {
       "Int" in {
@@ -146,23 +146,23 @@ class WritesSpec extends WordSpec with Matchers {
         (Json.obj("n" -> Json.obj("o" -> Json.obj("p" -> "foo"))))
       }
 
-      // "Option" in {
-      //   (Path \ "n").write[Option[String], JsValue].writes(Some("foo")) shouldBe
-      //   (Json.obj("n" -> "foo"))
-      //   (Path \ "n" \ "o").write[Option[String], JsValue].writes(Some("foo")) shouldBe
-      //   (Json.obj("n" -> Json.obj("o" -> "foo")))
-      //   (Path \ "n" \ "o" \ "p")
-      //     .write[Option[String], JsValue]
-      //     .writes(Some("foo")) shouldBe
-      //   (Json.obj("n" -> Json.obj("o" -> Json.obj("p" -> "foo"))))
+      "Option" in {
+        (Path \ "n").write[Option[String], JsValue].writes(Some("foo")) shouldBe
+        (Json.obj("n" -> "foo"))
+        (Path \ "n" \ "o").write[Option[String], JsValue].writes(Some("foo")) shouldBe
+        (Json.obj("n" -> Json.obj("o" -> "foo")))
+        (Path \ "n" \ "o" \ "p")
+          .write[Option[String], JsValue]
+          .writes(Some("foo")) shouldBe
+        (Json.obj("n" -> Json.obj("o" -> Json.obj("p" -> "foo"))))
 
-      //   (Path \ "n").write[Option[String], JsValue].writes(None) shouldBe
-      //   (Json.obj())
-      //   (Path \ "n" \ "o").write[Option[String], JsValue].writes(None) shouldBe
-      //   (Json.obj())
-      //   (Path \ "n" \ "o" \ "p").write[Option[String], JsValue].writes(None) shouldBe
-      //   (Json.obj())
-      // }
+        (Path \ "n").write[Option[String], JsValue].writes(None) shouldBe
+        (Json.obj())
+        (Path \ "n" \ "o").write[Option[String], JsValue].writes(None) shouldBe
+        (Json.obj())
+        (Path \ "n" \ "o" \ "p").write[Option[String], JsValue].writes(None) shouldBe
+        (Json.obj())
+      }
 
       "Map[String, Seq[V]]" in {
         (Path \ "n")
@@ -253,55 +253,55 @@ class WritesSpec extends WordSpec with Matchers {
       }
     }
 
-  //   "compose" in {
-  //     val w: Write[(Option[String], Seq[String]), JsValue] = To[JsValue] {
-  //       __ =>
-  //         ((__ \ "email").as[Option[String]] ~ (__ \ "phones")
-  //               .write[Seq[String]]).tupled
-  //     }
+    "compose" in {
+      val w: Write[(Option[String], Seq[String]), JsValue] = To[JsValue] {
+        __ =>
+          ((__ \ "email").as[Option[String]] ~ (__ \ "phones")
+                .as[Seq[String]]).tupled
+      }
 
-  //     val v = Some("jto@foobar.com") -> Seq("01.23.45.67.89", "98.76.54.32.10")
+      val v = Some("jto@foobar.com") -> Seq("01.23.45.67.89", "98.76.54.32.10")
 
-  //     w.writes(v) shouldBe Json.obj("email" -> "jto@foobar.com",
-  //                                   "phones" -> Seq("01.23.45.67.89",
-  //                                                   "98.76.54.32.10"))
-  //     w.writes(Some("jto@foobar.com") -> Nil) shouldBe Json.obj(
-  //         "email" -> "jto@foobar.com", "phones" -> Seq[String]())
-  //     w.writes(None -> Nil) shouldBe Json.obj("phones" -> Seq[String]())
-  //   }
+      w.writes(v) shouldBe Json.obj("email" -> "jto@foobar.com",
+                                    "phones" -> Seq("01.23.45.67.89",
+                                                    "98.76.54.32.10"))
+      w.writes(Some("jto@foobar.com") -> Nil) shouldBe Json.obj(
+          "email" -> "jto@foobar.com", "phones" -> Seq[String]())
+      w.writes(None -> Nil) shouldBe Json.obj("phones" -> Seq[String]())
+    }
 
-  //   // "write Invalid" in {
-  //   //   val f = Invalid[(Path, Seq[ValidationError]), String](Seq(Path \ "n" -> Seq(ValidationError("validation.type-mismatch", "Int"))))
+    // "write Invalid" in {
+    //   val f = Invalid[(Path, Seq[ValidationError]), String](Seq(Path \ "n" -> Seq(ValidationError("validation.type-mismatch", "Int"))))
 
-  //   //   implicitly[Write[(Path, Seq[ValidationError]), JsValue]]
-  //   //   implicitly[Write[Invalid[(Path, Seq[ValidationError]), String], JsValue]]
+    //   implicitly[Write[(Path, Seq[ValidationError]), JsValue]]
+    //   implicitly[Write[Invalid[(Path, Seq[ValidationError]), String], JsValue]]
 
-  //   //   val error =
-  //   //     Json.obj("errors" ->
-  //   //       Json.obj("/n" -> Json.arr(
-  //   //         Json.obj(
-  //   //           "msg" -> "validation.type-mismatch",
-  //   //           "args" -> Seq("Int")))))
+    //   val error =
+    //     Json.obj("errors" ->
+    //       Json.obj("/n" -> Json.arr(
+    //         Json.obj(
+    //           "msg" -> "validation.type-mismatch",
+    //           "args" -> Seq("Int")))))
 
-  //   //   (Path \ "errors").as[Invalid[(Path, Seq[ValidationError]), String], JsValue]
-  //   //     .writes(f) shouldBe(error)
-  //   // }
-
-    // "write Map" in {
-    //   implicit val contactInformation = To[JsValue] { __ =>
-    //     ((__ \ "label").as[String] ~ (__ \ "email").as[Option[String]] ~
-    //         (__ \ "phones").as[Seq[String]])
-    //       .unlifted(ContactInformation.unapply)
-    //   }
-
-    //   implicit val contactWrite = To[JsValue] { __ =>
-    //     ((__ \ "firstname").as[String] ~ (__ \ "lastname").as[String] ~
-    //         (__ \ "company").as[Option[String]] ~ (__ \ "informations")
-    //           .write[Seq[ContactInformation]]).unlifted(Contact.unapply)
-    //   }
-
-    //   contactWrite.writes(contact) shouldBe contactJson
+    //   (Path \ "errors").as[Invalid[(Path, Seq[ValidationError]), String], JsValue]
+    //     .writes(f) shouldBe(error)
     // }
+
+    "write Map" in {
+      implicit val contactInformation = To[JsValue] { __ =>
+        ((__ \ "label").as[String] ~ (__ \ "email").as[Option[String]] ~
+            (__ \ "phones").as[Seq[String]])
+          .unlifted(ContactInformation.unapply)
+      }
+
+      implicit val contactWrite = To[JsValue] { __ =>
+        ((__ \ "firstname").as[String] ~ (__ \ "lastname").as[String] ~
+            (__ \ "company").as[Option[String]] ~ (__ \ "informations")
+              .as[Seq[ContactInformation]]).unlifted(Contact.unapply)
+      }
+
+      contactWrite.writes(contact) shouldBe contactJson
+    }
 
     "write recursive" when {
       case class RecUser(name: String, friends: List[RecUser] = Nil)
@@ -340,13 +340,13 @@ class WritesSpec extends WordSpec with Matchers {
       //     ((__ \ "name").as[String] ~ (__ \ "friends").as[Seq[RecUser]])
       //       .unlifted(RecUser.unapply)
       //   }
-        // w.writes(u) shouldBe m
+      //   w.writes(u) shouldBe m
 
-        // implicit lazy val w3: Write[User1, JsValue] = To[JsValue] { __ =>
-        //   ((__ \ "name").as[String] ~ (__ \ "friend").as[Option[User1]])
-        //     .unlifted(User1.unapply)
-        // }
-        // w3.writes(u1) shouldBe m1
+      //   implicit lazy val w3: Write[User1, JsValue] = To[JsValue] { __ =>
+      //     ((__ \ "name").as[String] ~ (__ \ "friend").as[Option[User1]])
+      //       .unlifted(User1.unapply)
+      //   }
+      //   w3.writes(u1) shouldBe m1
       // }
     }
 

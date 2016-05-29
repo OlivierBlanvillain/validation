@@ -64,7 +64,7 @@
 //   }
 //   implicit val personWrite = {
 //     import Writes._
-//     Write.gen[Person, JsObject]
+//     Write.gen[Person, JsValue]
 //   }
 // }
 
@@ -77,7 +77,7 @@
 //   }
 //   implicit val personWrite = {
 //     import Writes._
-//     Write.gen[Person2, JsObject]
+//     Write.gen[Person2, JsValue]
 //   }
 // }
 
@@ -106,7 +106,7 @@
 
 //     "create a Write[User]" in {
 //       import Writes._
-//       implicit val userWrites = Write.gen[User, JsObject]
+//       implicit val userWrites = Write.gen[User, JsValue]
 //       userWrites.writes(User(45, "toto")) shouldBe
 //       (Json.obj("name" -> "toto", "age" -> 45))
 //     }
@@ -126,8 +126,8 @@
 
 //     "create a Write[Dog]" in {
 //       import Writes._
-//       implicit val userWrite = Write.gen[User, JsObject]
-//       implicit val dogWrite = Write.gen[Dog, JsObject]
+//       implicit val userWrite = Write.gen[User, JsValue]
+//       implicit val dogWrite = Write.gen[Dog, JsValue]
 
 //       dogWrite.writes(Dog("medor", User(45, "toto"))) shouldBe
 //       (Json.obj(
@@ -136,45 +136,45 @@
 //           ))
 //     }
 
-//     "create a Rule[RecUser]" in {
-//       import Rules._
+//     // "create a Rule[RecUser]" in {
+//     //   import Rules._
 
-//       implicit val catRule = Rule.gen[JsValue, Cat]
-//       catRule.validate(
-//           Json.obj("name" -> "minou")
-//       ) shouldBe (Valid(Cat("minou")))
+//     //   implicit val catRule = Rule.gen[JsValue, Cat]
+//     //   catRule.validate(
+//     //       Json.obj("name" -> "minou")
+//     //   ) shouldBe (Valid(Cat("minou")))
 
-//       implicit lazy val recUserRule: Rule[JsValue, RecUser] =
-//         Rule.gen[JsValue, RecUser]
+//     //   implicit lazy val recUserRule: Rule[JsValue, RecUser] =
+//     //     Rule.gen[JsValue, RecUser]
 
-//       recUserRule.validate(
-//           Json.obj(
-//               "name" -> "bob",
-//               "cat" -> Json.obj("name" -> "minou"),
-//               "hobbies" -> Json.arr("bobsleig", "manhunting"),
-//               "friends" -> Json.arr(Json.obj("name" -> "tom",
-//                                              "hobbies" -> Json.arr(),
-//                                              "friends" -> Json.arr()))
-//           )
-//       ) shouldBe
-//       (Valid(
-//               RecUser(
-//                   "bob",
-//                   Some(Cat("minou")),
-//                   List("bobsleig", "manhunting"),
-//                   List(RecUser("tom"))
-//               )
-//           ))
-//     }
+//     //   recUserRule.validate(
+//     //       Json.obj(
+//     //           "name" -> "bob",
+//     //           "cat" -> Json.obj("name" -> "minou"),
+//     //           "hobbies" -> Json.arr("bobsleig", "manhunting"),
+//     //           "friends" -> Json.arr(Json.obj("name" -> "tom",
+//     //                                          "hobbies" -> Json.arr(),
+//     //                                          "friends" -> Json.arr()))
+//     //       )
+//     //   ) shouldBe
+//     //   (Valid(
+//     //           RecUser(
+//     //               "bob",
+//     //               Some(Cat("minou")),
+//     //               List("bobsleig", "manhunting"),
+//     //               List(RecUser("tom"))
+//     //           )
+//     //       ))
+//     // }
 
 //     "create a Write[RecUser]" in {
 //       import Writes._
 
-//       implicit val catWrite = Write.gen[Cat, JsObject]
+//       implicit val catWrite = Write.gen[Cat, JsValue]
 //       catWrite.writes(Cat("minou")) shouldBe (Json.obj("name" -> "minou"))
 
 //       implicit lazy val recUserWrite: Write[RecUser, JsValue] =
-//         Write.gen[RecUser, JsObject]
+//         Write.gen[RecUser, JsValue]
 
 //       recUserWrite.writes(
 //           RecUser(
@@ -197,8 +197,7 @@
 //     "create a Rule[User1]" in {
 //       import Rules._
 
-//       implicit lazy val userRule: Rule[JsValue, User1] =
-//         Rule.gen[JsValue, User1]
+//       implicit lazy val userRule: Rule[JsValue, User1] = Rule.gen[JsValue, User1]
 //       userRule.validate(
 //           Json.obj(
 //               "name" -> "bob",
@@ -216,7 +215,7 @@
 //     "create a writes[User1]" in {
 //       import Writes._
 //       implicit lazy val userWrites: Write[User1, JsValue] =
-//         Write.gen[User1, JsObject]
+//         Write.gen[User1, JsValue]
 
 //       userWrites.writes(
 //           User1("bob", Some(User1("tom")))
@@ -288,7 +287,7 @@
 
 //       "Write" in {
 //         import Writes._
-//         implicit val XWrites = Write.gen[X, JsObject]
+//         implicit val XWrites = Write.gen[X, JsValue]
 //         ()
 //       }
 //     }
@@ -308,7 +307,7 @@
 
 //       "Write" in {
 //         import Writes._
-//         implicit val totoWrite = Write.gen[Toto, JsObject]
+//         implicit val totoWrite = Write.gen[Toto, JsValue]
 //         ()
 //       }
 //     }
@@ -322,7 +321,7 @@
 
 //       "Write" in {
 //         import Writes._
-//         implicit val toto2Write = Write.gen[Toto2, JsObject]
+//         implicit val toto2Write = Write.gen[Toto2, JsValue]
 //         ()
 //       }
 //     }
@@ -336,7 +335,7 @@
 
 //       "Write" in {
 //         import Writes._
-//         implicit val toto3Write = Write.gen[Toto3, JsObject]
+//         implicit val toto3Write = Write.gen[Toto3, JsValue]
 //         ()
 //       }
 //     }
@@ -350,7 +349,7 @@
 
 //       "Write" in {
 //         import Writes._
-//         implicit val toto4Write = Write.gen[Toto4, JsObject]
+//         implicit val toto4Write = Write.gen[Toto4, JsValue]
 //         ()
 //       }
 //     }
@@ -364,7 +363,7 @@
 
 //       "Write" in {
 //         import Writes._
-//         implicit val toto5Write = Write.gen[Toto5, JsObject]
+//         implicit val toto5Write = Write.gen[Toto5, JsValue]
 //         ()
 //       }
 //     }

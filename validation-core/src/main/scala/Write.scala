@@ -2,6 +2,7 @@ package jto.validation
 
 import cats.Monoid
 import cats.functor.Contravariant
+import scala.language.implicitConversions
 
 trait Write[I, +O] {
   /**

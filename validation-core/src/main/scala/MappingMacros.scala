@@ -103,7 +103,7 @@ object MappingMacros {
                       p <- g) yield {
       val term = p.asTerm
       val name = q"""${term.name.toString}"""
-      q"""(__ \ $name).write[${term.typeSignature}]"""
+      q"""(__ \ $name).as[${term.typeSignature}]"""
     }
 
     val typeI = weakTypeOf[I].dealias
@@ -141,7 +141,7 @@ object MappingMacros {
                      p <- g) yield {
       val term = p.asTerm
       val name = q"""${term.name.toString}"""
-      q"""(__ \ $name).read[${term.typeSignature}]"""
+      q"""(__ \ $name).as[${term.typeSignature}]"""
     }
 
     val typeI = weakTypeOf[I].dealias

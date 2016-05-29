@@ -2,6 +2,7 @@ package jto.validation
 package playjson
 
 import play.api.libs.json.{JsValue, JsObject, JsString, JsNumber, JsBoolean, JsArray, JsNull}
+import scala.reflect.ClassTag
 
 object Rules extends DefaultRules[JsValue] {
   private def jsonAs[T]
@@ -12,12 +13,12 @@ object Rules extends DefaultRules[JsValue] {
       case j => Invalid(Seq(ValidationError(msg, args: _*)))
     })
 
-  implicit val stringR: Rule[JsValue, String] =
+  implicit def stringR: Rule[JsValue, String] =
     jsonAs[String] {
       case JsString(v) => Valid(v)
     }("error.invalid", "String")
 
-  implicit val booleanR: Rule[JsValue, Boolean] =
+  implicit def booleanR: Rule[JsValue, Boolean] =
     jsonAs[Boolean] {
       case JsBoolean(v) => Valid(v)
     }("error.invalid", "Boolean")
@@ -25,67 +26,67 @@ object Rules extends DefaultRules[JsValue] {
   // Note: Mappings of JsNumber to Number are validating that the JsNumber is indeed valid
   // in the target type. i.e: JsNumber(4.5) is not considered parseable as an Int.
   // That's a bit stricter than the "old" Read, which just cast to the target type, possibly loosing data.
-  implicit val intR: Rule[JsValue, Int] =
+  implicit def intR: Rule[JsValue, Int] =
     jsonAs[Int] {
       case JsNumber(v) if v.isValidInt => Valid(v.toInt)
     }("error.number", "Int")
 
-  implicit val shortR: Rule[JsValue, Short] =
+  implicit def shortR: Rule[JsValue, Short] =
     jsonAs[Short] {
       case JsNumber(v) if v.isValidShort => Valid(v.toShort)
     }("error.number", "Short")
 
-  implicit val longR: Rule[JsValue, Long] =
+  implicit def longR: Rule[JsValue, Long] =
     jsonAs[Long] {
       case JsNumber(v) if v.isValidLong => Valid(v.toLong)
     }("error.number", "Long")
 
-  implicit val jsNumberR: Rule[JsValue, JsNumber] =
+  implicit def jsNumberR: Rule[JsValue, JsNumber] =
     jsonAs[JsNumber] {
       case v @ JsNumber(_) => Valid(v)
     }("error.number", "Number")
 
-  implicit val jsBooleanR: Rule[JsValue, JsBoolean] =
+  implicit def jsBooleanR: Rule[JsValue, JsBoolean] =
     jsonAs[JsBoolean] {
       case v @ JsBoolean(_) => Valid(v)
     }("error.invalid", "Boolean")
 
-  implicit val jsStringR: Rule[JsValue, JsString] =
+  implicit def jsStringR: Rule[JsValue, JsString] =
     jsonAs[JsString] {
       case v @ JsString(_) => Valid(v)
     }("error.invalid", "String")
 
-  implicit val jsObjectR: Rule[JsValue, JsObject] =
+  implicit def jsObjectR: Rule[JsValue, JsObject] =
     jsonAs[JsObject] {
       case v @ JsObject(_) => Valid(v)
     }("error.invalid", "Object")
 
-  implicit val jsArrayR: Rule[JsValue, JsArray] =
+  implicit def jsArrayR: Rule[JsValue, JsArray] =
     jsonAs[JsArray] {
       case v @ JsArray(_) => Valid(v)
     }("error.invalid", "Array")
 
-  implicit val floatR: Rule[JsValue, Float] =
+  implicit def floatR: Rule[JsValue, Float] =
     jsonAs[Float] {
       case JsNumber(v) if v.isDecimalFloat => Valid(v.toFloat)
     }("error.number", "Float")
 
-  implicit val doubleR: Rule[JsValue, Double] =
+  implicit def doubleR: Rule[JsValue, Double] =
     jsonAs[Double] {
       case JsNumber(v) if v.isDecimalDouble => Valid(v.toDouble)
     }("error.number", "Double")
 
-  implicit val bigDecimal: Rule[JsValue, BigDecimal] =
+  implicit def bigDecimal: Rule[JsValue, BigDecimal] =
     jsonAs[BigDecimal] {
       case JsNumber(v) => Valid(v)
     }("error.number", "BigDecimal")
 
-  implicit val javaBigDecimal: Rule[JsValue, java.math.BigDecimal] =
+  implicit def javaBigDecimal: Rule[JsValue, java.math.BigDecimal] =
     jsonAs[java.math.BigDecimal] {
       case JsNumber(v) => Valid(v.bigDecimal)
     }("error.number", "BigDecimal")
 
-  implicit val jsNullR: Rule[JsValue, JsNull.type] =
+  implicit def jsNullR: Rule[JsValue, JsNull.type] =
     jsonAs[JsNull.type] {
       case JsNull => Valid(JsNull)
     }("error.invalid", "null")
@@ -97,28 +98,27 @@ object Rules extends DefaultRules[JsValue] {
   implicit def JsValue[O](implicit r: Rule[JsObject, O]): Rule[JsValue, O] =
     jsObjectR.andThen(r)
 
-  private def pickInS[T](
-      implicit r: Rule[Seq[JsValue], T]): Rule[JsValue, T] =
+  private def pickInS[T](implicit r: Rule[Seq[JsValue], T]): Rule[JsValue, T] =
     jsArrayR.map { case JsArray(fs) => fs }.andThen(r)
-  implicit def pickSeq[O](implicit r: Rule[JsValue, O]) = pickInS(seqR[JsValue, O])
-  implicit def pickSet[O](implicit r: Rule[JsValue, O]) = pickInS(setR[JsValue, O])
-  implicit def pickList[O](implicit r: Rule[JsValue, O]) = pickInS(listR[JsValue, O])
-  implicit def pickArray[O: scala.reflect.ClassTag](implicit r: Rule[JsValue, O]) = pickInS(arrayR[JsValue, O])
-  implicit def pickTraversable[O](implicit r: Rule[JsValue, O]) =
-    pickInS(traversableR[JsValue, O])
 
-  // https://cdn.meme.am/instances/400x/64063590.jpg
-  // I guess? (These are implicit conversions, the BAD kind...)
-  // implicit def stringToJsValueR[O](r: Rule[String, O]): Rule[JsValue, O] =
-  //   stringR.andThen(r)
-  // implicit def intToJsValueR[O](r: Rule[Int, O]): Rule[JsValue, O] =
-  //   intR.andThen(r)
-  // implicit def seqToJsValueR[I, O](r: Rule[Seq[I], Seq[O]])(implicit l: Rule[JsValue, Seq[I]]): Rule[JsValue, Seq[O]] =
-  //   l.andThen(r)
+  implicit def pickSeq[O](implicit r: Rule[JsValue, O]): Rule[JsValue, Seq[O]] =
+    pickInS(seqR[JsValue, O])
+
+  implicit def pickSet[O](implicit r: Rule[JsValue, O]): Rule[JsValue, Set[O]] =
+    pickInS(setR[JsValue, O])
+
+  implicit def pickList[O](implicit r: Rule[JsValue, O]): Rule[JsValue, List[O]] =
+    pickInS(listR[JsValue, O])
+
+  implicit def pickArray[O: ClassTag](implicit r: Rule[JsValue, O]): Rule[JsValue, Array[O]] =
+    pickInS(arrayR[JsValue, O])
+
+  implicit def pickTraversable[O](implicit r: Rule[JsValue, O]): Rule[JsValue, Traversable[O]] =
+    pickInS(traversableR[JsValue, O])
 
   implicit val ruleAtJson: At[Rule[JsValue, ?]] = new At[Rule[JsValue, ?]] {
     def at[A](p: Path, r: Rule[JsValue, A]): Rule[JsValue, A] = {
-      r.isInstanceOf[Rule[JsValue, Option[_]]] // TODO
+      // r.isInstanceOf[Rule[JsValue, Option[_]]] // TODO
 
       def search(path: Path, json: JsValue): Option[JsValue] = path.path match {
         case KeyPathNode(k) :: t =>
