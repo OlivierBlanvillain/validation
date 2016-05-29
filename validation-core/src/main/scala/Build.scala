@@ -1,20 +1,21 @@
 package jto.validation
 
 object Build {
-  def apply[F1[_]: At, A](as: As1[F1] => F1[A]): F1[A] =
-    as(As1[F1](Path()))
+  def apply[F1[_]: At, A](as: As1[F1] => F1[A])(implicit M: Mixer1[F1]): F1[A] =
+    as(As1[F1](Path))
 
   def apply[F1[_]: At, F2[_]: At, A](as: As2[F1, F2] => F1[A] with F2[A])
     (implicit M: Mixer2[F1, F2]): F1[A] with F2[A] =
-      as(As2[F1, F2](Path()))
+      as(As2[F1, F2](Path))
 
   def apply[F1[_]: At, F2[_]: At, F3[_]: At, A](as: As3[F1, F2, F3] => F1[A] with F2[A] with F3[A])
     (implicit M: Mixer3[F1, F2, F3]): F1[A] with F2[A] with F3[A] =
-      as(As3[F1, F2, F3](Path()))
+      as(As3[F1, F2, F3](Path))
 }
 
-case class As1[F1[_]: At](path: Path) {
-  def as[A](m1: F1[A]): F1[A]= At[F1].at(path, m1)
+case class As1[F1[_]: At](path: Path)(implicit M: Mixer1[F1]) {
+  def as[A](implicit m1: F1[A]): F1[A] =
+    M.mix(At[F1].at(path, m1))
 
   def \(key: String): As1[F1] = As1(path \ key)
   def \(idx: Int): As1[F1] = As1(path \ idx)

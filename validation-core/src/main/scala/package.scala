@@ -76,12 +76,14 @@ package object validation {
     (f: Format[IR, OW, A]): InvariantSyntaxObs[Format[IR, OW, ?], A] =
       mixFunctorSyntaxObs[Rule[IR, ?], Write[?, OW], A](f)
 
-  // Format sugar (backward source compatible)
+  // Sugar (backward source compatible)
   // ----------------------------------------------------------------------------------------
   def Format[IR, OW, A](r: Rule[IR, A], w: Write[A, OW]): Format[IR, OW, A] =
     Mixer2.mixRuleWrite.mix(r, w)
 
   def Formatting[IR, OW] = new FormattingCurried[IR, OW] {}
+  def From[IR] = new FromCurried[IR] {}
+  def To[OW] = new ToCurried[OW] {}
 }
 
 class FormattingCurried[IR, OW] {
@@ -94,4 +96,18 @@ class FormattingCurried[IR, OW] {
       M: Mixer2[Rule[IR, ?], Write[?, OW]]
     ): Format[IR, OW, A] =
       Build[Rule[IR, ?], Write[?, OW], A](as)
+}
+
+class FromCurried[IR] {
+  import jto.validation._
+
+  def apply[A](as: As1[Rule[IR, ?]] => Rule[IR, A])(implicit a1: At[Rule[IR, ?]]): Rule[IR, A] =
+    Build[Rule[IR, ?], A](as)
+}
+
+class ToCurried[OW] {
+  import jto.validation._
+
+  def apply[A](as: As1[Write[?, OW]] => Write[A, OW])(implicit a1: At[Write[?, OW]]): Write[A, OW] =
+    Build[Write[?, OW], A](as)
 }

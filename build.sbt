@@ -141,10 +141,8 @@ val commonResolvers = Seq(
 val dependencies = Seq(libraryDependencies ++= Seq(
   "org.typelevel" %%% "cats" % catsVersion,
   "org.scalatest" %%% "scalatest" % scalatestVersion % "test",
-  "com.github.mpilquist" %% "simulacrum" % simulacrumVersion,
   "joda-time" % "joda-time" % jodaTimeVersion,
   "org.joda" % "joda-convert" % jodaConvertVersion,
-  compilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full),
   compilerPlugin("org.spire-math" %% "kind-projector" % kindProjectorVersion),
   compilerPlugin("com.milessabin" % "si2712fix-plugin" % si2712fixVersion cross CrossVersion.full)
 ))

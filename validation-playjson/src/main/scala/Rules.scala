@@ -99,16 +99,21 @@ object Rules extends DefaultRules[JsValue] {
   private def pickInS[T](
       implicit r: Rule[Seq[JsValue], T]): Rule[JsValue, T] =
     jsArrayR.map { case JsArray(fs) => fs }.andThen(r)
-  implicit def pickSeq[O](implicit r: Rule[JsValue, O]) =
-    pickInS(seqR[JsValue, O])
-  implicit def pickSet[O](implicit r: Rule[JsValue, O]) =
-    pickInS(setR[JsValue, O])
-  implicit def pickList[O](implicit r: Rule[JsValue, O]) =
-    pickInS(listR[JsValue, O])
-  implicit def pickArray[O: scala.reflect.ClassTag](
-      implicit r: Rule[JsValue, O]) = pickInS(arrayR[JsValue, O])
+  implicit def pickSeq[O](implicit r: Rule[JsValue, O]) = pickInS(seqR[JsValue, O])
+  implicit def pickSet[O](implicit r: Rule[JsValue, O]) = pickInS(setR[JsValue, O])
+  implicit def pickList[O](implicit r: Rule[JsValue, O]) = pickInS(listR[JsValue, O])
+  implicit def pickArray[O: scala.reflect.ClassTag](implicit r: Rule[JsValue, O]) = pickInS(arrayR[JsValue, O])
   implicit def pickTraversable[O](implicit r: Rule[JsValue, O]) =
     pickInS(traversableR[JsValue, O])
+
+  // https://cdn.meme.am/instances/400x/64063590.jpg
+  // I guess? (These are the implicit conversions, the BAD kind...)
+  implicit def stringToJsValueR[O](r: Rule[String, O]): Rule[JsValue, O] =
+    stringR.andThen(r)
+  implicit def intToJsValueR[O](r: Rule[Int, O]): Rule[JsValue, O] =
+    intR.andThen(r)
+  implicit def seqToJsValueR[I, O](r: Rule[Seq[I], Seq[O]])(implicit l: Rule[JsValue, Seq[I]]): Rule[JsValue, Seq[O]] =
+    l.andThen(r)
 
   implicit val ruleAtJson: At[Rule[JsValue, ?]] = new At[Rule[JsValue, ?]] {
     def at[A](p: Path, r: Rule[JsValue, A]): Rule[JsValue, A] = {
@@ -133,7 +138,7 @@ object Rules extends DefaultRules[JsValue] {
       Rule[JsValue, JsValue] { json =>
         search(p, json) match {
           case None =>
-            Invalid(Seq(Path() -> Seq(ValidationError("error.required"))))
+            Invalid(Seq(Path -> Seq(ValidationError("error.required"))))
           case Some(js) => Valid(js)
         }
       }.andThen(r).repath(p ++ _)

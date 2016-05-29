@@ -192,15 +192,14 @@ trait GenericRules {
     * @return A new Rule
     */
   implicit def seqR[I, O](implicit r: Rule[I, O]): Rule[Seq[I], Seq[O]] =
-    Rule {
-      case is =>
-        val withI = is.zipWithIndex.map {
-          case (v, i) =>
-            Rule.toRule(r).repath((Path() \ i) ++ _).validate(v)
-        }
-        import cats.std.list._
-        import cats.syntax.traverse._
-        withI.toList.sequenceU
+    Rule { is =>
+      val withI = is.zipWithIndex.map {
+        case (v, i) =>
+          Rule.toRule(r).repath((Path \ i) ++ _).validate(v)
+      }
+      import cats.std.list._
+      import cats.syntax.traverse._
+      withI.toList.sequenceU
     }
 
   /**
@@ -425,12 +424,12 @@ trait DefaultRules[I] extends GenericRules with DateRules {
                  p: Rule[I, Seq[(String, K)]]): Rule[I, Map[String, O]] = {
     Rule
       .toRule(p)
-      .andThen(Path())(
+      .andThen(Path)(
           Rule { fs =>
         val validations = fs.map { f =>
           Rule
             .toRule(r)
-            .repath((Path() \ f._1) ++ _)
+            .repath((Path \ f._1) ++ _)
             .validate(f._2)
             .map(f._1 -> _)
         }
