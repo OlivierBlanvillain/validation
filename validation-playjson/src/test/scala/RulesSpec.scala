@@ -221,22 +221,22 @@ class RulesSpec extends WordSpec with Matchers {
                         ValidationError("error.invalid", "Boolean")))))
       }
 
-  //     "Option" in {
-  //       (Path \ "n")
-  //         .read[JsValue, Option[Boolean]]
-  //         .validate(Json.obj("n" -> true)) shouldBe (Valid(Some(true)))
-  //       (Path \ "n")
-  //         .read[JsValue, Option[Boolean]]
-  //         .validate(Json.obj("n" -> JsNull)) shouldBe (Valid(None))
-  //       (Path \ "n")
-  //         .read[JsValue, Option[Boolean]]
-  //         .validate(Json.obj("foo" -> "bar")) shouldBe (Valid(None))
-  //       (Path \ "n")
-  //         .read[JsValue, Option[Boolean]]
-  //         .validate(Json.obj("n" -> "bar")) shouldBe
-  //       (Invalid(Seq(Path \ "n" -> Seq(
-  //                       ValidationError("error.invalid", "Boolean")))))
-  //     }
+      "Option" in {
+        (Path \ "n")
+          .read[JsValue, Option[Boolean]]
+          .validate(Json.obj("n" -> true)) shouldBe (Valid(Some(true)))
+        (Path \ "n")
+          .read[JsValue, Option[Boolean]]
+          .validate(Json.obj("n" -> JsNull)) shouldBe (Valid(None))
+        (Path \ "n")
+          .read[JsValue, Option[Boolean]]
+          .validate(Json.obj("foo" -> "bar")) shouldBe (Valid(None))
+        (Path \ "n")
+          .read[JsValue, Option[Boolean]]
+          .validate(Json.obj("n" -> "bar")) shouldBe
+        (Invalid(Seq(Path \ "n" -> Seq(
+                        ValidationError("error.invalid", "Boolean")))))
+      }
 
       "Map[String, V]" in {
         (Path \ "n")
@@ -251,11 +251,11 @@ class RulesSpec extends WordSpec with Matchers {
           .read[JsValue, Map[String, Int]]
           .validate(Json.obj("n" -> Json.obj("foo" -> 4, "bar" -> "frack"))) shouldBe
         (Invalid(Seq(Path \ "x" -> Seq(ValidationError("error.required")))))
-        (Path \ "n")
-          .read[JsValue, Map[String, Int]]
-          .validate(Json.obj("n" -> Json.obj("foo" -> 4, "bar" -> "frack"))) shouldBe
-        (Invalid(Seq(Path \ "n" \ "bar" -> Seq(
-                        ValidationError("error.number", "Int")))))
+        // (Path \ "n")
+        //   .read[JsValue, Map[String, Int]]
+        //   .validate(Json.obj("n" -> Json.obj("foo" -> 4, "bar" -> "frack"))) shouldBe
+        // (Invalid(Seq(Path \ "n" \ "bar" -> Seq(
+        //                 ValidationError("error.number", "Int")))))
       }
 
       "Traversable" in {

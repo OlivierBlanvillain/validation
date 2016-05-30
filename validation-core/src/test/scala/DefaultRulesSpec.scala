@@ -9,7 +9,7 @@ class DefaultRulesSpec extends WordSpec with Matchers {
   }
   import R._
 
-  implicit def r[A: ClassTag]: Rule[Any, A] = Rule {
+  implicit def r[A: TypeTag]: Rule[Any, A] = Rule {
     case a: A @unchecked => Valid(a)
     case _ => Invalid(Seq.empty)
   }
