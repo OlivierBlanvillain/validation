@@ -270,7 +270,7 @@ We need to create a `Rule[JsValue, User]`. Creating this Rule is simply a matter
 import jto.validation._
 import play.api.libs.json._
 
-val userRule = From[JsValue] { __ =>
+val userRule: Rule[JsValue, User] = From[JsValue] { __ =>
   import jto.validation.playjson.Rules._
   ((__ \ "name").read[String] ~
    (__ \ "age").read[Int] ~

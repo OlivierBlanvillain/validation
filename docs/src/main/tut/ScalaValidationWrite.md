@@ -9,7 +9,7 @@ To serialize data, the validation API provides the `Write` type. A `Write[I, O]`
 Let's say you want to serialize a `Float` to `String`.
 All you need to do is to define a `Write` from `Float` to `String`:
 
-```tut
+```tut:silent
 import jto.validation._
 def floatToString: Write[Float, String] = ???
 ```
@@ -59,7 +59,7 @@ Writes composition is very important in this API. `Write` composition means that
 Let's see we're working working on a e-commerce website. We have defined a `Product` class.
 Each product has a name and a price:
 
-```tut
+```tut:silent
 case class Product(name: String, price: Double)
 ```
 
@@ -69,7 +69,7 @@ We have already defined `currency: Write[Double, String]`, so we'd like to reuse
 First, we'll create a `Write[Product, Double]` extracting the price of the product:
 
 ```tut:silent
-val productPrice = Write[Product, Double]{ _.price }
+val productPrice: Write[Product, Double] = Write[Product, Double](_.price)
 ```
 
 Now we just have to compose it with `currency`:

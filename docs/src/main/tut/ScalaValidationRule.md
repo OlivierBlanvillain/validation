@@ -9,7 +9,7 @@ The API is designed around the concept of `Rule`. A `Rule[I, O]` defines a way t
 Let's say you want to coerce a `String` into an `Float`.
 All you need to do is to define a `Rule` from String to Float:
 
-```tut
+```tut:silent
 import jto.validation._
 def isFloat: Rule[String, Float] = ???
 ```

@@ -14,7 +14,7 @@ Migrating a Json `Reads` to a `Rule` is just a matter of modifying imports and s
 
 Let's take a typical example from the Json API documentation:
 
-```tut
+```tut:silent
 case class Creature(
   name: String,
   isDead: Boolean,
@@ -45,7 +45,7 @@ Using the new API, this code becomes:
 import jto.validation._
 import play.api.libs.json._
 
-implicit val creatureRule = From[JsValue] { __ =>
+implicit val creatureRule: Rule[JsValue, Creature] = From[JsValue] { __ =>
   import jto.validation.playjson.Rules._
   ((__ \ "name").read[String] ~
    (__ \ "isDead").read[Boolean] ~
@@ -67,7 +67,7 @@ It is recommended to always follow this pattern, as it nicely scopes the implici
 The readNullable method does not exists anymore. Just use a `Rule[JsValue, Option[T]]` instead. `null` and non existing Path will be handled correctly and give you a `None`:
 
 ```tut:silent
-val nullableStringRule = From[JsValue] { __ =>
+val nullableStringRule: Rule[JsValue, Option[String]] = From[JsValue] { __ =>
   import jto.validation.playjson.Rules._
   (__ \ "foo").read[Option[String]]
 }
@@ -134,7 +134,7 @@ becomes:
 ```tut:silent
 case class User(id: Long, name: String, friend: Option[User] = None)
 
-implicit lazy val userRule: Rule[JsValue, User] = From[JsValue]{ __ =>
+implicit lazy val userRule: Rule[JsValue, User] = From[JsValue] { __ =>
   import jto.validation.playjson.Rules._
   ((__ \ "id").read[Long] ~
    (__ \ "name").read[String] ~
@@ -228,7 +228,7 @@ val js = Json.obj(
     "field32"-> 345
   ))
 
-val pick = From[JsValue] { __ =>
+val pick: Rule[JsValue, JsValue] = From[JsValue] { __ =>
   import jto.validation.playjson.Rules._
   (__ \ "field3").read[JsValue]
 }

@@ -46,7 +46,7 @@ Now we are able to do this:
     "field31" -> "beta",
     "field32"-> 345))
 
-  val pick = From[JsValue]{ __ =>
+  val pick: Rule[JsValue, JsValue] = From[JsValue] { __ =>
     (__ \ "field2").read[JsValue]
   }
 
@@ -135,7 +135,7 @@ Basically it's just the same, but we are now only supporting `JsValue`. We are a
 Despite the type signature funkiness, this function is actually **really** simple to use:
 
 ```tut:silent
-val maybeEmail = From[JsValue]{ __ =>
+val maybeEmail: Rule[JsValue, Option[String]] = From[JsValue] { __ =>
   import jto.validation.playjson.Rules._
   (__ \ "email").read(optionR(email))
 }
@@ -158,7 +158,7 @@ implicit def option[O](p: Path)(implicit pick: Path => Rule[JsValue, JsValue], c
 ```
 
 ```tut:silent
-val maybeAge = From[JsValue]{ __ =>
+val maybeAge: Rule[JsValue, Option[Int]]] = From[JsValue] { __ =>
   import jto.validation.playjson.Rules._
   (__ \ "age").read[Option[Int]]
 }
@@ -175,7 +175,7 @@ val u = RecUser(
   "bob",
   Seq(RecUser("tom")))
 
-lazy val w: Rule[JsValue, RecUser] = From[JsValue]{ __ =>
+lazy val w: Rule[JsValue, RecUser] = From[JsValue] { __ =>
   import jto.validation.playjson.Rules._
   ((__ \ "name").read[String] ~
    (__ \ "friends").read(seqR(w))) (RecUser.apply _) // !!! recursive rule definition
