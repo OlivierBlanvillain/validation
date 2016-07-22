@@ -6,7 +6,7 @@ import play.api.libs.json._
 object Ast {
   val to: Write[JValue, JsValue] = Write[JValue, JsValue] {
     case JNull           => JsNull
-    case JObject (value) => JsObject(value.mapValues(to.writes))
+    case JObject (value) => JsObject(value.mapValues(to.writes).toSeq)
     case JArray  (value) => JsArray(value.map(to.writes))
     case JBoolean(value) => JsBoolean(value)
     case JString (value) => JsString(value)
@@ -14,8 +14,8 @@ object Ast {
   }
 
   private def totalFrom(jsValue: JsValue): JValue = jsValue match {
-    case JsNull           => JNull
-    case JsObject (value) => JObject(value.mapValues(totalFrom).toMap)
+    case JsNull | JsUndefined() => JNull
+    case JsObject (value) => JObject(value.toMap.mapValues(totalFrom).toMap)
     case JsArray  (value) => JArray(value.map(totalFrom).toVector)
     case JsBoolean(value) => JBoolean(value)
     case JsString (value) => JString(value)

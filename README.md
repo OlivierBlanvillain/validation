@@ -72,7 +72,8 @@ libraryDependencies ++= Seq(
 
 | Validation | Play  |
 | ---------- | ----- |
-| 2.0        | 2.5.3 |
+| 2.0        | 2.5.x |
+| play-2.3.x | 2.3.x |
 | 1.1.x      | 2.4.x |
 | 1.0.2      | 2.3.x |
 
